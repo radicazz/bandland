@@ -17,9 +17,7 @@ export default function Home() {
         <h1 className="mt-6 text-4xl font-semibold tracking-tight text-text sm:text-6xl">
           {site.name}
         </h1>
-        <p className="mt-6 max-w-2xl text-lg leading-8 text-text-muted">
-          {site.description}
-        </p>
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-text-muted">{site.description}</p>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <a
@@ -92,13 +90,17 @@ export default function Home() {
           {site.contactEmail ? (
             <p className="mt-2 text-sm leading-6 text-text-muted">
               Booking / press:{" "}
-              <a className="text-text underline underline-offset-4" href={`mailto:${site.contactEmail}`}>
+              <a
+                className="text-text underline underline-offset-4"
+                href={`mailto:${site.contactEmail}`}
+              >
                 {site.contactEmail}
               </a>
             </p>
           ) : (
             <p className="mt-2 text-sm leading-6 text-text-muted">
-              Add your contact email in <span className="font-mono text-text">src/config/site.ts</span>.
+              Add your contact email in{" "}
+              <span className="font-mono text-text">src/config/site.ts</span>.
             </p>
           )}
         </section>

@@ -21,10 +21,7 @@ export default function MerchPage() {
       ) : (
         <ul className="mt-10 grid gap-4 md:grid-cols-2">
           {merchItems.map((item) => (
-            <li
-              key={item.id}
-              className="rounded-2xl border border-border/70 bg-surface/50 p-6"
-            >
+            <li key={item.id} className="rounded-2xl border border-border/70 bg-surface/50 p-6">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="text-sm font-semibold text-text">{item.name}</p>
                 {item.price ? <p className="text-sm text-text-dim">{item.price}</p> : null}
@@ -44,4 +41,3 @@ export default function MerchPage() {
     </Container>
   );
 }
-

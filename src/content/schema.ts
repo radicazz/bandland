@@ -18,4 +18,3 @@ export const merchItemSchema = z.object({
 });
 
 export type MerchItem = z.infer<typeof merchItemSchema>;
-

@@ -7,17 +7,14 @@ Modern band landing page with **dark monochrome aesthetic**. High contrast, mini
 Located in `src/app/globals.css`:
 
 ```css
---bg: #060606          /* near-black background */
---surface: #0f0f10     /* elevated panels */
---surface-2: #1a1b1d   /* cards */
---border: #2a2b2e      /* dividers */
---text: #f2f2f2        /* primary text */
---text-muted: #b7b7b7  /* secondary text */
---text-dim: #7a7a7a    /* metadata */
---highlight: #e6e2da   /* bone/off-white accent */
+--bg: #060606 /* near-black background */ --surface: #0f0f10 /* elevated panels */
+  --surface-2: #1a1b1d /* cards */ --border: #2a2b2e /* dividers */ --text: #f2f2f2
+  /* primary text */ --text-muted: #b7b7b7 /* secondary text */ --text-dim: #7a7a7a /* metadata */
+  --highlight: #e6e2da /* bone/off-white accent */;
 ```
 
 **Rules:**
+
 - Never hardcode colors in components; use design tokens only
 - Single-accent approach (highlight only)
 - Translucent overlays preferred over new colors
@@ -42,6 +39,7 @@ Located in `src/app/globals.css`:
 **Location:** `content/` (JSON files)
 
 ### Shows (`content/shows.json`)
+
 ```ts
 {
   id: string,
@@ -53,6 +51,7 @@ Located in `src/app/globals.css`:
 ```
 
 ### Merch (`content/merch.json`)
+
 ```ts
 {
   id: string,
@@ -80,6 +79,7 @@ Located in `src/app/globals.css`:
 ## Component Architecture
 
 **Existing components:**
+
 - `Container` — max-w-6xl wrapper with padding
 - `SiteHeader` — nav with logo + links
 - `SiteFooter` — copyright + tagline
@@ -93,6 +93,7 @@ Located in `src/app/globals.css`:
 - `/merch` — Merch grid with external links
 
 **SEO:**
+
 - `src/app/sitemap.ts` — dynamic sitemap
 - `src/app/robots.ts` — robots.txt
 - `src/app/opengraph-image.tsx` — OG image (edge runtime)
@@ -149,15 +150,18 @@ npm run format     # Prettier
 ## Extending
 
 **New components:**
+
 - Add to `src/components/`
 - Use Tailwind utility classes
 - Reference design tokens via Tailwind (e.g., `bg-surface`, `text-text-muted`)
 
 **New pages:**
+
 - Add folder in `src/app/`
 - Include `page.tsx` + optional `metadata` export
 
 **New content types:**
+
 - Define Zod schema in `src/content/schema.ts`
 - Create loader in `src/content/`
 - Add JSON file in `content/`

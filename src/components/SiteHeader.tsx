@@ -14,11 +14,7 @@ export function SiteHeader() {
   return (
     <header className="border-b border-border/60 bg-bg/70 backdrop-blur">
       <Container className="flex h-16 items-center justify-between">
-        <Link
-          href="/"
-          className="text-sm font-semibold tracking-wide text-text"
-          aria-label="Home"
-        >
+        <Link href="/" className="text-sm font-semibold tracking-wide text-text" aria-label="Home">
           {site.name}
         </Link>
         <nav aria-label="Primary">

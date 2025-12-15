@@ -32,7 +32,13 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Arial,
+  font-family:
+    var(--font-sans),
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Arial,
     sans-serif;
 }
 
