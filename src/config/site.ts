@@ -1,15 +1,15 @@
 export const site = {
-  name: "Radicazz",
+  name: "Bandland",
   description: "Official landing page. Music, shows, and merch coming soon.",
   
   // Add your booking/press contact email here
-  contactEmail: "",
+  contactEmail: "info@bandland.com",
   
   // Social media links - set href to null or remove entries you don't need
   socials: [
-    { label: "Instagram", href: "https://instagram.com/radicazz" },
-    { label: "TikTok", href: "https://tiktok.com/@radicazz" },
-    { label: "YouTube", href: "https://youtube.com/@radicazz" },
-    { label: "Spotify", href: "https://open.spotify.com/artist/radicazz" },
+    { label: "Instagram", href: "https://instagram.com/bandland" },
+    { label: "TikTok", href: "https://tiktok.com/@bandland" },
+    { label: "YouTube", href: "https://youtube.com/@bandland" },
+    { label: "Spotify", href: "https://open.spotify.com/artist/bandland" },
   ],
 } as const;
