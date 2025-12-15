@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Container } from "@/components/Container";
+import { site } from "@/config/site";
 
 const navItems = [
   { href: "#music", label: "Music" },
@@ -18,7 +19,7 @@ export function SiteHeader() {
           className="text-sm font-semibold tracking-wide text-text"
           aria-label="Home"
         >
-          bandland
+          {site.name}
         </Link>
         <nav aria-label="Primary">
           <ul className="flex items-center gap-4 text-sm text-text-muted">
@@ -38,4 +39,3 @@ export function SiteHeader() {
     </header>
   );
 }
-
