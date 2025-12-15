@@ -13,3 +13,18 @@ vi.mock("next/image", () => {
     },
   };
 });
+
+vi.mock("next/link", () => {
+  return {
+    default: ({
+      children,
+      href,
+      ...props
+    }: React.AnchorHTMLAttributes<HTMLAnchorElement> & {
+      children: React.ReactNode;
+      href: string;
+    }) => {
+      return React.createElement("a", { ...props, href }, children);
+    },
+  };
+});
