@@ -4,10 +4,10 @@ import { Container } from "@/components/Container";
 import { site } from "@/config/site";
 
 const navItems = [
-  { href: "#music", label: "Music" },
-  { href: "#shows", label: "Shows" },
-  { href: "#merch", label: "Merch" },
-  { href: "#contact", label: "Contact" },
+  { href: "/#music", label: "Music" },
+  { href: "/shows", label: "Shows" },
+  { href: "/merch", label: "Merch" },
+  { href: "/#contact", label: "Contact" },
 ] as const;
 
 export function SiteHeader() {
@@ -25,12 +25,12 @@ export function SiteHeader() {
           <ul className="flex items-center gap-4 text-sm text-text-muted">
             {navItems.map((item) => (
               <li key={item.href}>
-                <a
+                <Link
                   href={item.href}
                   className="rounded-full px-2 py-1 transition-colors hover:text-text focus-visible:text-text"
                 >
                   {item.label}
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
