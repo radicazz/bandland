@@ -19,3 +19,17 @@ Open `http://localhost:3000`.
 npm run build
 npm run start
 ```
+
+## Deployment
+
+### Vercel
+
+- Import the repo and deploy.
+- Optionally set `NEXT_PUBLIC_SITE_URL` to your canonical URL.
+
+### Docker (portable)
+
+```bash
+docker build -t bandland .
+docker run --rm -p 3000:3000 --env NEXT_PUBLIC_SITE_URL=http://localhost:3000 bandland
+```
