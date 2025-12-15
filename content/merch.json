@@ -1,1 +1,25 @@
-[]
+[
+  {
+    "id": "merch-1",
+    "name": "Tour T-Shirt",
+    "href": "https://example.com/merch/tour-tee",
+    "price": "$25"
+  },
+  {
+    "id": "merch-2",
+    "name": "Limited Edition Vinyl",
+    "href": "https://example.com/merch/vinyl",
+    "price": "$35"
+  },
+  {
+    "id": "merch-3",
+    "name": "Poster Pack",
+    "href": "https://example.com/merch/posters",
+    "price": "$15"
+  },
+  {
+    "id": "merch-4",
+    "name": "Full Store",
+    "href": "https://example.com/store"
+  }
+]
