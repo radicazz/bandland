@@ -23,17 +23,17 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server (hot reload) |
-| `npm run build` | Build for production |
-| `npm run start` | Run production build locally |
-| `npm run lint` | Run ESLint |
-| `npm run typecheck` | Run TypeScript type checking |
-| `npm test` | Run tests (Vitest) |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run format` | Format all files with Prettier |
-| `npm run format:check` | Check formatting without writing |
+| Command                | Description                           |
+| ---------------------- | ------------------------------------- |
+| `npm run dev`          | Start development server (hot reload) |
+| `npm run build`        | Build for production                  |
+| `npm run start`        | Run production build locally          |
+| `npm run lint`         | Run ESLint                            |
+| `npm run typecheck`    | Run TypeScript type checking          |
+| `npm test`             | Run tests (Vitest)                    |
+| `npm run test:watch`   | Run tests in watch mode               |
+| `npm run format`       | Format all files with Prettier        |
+| `npm run format:check` | Check formatting without writing      |
 
 ## Project Structure
 
@@ -145,6 +145,7 @@ NEXT_PUBLIC_SITE_URL=https://yourdomain.com
 ```
 
 This is used for:
+
 - Generating absolute URLs in metadata
 - Open Graph images
 - Sitemap generation
@@ -182,41 +183,132 @@ All checks run automatically via pre-commit hooks if you have them configured.
 
 ## Deployment
 
-### Vercel (Recommended)
+### Docker (Recommended for Self-Hosting)
 
-1. Import repository in Vercel
-2. Set environment variable: `NEXT_PUBLIC_SITE_URL=https://yourdomain.com`
-3. Deploy
-
-Vercel automatically detects Next.js and optimizes the build.
-
-### Docker
-
-Build and run the production image:
+**Quick Start:**
 
 ```bash
-# Build
-docker build -t bandland .
+# Production (using Compose)
+docker compose up --build
 
-# Run
-docker run --rm -p 3000:3000 \
-  --env NEXT_PUBLIC_SITE_URL=https://yourdomain.com \
-  bandland
+# Or with npm scripts
+npm run docker:up
 ```
 
-The Dockerfile uses Next.js standalone output for minimal image size.
+**Manual Build & Run:**
+
+```bash
+# Build image
+npm run docker:build
+
+# Run container
+npm run docker:run
+
+# Or manually:
+docker build -t bandland .
+docker run --rm -p 3000:3000 -e NEXT_PUBLIC_SITE_URL=https://yourdomain.com bandland
+```
+
+**Development Mode:**
+
+```bash
+# Run dev server in container with hot-reload
+npm run docker:dev
+```
+
+Visit [http://localhost:3000](http://localhost:3000)
+
+**Cleanup:**
+
+```bash
+npm run docker:down
+```
+
+---
+
+### Podman (Docker Alternative)
+
+Podman works identically to Docker with full rootless support:
+
+```bash
+# Production
+npm run podman:up
+
+# Development
+npm run podman:dev
+
+# Manual commands
+npm run podman:build
+npm run podman:run
+npm run podman:down
+```
+
+**Troubleshooting Podman on Linux:**
+
+If the site isn't accessible at `localhost:3000`, try using host networking:
+
+```bash
+npm run podman:run:host
+```
+
+This uses `--network=host` which shares the host's network stack, avoiding rootless networking issues.
+
+All `compose.yaml` configurations work with both Docker Compose and Podman Compose.
+
+---
+
+### Vercel (Recommended for Cloud)
+
+**One-Click Deploy:**
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/radicazz/bandland)
+
+**Manual Deploy:**
+
+1. Install Vercel CLI: `npm i -g vercel`
+2. Run: `vercel`
+3. Set environment variable: `NEXT_PUBLIC_SITE_URL=https://yourdomain.com`
+
+Vercel automatically detects Next.js via `vercel.json` and applies optimal settings including:
+
+- Security headers (X-Frame-Options, CSP, etc.)
+- Static asset caching
+- Edge runtime optimization
+
+---
 
 ### Other Platforms
 
-The project works on any platform supporting Node.js 22:
+The project supports any platform with Node.js 22:
 
-- **Netlify**: Auto-detected
-- **Cloudflare Pages**: Use Next.js adapter
-- **Railway/Render**: Deploy from GitHub
+| Platform             | Method                                            |
+| -------------------- | ------------------------------------------------- |
+| **Netlify**          | Auto-detected via Git                             |
+| **Cloudflare Pages** | Requires `@cloudflare/next-on-pages`              |
+| **Railway**          | Auto-detected, add `NEXT_PUBLIC_SITE_URL` env var |
+| **Render**           | Auto-detected, add `NEXT_PUBLIC_SITE_URL` env var |
+| **Fly.io**           | Use included Dockerfile                           |
+
+**Environment Variables:**
+All platforms require `NEXT_PUBLIC_SITE_URL` set to your canonical domain (e.g., `https://yourdomain.com`).
+
+---
+
+### Deployment Checklist
+
+Before deploying to production:
+
+- [ ] Set `NEXT_PUBLIC_SITE_URL` environment variable
+- [ ] Update `src/config/site.ts` with your band details
+- [ ] Add real content to `content/shows.json` and `content/merch.json`
+- [ ] Test build locally: `npm run build && npm start`
+- [ ] Verify TypeScript: `npm run typecheck`
+- [ ] Run tests: `npm test`
 
 ## Design System
 
 All design tokens (colors, spacing, typography) are defined in:
+
 - `src/app/globals.css` – CSS custom properties
 - `AGENTS.md` – Complete visual & UX guidelines
 

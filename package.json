@@ -11,7 +11,18 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier . --write",
-    "format:check": "prettier . --check"
+    "format:check": "prettier . --check",
+    "docker:build": "docker build -t bandland .",
+    "docker:run": "docker run --rm -p 3000:3000 -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
+    "docker:dev": "docker compose --profile dev up --build",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "podman:build": "podman build -t bandland .",
+    "podman:run": "podman run --rm -p 127.0.0.1:3000:3000 -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
+    "podman:run:host": "podman run --rm --network=host -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
+    "podman:dev": "podman-compose --profile dev up --build",
+    "podman:up": "podman-compose up --build",
+    "podman:down": "podman-compose down"
   },
   "dependencies": {
     "next": "16.0.10",
