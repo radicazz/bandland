@@ -9,6 +9,7 @@ type Card = {
   description: string;
   href?: string;
   cta?: string;
+  embedUrl?: string;
 };
 
 const cards: Card[] = [
@@ -17,6 +18,8 @@ const cards: Card[] = [
     description: "Listen to the newest drop.",
     href: "https://tr.ee/7KaRvTpbLN",
     cta: "Listen",
+    embedUrl:
+      "https://open.spotify.com/embed/track/4vV3oxYqzSUBXBODbrKAmO?utm_source=generator&theme=0",
   },
   {
     title: "Merch",
@@ -92,6 +95,19 @@ export function HomeCarousel() {
                   <p className="mt-4 break-words text-base leading-7 text-text-muted">
                     {card.description}
                   </p>
+                  {card.embedUrl ? (
+                    <div className="mt-6 overflow-hidden rounded-2xl border border-border/70 bg-surface/70">
+                      <iframe
+                        title={`${card.title} — Spotify player`}
+                        src={card.embedUrl}
+                        width="100%"
+                        height="152"
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                        loading="lazy"
+                        className="block w-full"
+                      />
+                    </div>
+                  ) : null}
                   {card.href ? (
                     <a
                       className="mt-6 inline-flex h-11 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-6 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
