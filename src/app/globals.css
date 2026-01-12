@@ -52,6 +52,48 @@ body {
   background: color-mix(in srgb, var(--highlight) 30%, transparent);
 }
 
+@keyframes hero-fade {
+  0%,
+  22% {
+    opacity: 1;
+  }
+  33%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.hero-slide {
+  opacity: 0;
+  animation: hero-fade 18s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.hero-slide--2 {
+  animation-delay: 6s;
+}
+
+.hero-slide--3 {
+  animation-delay: 12s;
+}
+
+.hero-vignette {
+  background: radial-gradient(
+    60% 60% at 50% 50%,
+    transparent 0%,
+    color-mix(in srgb, var(--bg) 82%, transparent) 75%
+  );
+}
+
+.hero-grain {
+  background-image: repeating-linear-gradient(
+    65deg,
+    color-mix(in srgb, var(--text) 8%, transparent) 0 1px,
+    transparent 1px 6px
+  );
+  opacity: 0.12;
+}
+
 /* Respect user's motion preferences (required by AGENTS.md) */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -61,5 +103,14 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  .hero-slide {
+    animation: none;
+    opacity: 0;
+  }
+
+  .hero-slide:first-child {
+    opacity: 1;
   }
 }
