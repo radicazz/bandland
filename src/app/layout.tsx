@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, UnifrakturCook } from "next/font/google";
+import { Geist, Geist_Mono, Grenze_Gotisch } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const bandlandGothic = UnifrakturCook({
+const bandlandGothic = Grenze_Gotisch({
   variable: "--font-bandland-gothic",
   subsets: ["latin"],
   weight: "700",
