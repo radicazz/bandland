@@ -51,16 +51,24 @@ export function HomeCarousel() {
 
   const total = cards.length;
   const shouldAnimate = !prefersReducedMotion && !hasInteracted;
+  const safeIndex = useMemo(() => {
+    if (total === 0) return 0;
+    return ((index % total) + total) % total;
+  }, [index, total]);
 
   useEffect(() => {
     if (prefersReducedMotion || hasInteracted) return;
     const timer = window.setInterval(() => {
-      setIndex((current) => (current + 1) % total);
+      setIndex((current) => (total === 0 ? 0 : (current + 1) % total));
     }, slideIntervalMs);
     return () => window.clearInterval(timer);
   }, [prefersReducedMotion, hasInteracted, total]);
 
-  const current = useMemo(() => cards[index], [index]);
+  const current = useMemo(() => {
+    const firstCard = cards[0];
+    if (!firstCard) return null;
+    return cards[safeIndex] ?? firstCard;
+  }, [safeIndex]);
 
   return (
     <div className="flex w-full flex-col items-center justify-center gap-6 px-4 sm:px-6">
@@ -72,7 +80,7 @@ export function HomeCarousel() {
                 ? "transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
                 : "transition-none"
             }`}
-            style={{ transform: `translateX(-${index * 100}%)` }}
+            style={{ transform: `translateX(-${safeIndex * 100}%)` }}
           >
             {cards.map((card) => (
               <div key={card.title} className="w-full flex-shrink-0 px-2">
@@ -99,14 +107,14 @@ export function HomeCarousel() {
             ))}
           </div>
           <p className="sr-only" aria-live="polite">
-            {current.title}
+            {current?.title ?? ""}
           </p>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-3">
         {tabs.map((tab, tabIndex) => {
-          const isActive = tabIndex === index;
+          const isActive = tabIndex === safeIndex;
           return (
             <button
               key={tab}
