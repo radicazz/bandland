@@ -17,7 +17,7 @@ export default function ShowsPage() {
 
       <Container className="relative py-16 sm:py-20">
         <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Live</p>
-        <h1 className="mt-4 text-4xl font-[var(--font-brand)] uppercase tracking-[0.22em] text-highlight sm:text-5xl">
+        <h1 className="mt-4 text-4xl font-brand uppercase tracking-[0.22em] text-highlight sm:text-5xl">
           Shows
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-text-muted">

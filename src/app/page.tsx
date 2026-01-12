@@ -37,7 +37,7 @@ export default function Home() {
       </div>
 
       <Container className="relative flex min-h-[80svh] items-center">
-        <h1 className="text-balance text-5xl font-[var(--font-brand)] uppercase tracking-[0.18em] text-highlight sm:text-6xl md:text-7xl lg:text-8xl">
+        <h1 className="text-balance text-5xl font-brand uppercase tracking-[0.18em] text-highlight sm:text-6xl md:text-7xl lg:text-8xl">
           {site.name}
         </h1>
       </Container>

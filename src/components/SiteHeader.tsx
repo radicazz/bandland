@@ -51,7 +51,7 @@ export function SiteHeader() {
       <Container className="flex h-16 items-center justify-between">
         <Link
           href="/"
-          className="text-lg font-[var(--font-brand)] tracking-[0.18em] text-text"
+          className="text-lg font-brand tracking-[0.18em] text-text"
           aria-label="Home"
         >
           {site.name}

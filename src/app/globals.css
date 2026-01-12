@@ -43,6 +43,18 @@ body {
     sans-serif;
 }
 
+.font-brand {
+  font-family:
+    var(--font-bandland-gothic),
+    var(--font-geist-sans),
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Arial,
+    sans-serif;
+}
+
 :focus-visible {
   outline: 2px solid var(--highlight);
   outline-offset: 3px;
