@@ -81,14 +81,6 @@ body {
   will-change: opacity;
 }
 
-.hero-slide--2 {
-  animation-delay: 6s;
-}
-
-.hero-slide--3 {
-  animation-delay: 12s;
-}
-
 .hero-vignette {
   background: radial-gradient(
     60% 60% at 50% 50%,

@@ -1,27 +1,59 @@
+import { readdir } from "node:fs/promises";
+import path from "node:path";
 import Image from "next/image";
 
 import { Container } from "@/components/Container";
 import { site } from "@/config/site";
 
-const heroSlides = [
-  { src: "/slideshow/hero-1.jpg" },
-  { src: "/slideshow/hero-2.jpg" },
-  { src: "/slideshow/hero-3.jpg" },
-] as const;
+const slideshowDir = path.join(process.cwd(), "public", "slideshow");
+const slideIntervalSeconds = 6;
 
-export default function Home() {
+async function getSlides() {
+  try {
+    const entries = await readdir(slideshowDir, { withFileTypes: true });
+    return entries
+      .filter(
+        (entry) =>
+          entry.isFile() && /\.(avif|gif|jpe?g|png|webp)$/i.test(entry.name),
+      )
+      .map((entry) => `/slideshow/${entry.name}`)
+      .sort((a, b) => a.localeCompare(b));
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const slides = await getSlides();
+  const slideCount = Math.max(slides.length, 1);
+  const totalDurationSeconds = slideCount * slideIntervalSeconds;
+  const fadeInPct = (10 / slideCount).toFixed(4);
+  const holdPct = (70 / slideCount).toFixed(4);
+  const fadeOutPct = (100 / slideCount).toFixed(4);
+
   return (
     <section className="relative min-h-[80svh] overflow-hidden border-b border-border/60">
+      <style>{`
+        @keyframes hero-fade {
+          0% { opacity: 0; }
+          ${fadeInPct}% { opacity: 1; }
+          ${holdPct}% { opacity: 1; }
+          ${fadeOutPct}% { opacity: 0; }
+          100% { opacity: 0; }
+        }
+      `}</style>
       <div aria-hidden className="absolute inset-0">
-        {heroSlides.map((slide, index) => (
+        {slides.map((src, index) => (
           <div
-            key={slide.src}
-            className={`absolute inset-0 hero-slide ${index === 1 ? "hero-slide--2" : ""} ${
-              index === 2 ? "hero-slide--3" : ""
-            }`}
+            key={src}
+            className="absolute inset-0 hero-slide"
+            style={{
+              animationDelay: `${index * slideIntervalSeconds}s`,
+              animationDuration: `${totalDurationSeconds}s`,
+            }}
           >
             <Image
-              src={slide.src}
+              src={src}
               alt=""
               fill
               sizes="100vw"
