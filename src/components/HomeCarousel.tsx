@@ -61,8 +61,8 @@ export function HomeCarousel() {
   const current = useMemo(() => cards[index], [index]);
 
   return (
-    <div className="w-full">
-      <div className="flex min-h-[280px] items-center justify-center gap-4 sm:min-h-[320px]">
+    <div className="flex w-full items-center justify-center">
+      <div className="flex min-h-[60svh] w-full items-center justify-center gap-4 sm:min-h-[65svh] lg:min-h-[70svh]">
         <button
           type="button"
           className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/50 text-text transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
@@ -81,14 +81,14 @@ export function HomeCarousel() {
           </svg>
         </button>
 
-        <div className="relative flex w-full max-w-2xl items-center justify-center overflow-hidden">
+        <div className="relative flex w-full max-w-3xl items-center justify-center overflow-hidden">
           <div
             className="flex transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
             style={{ transform: `translateX(-${index * 100}%)` }}
           >
             {cards.map((card) => (
               <div key={card.title} className="w-full flex-shrink-0 px-2">
-                <article className="rounded-3xl border border-border/70 bg-surface/60 p-8 text-left sm:p-10">
+                <article className="rounded-3xl border border-border/70 bg-surface/60 p-10 text-left">
                   <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Feature</p>
                   <h2 className="mt-4 text-3xl font-brand uppercase tracking-[0.18em] text-highlight sm:text-4xl">
                     {card.title}

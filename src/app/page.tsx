@@ -33,7 +33,7 @@ export default async function Home() {
   const fadeOutPct = (100 / slideCount).toFixed(4);
 
   return (
-    <section className="relative min-h-[80svh] overflow-hidden border-b border-border/60">
+    <section className="relative min-h-[calc(100svh-8rem)] overflow-hidden border-b border-border/60">
       <style>{`
         @keyframes hero-fade {
           0% { opacity: 0; }
@@ -69,7 +69,7 @@ export default async function Home() {
         <div className="absolute inset-0 hero-grain" />
       </div>
 
-      <Container className="relative flex min-h-[80svh] items-center justify-center">
+      <Container className="relative flex min-h-[calc(100svh-8rem)] items-center justify-center py-12">
         <h1 className="sr-only">{site.name}</h1>
         <HomeCarousel />
       </Container>
