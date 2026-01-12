@@ -4,9 +4,9 @@ import { Container } from "@/components/Container";
 import { site } from "@/config/site";
 
 const heroSlides = [
-  { src: "/hero-1.svg" },
-  { src: "/hero-2.svg" },
-  { src: "/hero-3.svg" },
+  { src: "/slideshow/hero-1.jpg" },
+  { src: "/slideshow/hero-2.jpg" },
+  { src: "/slideshow/hero-3.jpg" },
 ] as const;
 
 export default function Home() {
