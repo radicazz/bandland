@@ -39,6 +39,19 @@ const socialIcons = {
       <path d="M8.8 17c2-.6 4.1-.4 5.8.4" strokeLinecap="round" />
     </svg>
   ),
+  "Apple Music": (props: IconProps) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}>
+      <path d="M14.5 5.5v8.6a2.5 2.5 0 1 1-1-2V7.2l6-1.2v7.1a2.5 2.5 0 1 1-1-2V4.6z" />
+    </svg>
+  ),
+  Linktree: (props: IconProps) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}>
+      <path d="M12 3v10" strokeLinecap="round" />
+      <path d="M6 7l6 6 6-6" strokeLinecap="round" />
+      <path d="M9 13l-3 3h6l-3 5" />
+      <path d="M15 13l3 3h-6l3 5" />
+    </svg>
+  ),
 } as const;
 
 export function SiteHeader() {
