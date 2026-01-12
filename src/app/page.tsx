@@ -3,6 +3,7 @@ import path from "node:path";
 import Image from "next/image";
 
 import { Container } from "@/components/Container";
+import { HomeCarousel } from "@/components/HomeCarousel";
 import { site } from "@/config/site";
 
 const slideshowDir = path.join(process.cwd(), "public", "slideshow");
@@ -68,8 +69,9 @@ export default async function Home() {
         <div className="absolute inset-0 hero-grain" />
       </div>
 
-      <Container className="relative flex min-h-[80svh] items-center">
+      <Container className="relative flex min-h-[80svh] items-center justify-center">
         <h1 className="sr-only">{site.name}</h1>
+        <HomeCarousel />
       </Container>
     </section>
   );
