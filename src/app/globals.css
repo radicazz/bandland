@@ -8,7 +8,7 @@
   --text: #f2f2f2;
   --text-muted: #b7b7b7;
   --text-dim: #7a7a7a;
-  --highlight: #e6e2da;
+  --highlight: #e36b6b;
 }
 
 @theme inline {
@@ -22,6 +22,7 @@
   --color-highlight: var(--highlight);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-brand: var(--font-bandland-gothic);
 }
 
 html,
@@ -43,7 +44,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--text);
+  outline: 2px solid var(--highlight);
   outline-offset: 3px;
 }
 

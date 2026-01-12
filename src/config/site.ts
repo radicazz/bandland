@@ -1,5 +1,5 @@
 export const site = {
-  name: "Bandland",
+  name: "bandland",
   description: "Official landing page. Music, shows, and merch coming soon.",
 
   // Add your booking/press contact email here
