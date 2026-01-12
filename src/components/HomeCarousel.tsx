@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-const slideIntervalMs = 8000;
+const slideIntervalMs = 20000;
 
 type Card = {
   title: string;
@@ -61,21 +61,23 @@ export function HomeCarousel() {
   const current = useMemo(() => cards[index], [index]);
 
   return (
-    <div className="flex w-full flex-col items-center justify-center gap-6">
-      <div className="flex min-h-[75svh] w-full items-center justify-center">
-        <div className="relative flex w-full max-w-3xl items-center justify-center overflow-hidden">
+    <div className="flex w-full flex-col items-center justify-center gap-6 px-4 sm:px-6">
+      <div className="flex min-h-[70svh] w-full items-center justify-center sm:min-h-[75svh]">
+        <div className="relative flex w-full max-w-[90vw] items-center justify-center overflow-hidden sm:max-w-3xl">
           <div
             className="flex transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
             style={{ transform: `translateX(-${index * 100}%)` }}
           >
             {cards.map((card) => (
               <div key={card.title} className="w-full flex-shrink-0 px-2">
-                <article className="rounded-3xl border border-border/70 bg-surface/60 p-10 text-left">
+                <article className="rounded-3xl border border-border/70 bg-surface/60 p-6 text-left sm:p-8 lg:p-10">
                   <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Feature</p>
-                  <h2 className="mt-4 text-3xl font-brand uppercase tracking-[0.18em] text-highlight sm:text-4xl">
+                  <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.18em] text-highlight sm:text-3xl lg:text-4xl">
                     {card.title}
                   </h2>
-                  <p className="mt-4 text-base leading-7 text-text-muted">{card.description}</p>
+                  <p className="mt-4 text-sm leading-7 text-text-muted sm:text-base">
+                    {card.description}
+                  </p>
                   {card.href ? (
                     <a
                       className="mt-6 inline-flex h-11 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-6 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"

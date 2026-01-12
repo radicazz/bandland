@@ -69,7 +69,7 @@ export default async function Home() {
         <div className="absolute inset-0 hero-grain" />
       </div>
 
-      <Container className="relative flex h-[100svh] items-center justify-center py-12">
+      <Container className="relative flex min-h-[100svh] items-center justify-center py-12">
         <h1 className="sr-only">{site.name}</h1>
         <HomeCarousel />
       </Container>
