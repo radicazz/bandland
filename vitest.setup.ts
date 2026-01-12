@@ -5,9 +5,14 @@ import { vi } from "vitest";
 vi.mock("next/image", () => {
   return {
     default: ({
+      fill,
       priority,
       ...props
-    }: React.ImgHTMLAttributes<HTMLImageElement> & { priority?: boolean }) => {
+    }: React.ImgHTMLAttributes<HTMLImageElement> & {
+      fill?: boolean;
+      priority?: boolean;
+    }) => {
+      void fill;
       void priority;
       return React.createElement("img", props);
     },
@@ -28,3 +33,18 @@ vi.mock("next/link", () => {
     },
   };
 });
+
+if (!window.matchMedia) {
+  window.matchMedia = (query: string) => {
+    return {
+      matches: false,
+      media: query,
+      onchange: null,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    } satisfies MediaQueryList;
+  };
+}
