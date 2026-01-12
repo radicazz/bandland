@@ -137,6 +137,11 @@ npm run lint       # ESLint
 npm run format     # Prettier
 ```
 
+## Git Commit Format
+
+- Use Conventional Commits: `feat: ...`, `fix: ...`, `chore: ...`, `refactor: ...`, `test: ...`, `docs: ...`
+- Keep the subject short, present tense, and scoped to a single change
+
 ## Environment Variables
 
 - `NEXT_PUBLIC_SITE_URL` — canonical site URL (for metadata/sitemap)
