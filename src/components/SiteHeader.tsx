@@ -58,7 +58,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-30 border-b border-border/40 bg-bg/50 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
         <details className="group relative">
-          <summary className="flex cursor-pointer list-none items-center gap-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight [&::-webkit-details-marker]:hidden">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight [&::-webkit-details-marker]:hidden">
             {site.name}
             <svg
               viewBox="0 0 24 24"
@@ -132,7 +132,7 @@ export function SiteHeader() {
                 <li key={social.label}>
                   <a
                     href={social.href ?? undefined}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-surface/30 transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/30 transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight sm:h-9 sm:w-9"
                     target="_blank"
                     rel="noreferrer"
                     aria-label={social.label}

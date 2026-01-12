@@ -39,7 +39,7 @@ export function HomeCarousel() {
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <a
-              className="inline-flex h-11 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-6 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-6 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20 whitespace-normal"
               href={latestRelease.href}
               target="_blank"
               rel="noreferrer"
@@ -61,7 +61,7 @@ export function HomeCarousel() {
               Limited runs and staples. New drops coming soon.
             </p>
             <a
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
+              className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20 whitespace-normal"
               href="/merch"
             >
               Shop merch
@@ -77,7 +77,7 @@ export function HomeCarousel() {
               Upcoming dates, tickets, and venue details.
             </p>
             <a
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
+              className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20 whitespace-normal"
               href="/shows"
             >
               View shows
@@ -124,7 +124,7 @@ export function HomeCarousel() {
               </div>
             )}
             <a
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
+              className="mt-5 inline-flex min-h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20 whitespace-normal"
               href={instagramProfile}
               target="_blank"
               rel="noreferrer"

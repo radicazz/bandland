@@ -45,7 +45,7 @@ export default function ShowsPage() {
                 </div>
                 {show.ticketUrl ? (
                   <a
-                    className="mt-4 inline-flex h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
+                    className="mt-4 inline-flex min-h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20 whitespace-normal"
                     href={show.ticketUrl}
                     target="_blank"
                     rel="noreferrer"
