@@ -7,21 +7,27 @@ Modern, TypeScript-first band landing page built with Next.js 16, React 19, and 
 ## Prerequisites
 
 - **Node.js**: v22 (see `.nvmrc`)
-- **npm**: Included with Node.js
+- **npm** (included with Node.js) or **pnpm**
 
 ## Quick Start
 
 ```bash
 # Install dependencies
 npm install
+# or
+pnpm install
 
 # Start dev server
 npm run dev
+# or
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Available Scripts
+
+Use `npm` or `pnpm` to run scripts (examples below use `npm`).
 
 | Command                | Description                           |
 | ---------------------- | ------------------------------------- |

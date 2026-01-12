@@ -130,7 +130,10 @@ Located in `src/app/globals.css`:
 ## Development Workflow
 
 ```bash
+npm install      # install deps
+pnpm install     # install deps (pnpm)
 npm run dev         # dev server
+pnpm dev            # dev server (pnpm)
 npm test           # run tests
 npm run typecheck  # TypeScript validation
 npm run lint       # ESLint
