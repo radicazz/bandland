@@ -28,6 +28,8 @@ const cards: Card[] = [
   },
 ];
 
+const tabs = ["Latest", "Merch", "Shows"] as const;
+
 function usePrefersReducedMotion() {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
@@ -47,8 +49,6 @@ export function HomeCarousel() {
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const total = cards.length;
-  const nextIndex = () => setIndex((current) => (current + 1) % total);
-  const prevIndex = () => setIndex((current) => (current - 1 + total) % total);
 
   useEffect(() => {
     if (prefersReducedMotion) return;
@@ -61,26 +61,8 @@ export function HomeCarousel() {
   const current = useMemo(() => cards[index], [index]);
 
   return (
-    <div className="flex w-full items-center justify-center">
-      <div className="flex min-h-[75svh] w-full items-center justify-center gap-4">
-        <button
-          type="button"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/50 text-text transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
-          aria-label="Previous card"
-          onClick={prevIndex}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            aria-hidden="true"
-          >
-            <path d="M15 5l-7 7 7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
-
+    <div className="flex w-full flex-col items-center justify-center gap-6">
+      <div className="flex min-h-[75svh] w-full items-center justify-center">
         <div className="relative flex w-full max-w-3xl items-center justify-center overflow-hidden">
           <div
             className="flex transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
@@ -112,24 +94,27 @@ export function HomeCarousel() {
             {current.title}
           </p>
         </div>
+      </div>
 
-        <button
-          type="button"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/50 text-text transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
-          aria-label="Next card"
-          onClick={nextIndex}
-        >
-          <svg
-            viewBox="0 0 24 24"
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            aria-hidden="true"
-          >
-            <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+      <div className="flex flex-wrap items-center justify-center gap-3">
+        {tabs.map((tab, tabIndex) => {
+          const isActive = tabIndex === index;
+          return (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setIndex(tabIndex)}
+              className={`rounded-full border px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition-colors ${
+                isActive
+                  ? "border-highlight/70 bg-highlight/20 text-highlight"
+                  : "border-border/70 bg-surface/40 text-text-dim hover:border-highlight/50 hover:text-highlight"
+              }`}
+              aria-current={isActive ? "true" : undefined}
+            >
+              {tab}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

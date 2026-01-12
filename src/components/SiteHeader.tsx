@@ -4,11 +4,6 @@ import Link from "next/link";
 import { Container } from "@/components/Container";
 import { site } from "@/config/site";
 
-const navItems = [
-  { href: "/shows", label: "Shows" },
-  { href: "/merch", label: "Merch" },
-] as const;
-
 type IconProps = SVGProps<SVGSVGElement>;
 
 const socialIcons = {
@@ -70,20 +65,6 @@ export function SiteHeader() {
           {site.name}
         </Link>
         <div className="flex items-center gap-6">
-          <nav aria-label="Primary">
-            <ul className="flex items-center gap-5 text-xs uppercase tracking-[0.3em] text-text-dim">
-              {navItems.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="rounded-full px-1 py-1 transition-colors hover:text-highlight focus-visible:text-highlight"
-                  >
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
           <ul className="flex items-center gap-2 text-text-dim">
             {socialLinks.map((social) => {
               const Icon = socialIcons[social.label as keyof typeof socialIcons];
