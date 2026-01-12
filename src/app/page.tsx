@@ -17,7 +17,7 @@ async function getSlides() {
           entry.isFile() && /\.(avif|gif|jpe?g|png|webp)$/i.test(entry.name),
       )
       .map((entry) => `/slideshow/${entry.name}`)
-      .sort((a, b) => a.localeCompare(b));
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
   } catch {
     return [];
   }
@@ -62,8 +62,8 @@ export default async function Home() {
             />
           </div>
         ))}
-        <div className="absolute inset-0 bg-bg/70" />
-        <div className="absolute inset-0 bg-highlight/15 mix-blend-screen" />
+        <div className="absolute inset-0 bg-bg/50" />
+        <div className="absolute inset-0 bg-highlight/20 mix-blend-screen" />
         <div className="absolute inset-0 hero-vignette" />
         <div className="absolute inset-0 hero-grain" />
       </div>
