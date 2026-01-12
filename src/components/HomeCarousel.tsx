@@ -46,26 +46,32 @@ function usePrefersReducedMotion() {
 
 export function HomeCarousel() {
   const [index, setIndex] = useState(0);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const total = cards.length;
+  const shouldAnimate = !prefersReducedMotion && !hasInteracted;
 
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion || hasInteracted) return;
     const timer = window.setInterval(() => {
       setIndex((current) => (current + 1) % total);
     }, slideIntervalMs);
     return () => window.clearInterval(timer);
-  }, [prefersReducedMotion, total]);
+  }, [prefersReducedMotion, hasInteracted, total]);
 
   const current = useMemo(() => cards[index], [index]);
 
   return (
     <div className="flex w-full flex-col items-center justify-center gap-6 px-4 sm:px-6">
-      <div className="flex min-h-[70svh] w-full items-center justify-center sm:min-h-[75svh]">
-        <div className="relative flex w-full max-w-[90vw] items-center justify-center overflow-hidden sm:max-w-3xl">
+      <div className="flex min-h-[70svh] w-full items-center justify-center py-6 sm:min-h-[75svh]">
+        <div className="relative flex w-full max-w-[95vw] items-center justify-center overflow-x-hidden overflow-y-visible sm:max-w-4xl">
           <div
-            className="flex transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+            className={`flex ${
+              shouldAnimate
+                ? "transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
+                : "transition-none"
+            }`}
             style={{ transform: `translateX(-${index * 100}%)` }}
           >
             {cards.map((card) => (
@@ -105,7 +111,10 @@ export function HomeCarousel() {
             <button
               key={tab}
               type="button"
-              onClick={() => setIndex(tabIndex)}
+              onClick={() => {
+                setIndex(tabIndex);
+                setHasInteracted(true);
+              }}
               className={`rounded-full border px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition-colors ${
                 isActive
                   ? "border-highlight/70 bg-highlight/20 text-highlight"
