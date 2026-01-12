@@ -57,13 +57,73 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b border-border/40 bg-bg/50 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
-        <Link
-          href="/"
-          className="text-lg font-brand tracking-[0.18em] text-text"
-          aria-label="Home"
-        >
-          {site.name}
-        </Link>
+        <details className="group relative">
+          <summary className="flex cursor-pointer list-none items-center gap-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight [&::-webkit-details-marker]:hidden">
+            {site.name}
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-4 w-4 text-text-dim transition-transform duration-200 group-hover:text-highlight group-[open]:rotate-180 group-[open]:text-highlight"
+            >
+              <path d="M6 9l6 6 6-6" fill="currentColor" />
+            </svg>
+          </summary>
+          <div className="absolute left-0 top-full z-20 w-[min(20rem,90vw)] origin-top pt-3 opacity-0 pointer-events-none transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-[open]:pointer-events-auto group-[open]:opacity-100 sm:w-64">
+            <div className="max-h-[60vh] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4">
+              <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                Explore
+              </p>
+              <ul className="mt-3 grid gap-3">
+                <li>
+                  <Link
+                    href="/"
+                    className="block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60"
+                  >
+                    <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                      Main
+                    </span>
+                    <span className="mt-1 block text-sm font-semibold text-text">Home</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/merch"
+                    className="block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60"
+                  >
+                    <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                      Store
+                    </span>
+                    <span className="mt-1 block text-sm font-semibold text-text">Merch</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/shows"
+                    className="block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60"
+                  >
+                    <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                      Live
+                    </span>
+                    <span className="mt-1 block text-sm font-semibold text-text">Shows</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/gallery"
+                    className="block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60"
+                  >
+                    <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                      Gallery
+                    </span>
+                    <span className="mt-1 block text-sm font-semibold text-text">
+                      Instagram
+                    </span>
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </details>
         <div className="flex items-center gap-6">
           <ul className="flex items-center gap-2 text-text-dim">
             {socialLinks.map((social) => {
