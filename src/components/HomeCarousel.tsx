@@ -62,7 +62,7 @@ export function HomeCarousel() {
 
   return (
     <div className="flex w-full items-center justify-center">
-      <div className="flex min-h-[60svh] w-full items-center justify-center gap-4 sm:min-h-[65svh] lg:min-h-[70svh]">
+      <div className="flex min-h-[75svh] w-full items-center justify-center gap-4">
         <button
           type="button"
           className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/50 text-text transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"

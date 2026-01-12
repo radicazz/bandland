@@ -60,7 +60,7 @@ export function SiteHeader() {
   );
 
   return (
-    <header className="border-b border-border/60 bg-bg/80 backdrop-blur">
+    <header className="relative z-20 border-b border-border/40 bg-bg/50 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
         <Link
           href="/"
