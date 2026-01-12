@@ -40,7 +40,7 @@ export default function GalleryPage() {
         </div>
 
         <a
-          className="mt-8 inline-flex min-h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20 whitespace-normal"
+          className="btn-primary mt-8"
           href={instagramUrl}
           target="_blank"
           rel="noreferrer"

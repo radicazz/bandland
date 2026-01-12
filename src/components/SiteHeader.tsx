@@ -68,7 +68,7 @@ export function SiteHeader() {
               <path d="M6 9l6 6 6-6" fill="currentColor" />
             </svg>
           </summary>
-          <div className="absolute left-0 top-full z-20 w-[min(20rem,90vw)] origin-top pt-3 opacity-0 pointer-events-none transition duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-[open]:pointer-events-auto group-[open]:opacity-100 sm:w-64">
+          <div className="absolute left-2 right-2 top-full z-20 pt-3 opacity-0 pointer-events-none transition duration-200 group-[open]:pointer-events-auto group-[open]:opacity-100 sm:left-0 sm:right-auto sm:w-64 sm:translate-y-2 sm:group-hover:pointer-events-auto sm:group-hover:opacity-100 sm:group-hover:translate-y-0 sm:group-focus-within:pointer-events-auto sm:group-focus-within:opacity-100 sm:group-focus-within:translate-y-0">
             <div className="max-h-[60vh] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4">
               <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
                 Explore
@@ -77,7 +77,7 @@ export function SiteHeader() {
                 <li>
                   <Link
                     href="/"
-                    className="block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60"
+                    className="menu-tile"
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                       Main
@@ -88,7 +88,7 @@ export function SiteHeader() {
                 <li>
                   <Link
                     href="/merch"
-                    className="block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60"
+                    className="menu-tile"
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                       Store
@@ -99,7 +99,7 @@ export function SiteHeader() {
                 <li>
                   <Link
                     href="/shows"
-                    className="block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60"
+                    className="menu-tile"
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                       Live
@@ -110,7 +110,7 @@ export function SiteHeader() {
                 <li>
                   <Link
                     href="/gallery"
-                    className="block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60"
+                    className="menu-tile"
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                       Gallery
