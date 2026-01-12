@@ -11,7 +11,6 @@ describe("home", () => {
     expect(screen.getByRole("heading", { name: /Latest release/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Merch/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Shows/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /Instagram/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: site.name })).toBeInTheDocument();
   });
 });

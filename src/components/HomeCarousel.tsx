@@ -1,5 +1,3 @@
-import { site } from "@/config/site";
-
 export function HomeCarousel() {
   const latestRelease = {
     title: "Latest release",
@@ -9,11 +7,6 @@ export function HomeCarousel() {
     embedUrl:
       "https://open.spotify.com/embed/track/4vV3oxYqzSUBXBODbrKAmO?utm_source=generator&theme=0",
   };
-
-  const instagramEmbeds: string[] = [];
-  const instagramProfile =
-    site.socials.find((social) => social.label === "Instagram")?.href ??
-    "https://www.instagram.com/";
 
   return (
     <div className="flex w-full flex-col items-center gap-12 px-4 sm:px-6">
@@ -51,7 +44,7 @@ export function HomeCarousel() {
       </section>
 
       <section className="w-full max-w-6xl">
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2">
           <article className="rounded-3xl border border-border/70 bg-surface/50 p-6 sm:p-7">
             <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Store</p>
             <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
@@ -81,55 +74,6 @@ export function HomeCarousel() {
               href="/shows"
             >
               View shows
-            </a>
-          </article>
-
-          <article className="rounded-3xl border border-border/70 bg-surface/50 p-6 sm:p-7">
-            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Gallery</p>
-            <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
-              Instagram
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-text-muted">
-              Latest Instagram posts from the band.
-            </p>
-            {instagramEmbeds.length > 0 ? (
-              <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                {instagramEmbeds.slice(0, 3).map((embedUrl) => (
-                  <div
-                    key={embedUrl}
-                    className="overflow-hidden rounded-2xl border border-border/70 bg-surface/70"
-                  >
-                    <iframe
-                      title="Instagram post"
-                      src={embedUrl}
-                      width="100%"
-                      height="320"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                      loading="lazy"
-                      className="block w-full"
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="mt-5 grid grid-cols-3 gap-3">
-                {["One", "Two", "Three"].map((label) => (
-                  <div
-                    key={label}
-                    className="flex aspect-square items-center justify-center rounded-2xl border border-border/70 bg-surface/70 text-[10px] uppercase tracking-[0.32em] text-text-dim"
-                  >
-                    {label}
-                  </div>
-                ))}
-              </div>
-            )}
-            <a
-              className="btn-primary mt-5"
-              href={instagramProfile}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Follow
             </a>
           </article>
         </div>
