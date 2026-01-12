@@ -8,7 +8,10 @@ describe("home", () => {
   it("renders the landing content", async () => {
     const view = await Home();
     render(view);
-    expect(screen.getAllByText(/Under construction/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("heading", { name: /Latest release/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Merch/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Shows/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Instagram/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: site.name })).toBeInTheDocument();
   });
 });

@@ -1,156 +1,139 @@
-"use client";
+import { site } from "@/config/site";
 
-import { useEffect, useMemo, useState } from "react";
-
-const slideIntervalMs = 20000;
-
-type Card = {
-  title: string;
-  description: string;
-  href?: string;
-  cta?: string;
-  embedUrl?: string;
-};
-
-const cards: Card[] = [
-  {
+export function HomeCarousel() {
+  const latestRelease = {
     title: "Latest release",
     description: "Listen to the newest drop.",
     href: "https://tr.ee/7KaRvTpbLN",
     cta: "Listen",
     embedUrl:
       "https://open.spotify.com/embed/track/4vV3oxYqzSUBXBODbrKAmO?utm_source=generator&theme=0",
-  },
-  {
-    title: "Merch",
-    description: "Under construction.",
-  },
-  {
-    title: "Shows",
-    description: "Under construction.",
-  },
-];
+  };
 
-const tabs = ["Latest", "Merch", "Shows"] as const;
-
-function usePrefersReducedMotion() {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updatePreference = () => setPrefersReducedMotion(media.matches);
-    updatePreference();
-    media.addEventListener("change", updatePreference);
-    return () => media.removeEventListener("change", updatePreference);
-  }, []);
-
-  return prefersReducedMotion;
-}
-
-export function HomeCarousel() {
-  const [index, setIndex] = useState(0);
-  const [hasInteracted, setHasInteracted] = useState(false);
-  const prefersReducedMotion = usePrefersReducedMotion();
-
-  const total = cards.length;
-  const shouldAnimate = !prefersReducedMotion && !hasInteracted;
-  const safeIndex = useMemo(() => {
-    if (total === 0) return 0;
-    return ((index % total) + total) % total;
-  }, [index, total]);
-
-  useEffect(() => {
-    if (prefersReducedMotion || hasInteracted) return;
-    const timer = window.setInterval(() => {
-      setIndex((current) => (total === 0 ? 0 : (current + 1) % total));
-    }, slideIntervalMs);
-    return () => window.clearInterval(timer);
-  }, [prefersReducedMotion, hasInteracted, total]);
-
-  const current = useMemo(() => {
-    const firstCard = cards[0];
-    if (!firstCard) return null;
-    return cards[safeIndex] ?? firstCard;
-  }, [safeIndex]);
+  const instagramEmbeds: string[] = [];
+  const instagramProfile =
+    site.socials.find((social) => social.label === "Instagram")?.href ??
+    "https://www.instagram.com/";
 
   return (
-    <div className="flex w-full flex-col items-center justify-center gap-6 px-4 sm:px-6">
-      <div className="flex min-h-[85svh] w-full items-center justify-center py-12 sm:min-h-[70svh] md:min-h-[75svh]">
-        <div className="relative flex w-full max-w-[95vw] items-center justify-center overflow-x-hidden overflow-y-visible sm:max-w-4xl">
-          <div
-            className={`flex ${
-              shouldAnimate
-                ? "transition-transform duration-700 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
-                : "transition-none"
-            }`}
-            style={{ transform: `translateX(-${safeIndex * 100}%)` }}
-          >
-            {cards.map((card) => (
-              <div key={card.title} className="w-full flex-shrink-0 px-2">
-                <article className="min-h-[70svh] rounded-3xl border border-border/70 bg-surface/60 p-6 text-left sm:min-h-0 sm:p-8 lg:p-10">
-                  <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Feature</p>
-                  <h2 className="mt-4 break-words text-3xl font-brand uppercase tracking-[0.16em] text-highlight sm:text-4xl lg:text-5xl">
-                    {card.title}
-                  </h2>
-                  <p className="mt-4 break-words text-base leading-7 text-text-muted">
-                    {card.description}
-                  </p>
-                  {card.embedUrl ? (
-                    <div className="mt-6 overflow-hidden rounded-2xl border border-border/70 bg-surface/70">
-                      <iframe
-                        title={`${card.title} — Spotify player`}
-                        src={card.embedUrl}
-                        width="100%"
-                        height="152"
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        loading="lazy"
-                        className="block w-full"
-                      />
-                    </div>
-                  ) : null}
-                  {card.href ? (
-                    <a
-                      className="mt-6 inline-flex h-11 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-6 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
-                      href={card.href}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {card.cta ?? "Open"}
-                    </a>
-                  ) : null}
-                </article>
-              </div>
-            ))}
-          </div>
-          <p className="sr-only" aria-live="polite">
-            {current?.title ?? ""}
+    <div className="flex w-full flex-col items-center gap-12 px-4 sm:px-6">
+      <section className="w-full max-w-4xl">
+        <article className="rounded-3xl border border-border/70 bg-surface/60 p-6 text-left sm:p-8 lg:p-10">
+          <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Pinned</p>
+          <h2 className="mt-4 break-words text-3xl font-brand uppercase tracking-[0.16em] text-highlight sm:text-4xl lg:text-5xl">
+            {latestRelease.title}
+          </h2>
+          <p className="mt-4 break-words text-base leading-7 text-text-muted">
+            {latestRelease.description}
           </p>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        {tabs.map((tab, tabIndex) => {
-          const isActive = tabIndex === safeIndex;
-          return (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => {
-                setIndex(tabIndex);
-                setHasInteracted(true);
-              }}
-              className={`rounded-full border px-5 py-2 text-xs font-semibold uppercase tracking-[0.3em] transition-colors ${
-                isActive
-                  ? "border-highlight/70 bg-highlight/20 text-highlight"
-                  : "border-border/70 bg-surface/40 text-text-dim hover:border-highlight/50 hover:text-highlight"
-              }`}
-              aria-current={isActive ? "true" : undefined}
+          <div className="mt-6 overflow-hidden rounded-2xl border border-border/70 bg-surface/70">
+            <iframe
+              title={`${latestRelease.title} — Spotify player`}
+              src={latestRelease.embedUrl}
+              width="100%"
+              height="152"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+              className="block w-full"
+            />
+          </div>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <a
+              className="inline-flex h-11 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-6 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
+              href={latestRelease.href}
+              target="_blank"
+              rel="noreferrer"
             >
-              {tab}
-            </button>
-          );
-        })}
-      </div>
+              {latestRelease.cta}
+            </a>
+          </div>
+        </article>
+      </section>
+
+      <section className="w-full max-w-6xl">
+        <div className="grid gap-6 md:grid-cols-3">
+          <article className="rounded-3xl border border-border/70 bg-surface/50 p-6 sm:p-7">
+            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Store</p>
+            <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
+              Merch
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-text-muted">
+              Limited runs and staples. New drops coming soon.
+            </p>
+            <a
+              className="mt-5 inline-flex h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
+              href="/merch"
+            >
+              Shop merch
+            </a>
+          </article>
+
+          <article className="rounded-3xl border border-border/70 bg-surface/50 p-6 sm:p-7">
+            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Live</p>
+            <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
+              Shows
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-text-muted">
+              Upcoming dates, tickets, and venue details.
+            </p>
+            <a
+              className="mt-5 inline-flex h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
+              href="/shows"
+            >
+              View shows
+            </a>
+          </article>
+
+          <article className="rounded-3xl border border-border/70 bg-surface/50 p-6 sm:p-7">
+            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Gallery</p>
+            <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
+              Instagram
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-text-muted">
+              Latest Instagram posts from the band.
+            </p>
+            {instagramEmbeds.length > 0 ? (
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                {instagramEmbeds.slice(0, 3).map((embedUrl) => (
+                  <div
+                    key={embedUrl}
+                    className="overflow-hidden rounded-2xl border border-border/70 bg-surface/70"
+                  >
+                    <iframe
+                      title="Instagram post"
+                      src={embedUrl}
+                      width="100%"
+                      height="320"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      className="block w-full"
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="mt-5 grid grid-cols-3 gap-3">
+                {["One", "Two", "Three"].map((label) => (
+                  <div
+                    key={label}
+                    className="flex aspect-square items-center justify-center rounded-2xl border border-border/70 bg-surface/70 text-[10px] uppercase tracking-[0.32em] text-text-dim"
+                  >
+                    {label}
+                  </div>
+                ))}
+              </div>
+            )}
+            <a
+              className="mt-5 inline-flex h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20"
+              href={instagramProfile}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Follow
+            </a>
+          </article>
+        </div>
+      </section>
     </div>
   );
 }
