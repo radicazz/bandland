@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { Container } from "@/components/Container";
-import { merchItems } from "@/content/merch";
+import { getMerchItems } from "@/content/merch";
 import { getTranslationsFromCookies } from "@/i18n/server";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function MerchPage() {
   const { labels } = await getTranslationsFromCookies();
+  const merchItems = await getMerchItems();
   return (
     <section className="relative overflow-hidden border-b border-border/60">
       <div aria-hidden className="pointer-events-none absolute inset-0">

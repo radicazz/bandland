@@ -2,6 +2,22 @@ import "@testing-library/jest-dom/vitest";
 import React from "react";
 import { vi } from "vitest";
 
+vi.mock("next/headers", () => {
+  return {
+    cookies: vi.fn(async () => {
+      return {
+        get: () => undefined,
+      };
+    }),
+  };
+});
+
+vi.mock("next/cache", () => {
+  return {
+    unstable_cache: (fn: (...args: unknown[]) => unknown) => fn,
+  };
+});
+
 vi.mock("next/image", () => {
   return {
     default: ({

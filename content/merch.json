@@ -3,19 +3,19 @@
     "id": "merch-1",
     "name": "Tour T-Shirt",
     "href": "https://example.com/merch/tour-tee",
-    "price": "$25"
+    "price": "R450"
   },
   {
     "id": "merch-2",
     "name": "Limited Edition Vinyl",
     "href": "https://example.com/merch/vinyl",
-    "price": "$35"
+    "price": "R650"
   },
   {
     "id": "merch-3",
     "name": "Poster Pack",
     "href": "https://example.com/merch/posters",
-    "price": "$15"
+    "price": "R250"
   },
   {
     "id": "merch-4",

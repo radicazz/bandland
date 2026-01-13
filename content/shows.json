@@ -1,22 +1,22 @@
 [
   {
     "id": "show-1",
-    "date": "2025-03-15T20:00:00-05:00",
-    "venue": "The Basement",
-    "city": "Nashville, TN",
+    "date": "2026-03-15T20:00:00+02:00",
+    "venue": "The Waiting Room",
+    "city": "Cape Town, WC",
     "ticketUrl": "https://example.com/tickets/show-1"
   },
   {
     "id": "show-2",
-    "date": "2025-03-22T21:00:00-04:00",
-    "venue": "Brooklyn Steel",
-    "city": "Brooklyn, NY",
+    "date": "2026-03-22T21:00:00+02:00",
+    "venue": "The Sheds at 1 Fox",
+    "city": "Johannesburg, GP",
     "ticketUrl": "https://example.com/tickets/show-2"
   },
   {
     "id": "show-3",
-    "date": "2025-04-05T19:30:00-07:00",
-    "venue": "The Troubadour",
-    "city": "West Hollywood, CA"
+    "date": "2026-04-05T19:30:00+02:00",
+    "venue": "The Winston",
+    "city": "Durban, KZN"
   }
 ]

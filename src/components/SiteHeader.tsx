@@ -192,21 +192,6 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                     </span>
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    href="/gallery"
-                    className="menu-tile"
-                    tabIndex={menuTabIndex}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                      {labels.nav.gallery}
-                    </span>
-                    <span className="mt-1 block text-sm font-semibold text-text">
-                      {labels.nav.instagram}
-                    </span>
-                  </Link>
-                </li>
               </ul>
               {mobileSocialLinks.length ? (
                 <div className="mt-4 border-t border-border/60 pt-4 sm:hidden">
