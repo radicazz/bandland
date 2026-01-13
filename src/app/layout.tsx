@@ -55,6 +55,14 @@ export default async function RootLayout({
   const { locale, labels } = await getTranslationsFromCookies();
   return (
     <html lang={locale} className="bg-bg text-text">
+      <head>
+        <link rel="preconnect" href="https://open.spotify.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://open.spotify.com" />
+        <link rel="preconnect" href="https://i.scdn.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://i.scdn.co" />
+        <link rel="preconnect" href="https://p.scdn.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://p.scdn.co" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bandlandGothic.variable} antialiased`}
       >

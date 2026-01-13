@@ -16,7 +16,7 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
 
   return (
     <div className="flex w-full flex-col items-center gap-12 px-4 sm:px-6">
-      <section className="w-full max-w-4xl">
+      <section className="w-full max-w-6xl">
         <article className="rounded-3xl border border-border/70 bg-surface/60 p-6 text-left sm:p-8 lg:p-10">
           <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.pinned}</p>
           <h2 className="mt-4 break-words text-3xl font-brand uppercase tracking-[0.16em] text-highlight sm:text-4xl lg:text-5xl">
@@ -32,7 +32,7 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
               width="100%"
               height="152"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
+              loading="eager"
               className="block w-full"
             />
           </div>
