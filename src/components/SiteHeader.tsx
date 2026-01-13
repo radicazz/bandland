@@ -240,7 +240,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
             })}
           </ul>
         </div>
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 sm:static sm:translate-y-0">
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 pr-2 sm:static sm:translate-y-0">
           <div
             role="group"
             aria-label={labels.nav.language}
