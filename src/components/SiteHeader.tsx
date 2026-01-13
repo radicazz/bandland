@@ -3,9 +3,12 @@
 import type { SVGProps } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Container } from "@/components/Container";
 import { site } from "@/config/site";
+import type { Locale, Translations } from "@/i18n/translations";
+import { LOCALE_COOKIE } from "@/i18n/translations";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -52,13 +55,29 @@ const socialIcons = {
   ),
 } as const;
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  locale: Locale;
+  labels: Translations;
+};
+
+export function SiteHeader({ locale, labels }: SiteHeaderProps) {
   const socialLinks = site.socials.filter(
     (social) => social.href && social.label in socialIcons,
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuId = useId();
+  const menuButtonId = useId();
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuTabIndex = isMenuOpen ? 0 : -1;
+  const router = useRouter();
+
+  const setLocale = (nextLocale: Locale) => {
+    if (nextLocale === locale) {
+      return;
+    }
+    document.cookie = `${LOCALE_COOKIE}=${nextLocale}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    router.refresh();
+  };
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -88,85 +107,134 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/40 bg-bg/50 backdrop-blur-md">
-      <Container className="flex h-16 items-center justify-between">
-        <div className="relative" ref={menuRef}>
-          <button
-            type="button"
-            aria-expanded={isMenuOpen}
-            aria-controls={menuId}
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="flex min-h-11 items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight"
-          >
-            {site.name}
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              className={`h-4 w-4 text-text-dim transition-transform duration-200 ${
-                isMenuOpen ? "rotate-180 text-highlight" : ""
-              }`}
+      <Container className="relative flex h-16 items-center justify-between">
+        <div className="relative w-full sm:w-auto" ref={menuRef}>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              aria-expanded={isMenuOpen}
+              aria-controls={menuId}
+              aria-haspopup="menu"
+              id={menuButtonId}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className="flex min-h-11 items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight"
             >
-              <path d="M6 9l6 6 6-6" fill="currentColor" />
-            </svg>
-          </button>
+              {site.name}
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className={`h-4 w-4 text-text-dim transition-transform duration-200 ${
+                  isMenuOpen ? "rotate-180 text-highlight" : ""
+                }`}
+              >
+                <path d="M6 9l6 6 6-6" fill="currentColor" />
+              </svg>
+            </button>
+            <div
+              role="group"
+              aria-label={labels.nav.language}
+              className="flex items-center gap-1 rounded-full border border-border/70 bg-surface/60 p-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-text-dim"
+            >
+              <button
+                type="button"
+                aria-pressed={locale === "en"}
+                onClick={() => setLocale("en")}
+                className={`rounded-full px-2 py-1 transition-colors ${
+                  locale === "en"
+                    ? "bg-highlight/20 text-highlight"
+                    : "text-text-dim hover:text-highlight focus-visible:text-highlight"
+                }`}
+              >
+                ENG
+              </button>
+              <button
+                type="button"
+                aria-pressed={locale === "af"}
+                onClick={() => setLocale("af")}
+                className={`rounded-full px-2 py-1 transition-colors ${
+                  locale === "af"
+                    ? "bg-highlight/20 text-highlight"
+                    : "text-text-dim hover:text-highlight focus-visible:text-highlight"
+                }`}
+              >
+                AFR
+              </button>
+            </div>
+          </div>
           <div
             id={menuId}
-            className={`absolute left-2 right-2 top-full z-20 pt-3 transition duration-200 sm:left-0 sm:right-auto sm:w-64 ${
+            className={`absolute left-0 right-0 top-full z-20 pt-3 transition duration-200 sm:left-0 sm:right-auto sm:w-64 ${
               isMenuOpen
                 ? "pointer-events-auto translate-y-0 opacity-100"
                 : "pointer-events-none translate-y-2 opacity-0"
             }`}
           >
             <nav
-              aria-label="Explore"
+              aria-label={labels.nav.explore}
+              aria-hidden={!isMenuOpen}
               className="max-h-[60vh] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4"
             >
               <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                Explore
+                {labels.nav.explore}
               </p>
               <ul className="mt-3 grid gap-3">
                 <li>
-                  <Link href="/" className="menu-tile" onClick={() => setIsMenuOpen(false)}>
+                  <Link
+                    href="/"
+                    className="menu-tile"
+                    tabIndex={menuTabIndex}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                      Main
+                      {labels.nav.main}
                     </span>
-                    <span className="mt-1 block text-sm font-semibold text-text">Home</span>
+                    <span className="mt-1 block text-sm font-semibold text-text">
+                      {labels.nav.home}
+                    </span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/merch"
                     className="menu-tile"
+                    tabIndex={menuTabIndex}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                      Store
+                      {labels.nav.store}
                     </span>
-                    <span className="mt-1 block text-sm font-semibold text-text">Merch</span>
+                    <span className="mt-1 block text-sm font-semibold text-text">
+                      {labels.nav.merch}
+                    </span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/shows"
                     className="menu-tile"
+                    tabIndex={menuTabIndex}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                      Live
+                      {labels.nav.live}
                     </span>
-                    <span className="mt-1 block text-sm font-semibold text-text">Shows</span>
+                    <span className="mt-1 block text-sm font-semibold text-text">
+                      {labels.nav.shows}
+                    </span>
                   </Link>
                 </li>
                 <li>
                   <Link
                     href="/gallery"
                     className="menu-tile"
+                    tabIndex={menuTabIndex}
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                      Gallery
+                      {labels.nav.gallery}
                     </span>
                     <span className="mt-1 block text-sm font-semibold text-text">
-                      Instagram
+                      {labels.nav.instagram}
                     </span>
                   </Link>
                 </li>
@@ -174,7 +242,7 @@ export function SiteHeader() {
             </nav>
           </div>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-6 sm:static sm:translate-y-0">
           <ul className="flex items-center gap-2 text-text-dim">
             {socialLinks.map((social) => {
               const Icon = socialIcons[social.label as keyof typeof socialIcons];

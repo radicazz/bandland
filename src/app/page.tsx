@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Container } from "@/components/Container";
 import { HomeCarousel } from "@/components/HomeCarousel";
 import { site } from "@/config/site";
+import { getTranslationsFromCookies } from "@/i18n/server";
 
 const slideshowDir = path.join(process.cwd(), "public", "slideshow");
 const slideIntervalSeconds = 6;
@@ -25,6 +26,7 @@ async function getSlides() {
 }
 
 export default async function Home() {
+  const { labels } = await getTranslationsFromCookies();
   const slides = await getSlides();
   const slideCount = Math.max(slides.length, 1);
   const totalDurationSeconds = slideCount * slideIntervalSeconds;
@@ -71,7 +73,7 @@ export default async function Home() {
 
       <Container className="relative flex min-h-[100svh] items-start justify-center py-16">
         <h1 className="sr-only">{site.name}</h1>
-        <HomeCarousel />
+        <HomeCarousel labels={labels.home} />
       </Container>
     </section>
   );

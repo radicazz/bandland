@@ -1,11 +1,18 @@
+import type { Metadata } from "next";
+
 import { Container } from "@/components/Container";
 import { shows } from "@/content/shows";
+import { getTranslationsFromCookies } from "@/i18n/server";
 
-export const metadata = {
-  title: "Shows",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { labels } = await getTranslationsFromCookies();
+  return {
+    title: labels.shows.title,
+  };
+}
 
-export default function ShowsPage() {
+export default async function ShowsPage() {
+  const { labels } = await getTranslationsFromCookies();
   return (
     <section className="relative overflow-hidden border-b border-border/60">
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -16,18 +23,19 @@ export default function ShowsPage() {
       </div>
 
       <Container className="relative py-16 sm:py-20">
-        <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Live</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.shows.label}</p>
         <h1 className="mt-4 text-4xl font-brand uppercase tracking-[0.22em] text-highlight sm:text-5xl">
-          Shows
+          {labels.shows.title}
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-text-muted">
-          Live dates and ticket links. Edit{" "}
-          <span className="font-mono text-text">content/shows.json</span> to update.
+          {labels.shows.introPrefix}
+          <span className="font-mono text-text">content/shows.json</span>
+          {labels.shows.introSuffix}
         </p>
 
         {shows.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-border/70 bg-surface/60 p-6 text-sm text-text-muted">
-            No dates announced yet.
+            {labels.shows.empty}
           </div>
         ) : (
           <ul className="mt-10 grid gap-4">
@@ -50,7 +58,7 @@ export default function ShowsPage() {
                     target="_blank"
                     rel="noreferrer"
                   >
-                    Tickets
+                    {labels.shows.tickets}
                   </a>
                 ) : null}
               </li>

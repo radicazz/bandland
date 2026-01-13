@@ -1,11 +1,18 @@
+import type { Metadata } from "next";
+
 import { Container } from "@/components/Container";
 import { site } from "@/config/site";
+import { getTranslationsFromCookies } from "@/i18n/server";
 
-export const metadata = {
-  title: "Gallery",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { labels } = await getTranslationsFromCookies();
+  return {
+    title: labels.gallery.label,
+  };
+}
 
-export default function GalleryPage() {
+export default async function GalleryPage() {
+  const { labels } = await getTranslationsFromCookies();
   const instagramUrl =
     site.socials.find((social) => social.label === "Instagram")?.href ??
     "https://www.instagram.com/";
@@ -20,12 +27,12 @@ export default function GalleryPage() {
       </div>
 
       <Container className="relative py-16 sm:py-20">
-        <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Gallery</p>
+        <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.gallery.label}</p>
         <h1 className="mt-4 text-4xl font-brand uppercase tracking-[0.22em] text-highlight sm:text-5xl">
-          Instagram
+          {labels.gallery.title}
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-text-muted">
-          Latest posts and behind-the-scenes moments. Instagram embeds landing soon.
+          {labels.gallery.intro}
         </p>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -45,7 +52,7 @@ export default function GalleryPage() {
           target="_blank"
           rel="noreferrer"
         >
-          Follow on Instagram
+          {labels.gallery.follow}
         </a>
       </Container>
     </section>

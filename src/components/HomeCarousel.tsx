@@ -1,9 +1,15 @@
-export function HomeCarousel() {
+import type { Translations } from "@/i18n/translations";
+
+type HomeCarouselProps = {
+  labels: Translations["home"];
+};
+
+export function HomeCarousel({ labels }: HomeCarouselProps) {
   const latestRelease = {
-    title: "Latest release",
-    description: "Listen to the newest drop.",
+    title: labels.latestReleaseTitle,
+    description: labels.latestReleaseDescription,
     href: "https://tr.ee/7KaRvTpbLN",
-    cta: "Listen",
+    cta: labels.latestReleaseCta,
     embedUrl:
       "https://open.spotify.com/embed/track/4vV3oxYqzSUBXBODbrKAmO?utm_source=generator&theme=0",
   };
@@ -12,7 +18,7 @@ export function HomeCarousel() {
     <div className="flex w-full flex-col items-center gap-12 px-4 sm:px-6">
       <section className="w-full max-w-4xl">
         <article className="rounded-3xl border border-border/70 bg-surface/60 p-6 text-left sm:p-8 lg:p-10">
-          <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Pinned</p>
+          <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.pinned}</p>
           <h2 className="mt-4 break-words text-3xl font-brand uppercase tracking-[0.16em] text-highlight sm:text-4xl lg:text-5xl">
             {latestRelease.title}
           </h2>
@@ -46,34 +52,36 @@ export function HomeCarousel() {
       <section className="w-full max-w-6xl">
         <div className="grid gap-6 md:grid-cols-2">
           <article className="rounded-3xl border border-border/70 bg-surface/50 p-6 sm:p-7">
-            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Store</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
+              {labels.storeLabel}
+            </p>
             <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
-              Merch
+              {labels.storeTitle}
             </h2>
             <p className="mt-3 text-sm leading-6 text-text-muted">
-              Limited runs and staples. New drops coming soon.
+              {labels.storeDescription}
             </p>
             <a
               className="btn-primary mt-5"
               href="/merch"
             >
-              Shop merch
+              {labels.storeCta}
             </a>
           </article>
 
           <article className="rounded-3xl border border-border/70 bg-surface/50 p-6 sm:p-7">
-            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">Live</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.liveLabel}</p>
             <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
-              Shows
+              {labels.liveTitle}
             </h2>
             <p className="mt-3 text-sm leading-6 text-text-muted">
-              Upcoming dates, tickets, and venue details.
+              {labels.liveDescription}
             </p>
             <a
               className="btn-primary mt-5"
               href="/shows"
             >
-              View shows
+              {labels.liveCta}
             </a>
           </article>
         </div>
