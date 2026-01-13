@@ -1,4 +1,7 @@
+"use client";
+
 import type { SVGProps } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 
 import { Container } from "@/components/Container";
@@ -53,32 +56,76 @@ export function SiteHeader() {
   const socialLinks = site.socials.filter(
     (social) => social.href && social.label in socialIcons,
   );
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuId = useId();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsMenuOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMenuOpen]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/40 bg-bg/50 backdrop-blur-md">
       <Container className="flex h-16 items-center justify-between">
-        <details className="group relative">
-          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight [&::-webkit-details-marker]:hidden">
+        <div className="relative" ref={menuRef}>
+          <button
+            type="button"
+            aria-expanded={isMenuOpen}
+            aria-controls={menuId}
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            className="flex min-h-11 items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight"
+          >
             {site.name}
             <svg
               viewBox="0 0 24 24"
               aria-hidden="true"
-              className="h-4 w-4 text-text-dim transition-transform duration-200 group-hover:text-highlight group-[open]:rotate-180 group-[open]:text-highlight"
+              className={`h-4 w-4 text-text-dim transition-transform duration-200 ${
+                isMenuOpen ? "rotate-180 text-highlight" : ""
+              }`}
             >
               <path d="M6 9l6 6 6-6" fill="currentColor" />
             </svg>
-          </summary>
-          <div className="absolute left-2 right-2 top-full z-20 pt-3 opacity-0 pointer-events-none transition duration-200 group-[open]:pointer-events-auto group-[open]:opacity-100 sm:left-0 sm:right-auto sm:w-64 sm:translate-y-2 sm:group-hover:pointer-events-auto sm:group-hover:opacity-100 sm:group-hover:translate-y-0 sm:group-focus-within:pointer-events-auto sm:group-focus-within:opacity-100 sm:group-focus-within:translate-y-0">
-            <div className="max-h-[60vh] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4">
+          </button>
+          <div
+            id={menuId}
+            className={`absolute left-2 right-2 top-full z-20 pt-3 transition duration-200 sm:left-0 sm:right-auto sm:w-64 ${
+              isMenuOpen
+                ? "pointer-events-auto translate-y-0 opacity-100"
+                : "pointer-events-none translate-y-2 opacity-0"
+            }`}
+          >
+            <nav
+              aria-label="Explore"
+              className="max-h-[60vh] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4"
+            >
               <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
                 Explore
               </p>
               <ul className="mt-3 grid gap-3">
                 <li>
-                  <Link
-                    href="/"
-                    className="menu-tile"
-                  >
+                  <Link href="/" className="menu-tile" onClick={() => setIsMenuOpen(false)}>
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                       Main
                     </span>
@@ -89,6 +136,7 @@ export function SiteHeader() {
                   <Link
                     href="/merch"
                     className="menu-tile"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                       Store
@@ -100,6 +148,7 @@ export function SiteHeader() {
                   <Link
                     href="/shows"
                     className="menu-tile"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                       Live
@@ -111,6 +160,7 @@ export function SiteHeader() {
                   <Link
                     href="/gallery"
                     className="menu-tile"
+                    onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                       Gallery
@@ -121,9 +171,9 @@ export function SiteHeader() {
                   </Link>
                 </li>
               </ul>
-            </div>
+            </nav>
           </div>
-        </details>
+        </div>
         <div className="flex items-center gap-6">
           <ul className="flex items-center gap-2 text-text-dim">
             {socialLinks.map((social) => {
