@@ -15,9 +15,9 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
   };
 
   return (
-    <div className="flex w-full flex-col items-center gap-12 px-4 sm:px-6">
+    <div className="flex w-full flex-col items-center gap-5 px-2 sm:gap-12 sm:px-6">
       <section className="w-full max-w-6xl">
-        <article className="card-interactive rounded-3xl border border-border/70 bg-surface/60 p-6 text-left sm:p-8 lg:p-10">
+        <article className="card-interactive rounded-3xl border border-border/70 bg-surface/60 p-4 text-left sm:p-8 lg:p-10">
           <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.pinned}</p>
           <h2 className="mt-4 break-words text-3xl font-brand uppercase tracking-[0.16em] text-highlight sm:text-4xl lg:text-5xl">
             {latestRelease.title}
@@ -40,8 +40,8 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
       </section>
 
       <section className="w-full max-w-6xl">
-        <div className="grid gap-6 md:grid-cols-2">
-          <article className="card-interactive rounded-3xl border border-border/70 bg-surface/50 p-6 sm:p-7">
+        <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
+          <article className="card-interactive rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7">
             <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
               {labels.storeLabel}
             </p>
@@ -59,7 +59,7 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
             </a>
           </article>
 
-          <article className="card-interactive rounded-3xl border border-border/70 bg-surface/50 p-6 sm:p-7">
+          <article className="card-interactive rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7">
             <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.liveLabel}</p>
             <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
               {labels.liveTitle}

@@ -64,7 +64,6 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
   const socialLinks = site.socials.filter(
     (social) => social.href && social.label in socialIcons,
   );
-  const mobileSocialLinks = site.socials.filter((social) => social.href);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuId = useId();
   const menuButtonId = useId();
@@ -109,118 +108,122 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
   return (
     <header className="sticky top-0 z-30 border-b border-border/40 bg-bg/50 backdrop-blur-md">
       <Container className="relative flex h-16 items-center">
-        <div className="relative flex-1 sm:flex-none" ref={menuRef}>
-          <button
-            type="button"
-            aria-expanded={isMenuOpen}
-            aria-controls={menuId}
-            aria-haspopup="menu"
-            id={menuButtonId}
-            onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="flex min-h-11 items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight"
-          >
-            {site.name}
-            <svg
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              className={`h-4 w-4 text-text-dim transition-transform duration-200 ${
-                isMenuOpen ? "rotate-180 text-highlight" : ""
+        <div className="order-1 flex items-center gap-4 sm:order-none">
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              aria-expanded={isMenuOpen}
+              aria-controls={menuId}
+              aria-haspopup="menu"
+              id={menuButtonId}
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className="flex min-h-11 items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight"
+            >
+              {site.name}
+              <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                className={`h-4 w-4 text-text-dim transition-transform duration-200 ${
+                  isMenuOpen ? "rotate-180 text-highlight" : ""
+                }`}
+              >
+                <path d="M6 9l6 6 6-6" fill="currentColor" />
+              </svg>
+            </button>
+            <div
+              id={menuId}
+              className={`fixed left-0 right-0 top-16 z-20 w-full px-4 pt-4 transition duration-200 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-64 sm:px-0 sm:pt-3 ${
+                isMenuOpen
+                  ? "pointer-events-auto translate-y-0 opacity-100"
+                  : "pointer-events-none translate-y-2 opacity-0"
               }`}
             >
-              <path d="M6 9l6 6 6-6" fill="currentColor" />
-            </svg>
-          </button>
-          <div
-            id={menuId}
-            className={`absolute left-0 right-0 top-full z-20 pt-3 transition duration-200 sm:left-0 sm:right-auto sm:w-64 ${
-              isMenuOpen
-                ? "pointer-events-auto translate-y-0 opacity-100"
-                : "pointer-events-none translate-y-2 opacity-0"
-            }`}
-          >
-            <nav
-              aria-label={labels.nav.explore}
-              aria-hidden={!isMenuOpen}
-              className="max-h-[60vh] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4"
-            >
-              <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                {labels.nav.explore}
-              </p>
-              <ul className="mt-3 grid gap-3">
-                <li>
-                  <Link
-                    href="/"
-                    className="menu-tile"
-                    tabIndex={menuTabIndex}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                      {labels.nav.main}
-                    </span>
-                    <span className="mt-1 block text-sm font-semibold text-text">
-                      {labels.nav.home}
-                    </span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/merch"
-                    className="menu-tile"
-                    tabIndex={menuTabIndex}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                      {labels.nav.store}
-                    </span>
-                    <span className="mt-1 block text-sm font-semibold text-text">
-                      {labels.nav.merch}
-                    </span>
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/shows"
-                    className="menu-tile"
-                    tabIndex={menuTabIndex}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                      {labels.nav.live}
-                    </span>
-                    <span className="mt-1 block text-sm font-semibold text-text">
-                      {labels.nav.shows}
-                    </span>
-                  </Link>
-                </li>
-              </ul>
-              {mobileSocialLinks.length ? (
-                <div className="mt-4 border-t border-border/60 pt-4 sm:hidden">
-                  <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                    {labels.nav.socials}
-                  </p>
-                  <ul className="mt-3 grid gap-3">
-                    {mobileSocialLinks.map((social) => (
-                      <li key={social.label}>
-                        <a
-                          className="menu-tile"
-                          href={social.href ?? undefined}
-                          target="_blank"
-                          rel="noreferrer"
-                          tabIndex={menuTabIndex}
-                        >
-                          <span className="block text-sm font-semibold text-text">
-                            {social.label}
-                          </span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-            </nav>
+              <nav
+                aria-label={labels.nav.explore}
+                aria-hidden={!isMenuOpen}
+                className="rounded-2xl border border-border/70 bg-surface/90 p-5 sm:menu-scroll sm:max-h-[60vh] sm:overflow-y-auto sm:p-4"
+              >
+                <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                  {labels.nav.explore}
+                </p>
+                <ul className="mt-3 grid gap-3">
+                  <li>
+                    <Link
+                      href="/"
+                      className="menu-tile"
+                      tabIndex={menuTabIndex}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                        {labels.nav.main}
+                      </span>
+                      <span className="mt-1 block text-sm font-semibold text-text">
+                        {labels.nav.home}
+                      </span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/merch"
+                      className="menu-tile"
+                      tabIndex={menuTabIndex}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                        {labels.nav.store}
+                      </span>
+                      <span className="mt-1 block text-sm font-semibold text-text">
+                        {labels.nav.merch}
+                      </span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/shows"
+                      className="menu-tile"
+                      tabIndex={menuTabIndex}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                        {labels.nav.live}
+                      </span>
+                      <span className="mt-1 block text-sm font-semibold text-text">
+                        {labels.nav.shows}
+                      </span>
+                    </Link>
+                  </li>
+                </ul>
+                {socialLinks.length ? (
+                  <div className="mt-4 border-t border-border/60 pt-4 sm:hidden">
+                    <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                      {labels.nav.socials}
+                    </p>
+                    <ul className="mt-3 grid grid-cols-4 gap-2">
+                      {socialLinks.map((social) => {
+                        const Icon = socialIcons[social.label as keyof typeof socialIcons];
+                        return (
+                          <li key={social.label}>
+                            <a
+                              className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/30 text-text transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
+                              href={social.href ?? undefined}
+                              target="_blank"
+                              rel="noreferrer"
+                              tabIndex={menuTabIndex}
+                              aria-label={social.label}
+                            >
+                              <Icon className="h-4 w-4" aria-hidden="true" />
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                ) : null}
+              </nav>
+            </div>
           </div>
         </div>
-        <div className="hidden flex-1 items-center justify-center sm:flex">
+        <div className="order-2 ml-auto hidden items-center sm:order-none sm:flex">
           <ul className="flex items-center gap-2 text-text-dim">
             {socialLinks.map((social) => {
               const Icon = socialIcons[social.label as keyof typeof socialIcons];
@@ -240,7 +243,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
             })}
           </ul>
         </div>
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 pr-2 sm:static sm:translate-y-0">
+        <div className="order-3 ml-auto sm:absolute sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:ml-0 sm:order-none">
           <div
             role="group"
             aria-label={labels.nav.language}
