@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SERVICE_NAME="${SERVICE_NAME:-bandland}"
+DEFAULT_SERVICE_NAME="bandland"
+SERVICE_NAME="${SERVICE_NAME:-$DEFAULT_SERVICE_NAME}"
 
 if [ ! -f package.json ]; then
   echo "Run this script from the repo root (package.json not found)."
