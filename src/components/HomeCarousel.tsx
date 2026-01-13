@@ -36,16 +36,6 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
               className="block w-full"
             />
           </div>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <a
-              className="btn-primary btn-primary-lg"
-              href={latestRelease.href}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {latestRelease.cta}
-            </a>
-          </div>
         </article>
       </section>
 
