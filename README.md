@@ -189,6 +189,22 @@ All checks run automatically via pre-commit hooks if you have them configured.
 
 ## Deployment
 
+### VPS (systemd / Nginx)
+
+For a traditional VPS (e.g., Vultr/DigitalOcean/Linode) with systemd:
+
+```bash
+# from the repo root on the server
+./scripts/deploy.sh
+```
+
+The script pulls the latest commits, installs dependencies, builds, and restarts the `bandland` service.
+Override the service name if needed:
+
+```bash
+SERVICE_NAME=bandland ./scripts/deploy.sh
+```
+
 ### Docker (Recommended for Self-Hosting)
 
 **Quick Start:**
