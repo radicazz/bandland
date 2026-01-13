@@ -19,6 +19,7 @@ export type Translations = {
     gallery: string;
     instagram: string;
     language: string;
+    socials: string;
   };
   home: {
     pinned: string;
@@ -80,6 +81,7 @@ export const translations: Record<Locale, Translations> = {
       gallery: "Gallery",
       instagram: "Instagram",
       language: "Language",
+      socials: "Socials",
     },
     home: {
       pinned: "Pinned",
@@ -139,6 +141,7 @@ export const translations: Record<Locale, Translations> = {
       gallery: "Galerie",
       instagram: "Instagram",
       language: "Taal",
+      socials: "Sosiaal",
     },
     home: {
       pinned: "Vasgepen",

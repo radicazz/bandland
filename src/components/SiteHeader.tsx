@@ -64,6 +64,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
   const socialLinks = site.socials.filter(
     (social) => social.href && social.label in socialIcons,
   );
+  const mobileSocialLinks = site.socials.filter((social) => social.href);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuId = useId();
   const menuButtonId = useId();
@@ -107,60 +108,28 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/40 bg-bg/50 backdrop-blur-md">
-      <Container className="relative flex h-16 items-center justify-between">
-        <div className="relative w-full sm:w-auto" ref={menuRef}>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              aria-expanded={isMenuOpen}
-              aria-controls={menuId}
-              aria-haspopup="menu"
-              id={menuButtonId}
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="flex min-h-11 items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight"
+      <Container className="relative flex h-16 items-center">
+        <div className="relative flex-1 sm:flex-none" ref={menuRef}>
+          <button
+            type="button"
+            aria-expanded={isMenuOpen}
+            aria-controls={menuId}
+            aria-haspopup="menu"
+            id={menuButtonId}
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            className="flex min-h-11 items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight"
+          >
+            {site.name}
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className={`h-4 w-4 text-text-dim transition-transform duration-200 ${
+                isMenuOpen ? "rotate-180 text-highlight" : ""
+              }`}
             >
-              {site.name}
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className={`h-4 w-4 text-text-dim transition-transform duration-200 ${
-                  isMenuOpen ? "rotate-180 text-highlight" : ""
-                }`}
-              >
-                <path d="M6 9l6 6 6-6" fill="currentColor" />
-              </svg>
-            </button>
-            <div
-              role="group"
-              aria-label={labels.nav.language}
-              className="flex items-center gap-1 rounded-full border border-border/70 bg-surface/60 p-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-text-dim"
-            >
-              <button
-                type="button"
-                aria-pressed={locale === "en"}
-                onClick={() => setLocale("en")}
-                className={`rounded-full px-2 py-1 transition-colors ${
-                  locale === "en"
-                    ? "bg-highlight/20 text-highlight"
-                    : "text-text-dim hover:text-highlight focus-visible:text-highlight"
-                }`}
-              >
-                ENG
-              </button>
-              <button
-                type="button"
-                aria-pressed={locale === "af"}
-                onClick={() => setLocale("af")}
-                className={`rounded-full px-2 py-1 transition-colors ${
-                  locale === "af"
-                    ? "bg-highlight/20 text-highlight"
-                    : "text-text-dim hover:text-highlight focus-visible:text-highlight"
-                }`}
-              >
-                AFR
-              </button>
-            </div>
-          </div>
+              <path d="M6 9l6 6 6-6" fill="currentColor" />
+            </svg>
+          </button>
           <div
             id={menuId}
             className={`absolute left-0 right-0 top-full z-20 pt-3 transition duration-200 sm:left-0 sm:right-auto sm:w-64 ${
@@ -239,10 +208,34 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                   </Link>
                 </li>
               </ul>
+              {mobileSocialLinks.length ? (
+                <div className="mt-4 border-t border-border/60 pt-4 sm:hidden">
+                  <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                    {labels.nav.socials}
+                  </p>
+                  <ul className="mt-3 grid gap-3">
+                    {mobileSocialLinks.map((social) => (
+                      <li key={social.label}>
+                        <a
+                          className="menu-tile"
+                          href={social.href ?? undefined}
+                          target="_blank"
+                          rel="noreferrer"
+                          tabIndex={menuTabIndex}
+                        >
+                          <span className="block text-sm font-semibold text-text">
+                            {social.label}
+                          </span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
             </nav>
           </div>
         </div>
-        <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-6 sm:static sm:translate-y-0">
+        <div className="hidden flex-1 items-center justify-center sm:flex">
           <ul className="flex items-center gap-2 text-text-dim">
             {socialLinks.map((social) => {
               const Icon = socialIcons[social.label as keyof typeof socialIcons];
@@ -250,7 +243,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                 <li key={social.label}>
                   <a
                     href={social.href ?? undefined}
-                    className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/30 transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight sm:h-9 sm:w-9"
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-surface/30 transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
                     target="_blank"
                     rel="noreferrer"
                     aria-label={social.label}
@@ -261,6 +254,38 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               );
             })}
           </ul>
+        </div>
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 sm:static sm:translate-y-0">
+          <div
+            role="group"
+            aria-label={labels.nav.language}
+            className="flex shrink-0 items-center gap-1 rounded-full border border-border/70 bg-surface/60 p-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-text-dim"
+          >
+            <button
+              type="button"
+              aria-pressed={locale === "en"}
+              onClick={() => setLocale("en")}
+              className={`rounded-full px-2 py-1 transition-colors ${
+                locale === "en"
+                  ? "bg-highlight/20 text-highlight"
+                  : "text-text-dim hover:text-highlight focus-visible:text-highlight"
+              }`}
+            >
+              ENG
+            </button>
+            <button
+              type="button"
+              aria-pressed={locale === "af"}
+              onClick={() => setLocale("af")}
+              className={`rounded-full px-2 py-1 transition-colors ${
+                locale === "af"
+                  ? "bg-highlight/20 text-highlight"
+                  : "text-text-dim hover:text-highlight focus-visible:text-highlight"
+              }`}
+            >
+              AFR
+            </button>
+          </div>
         </div>
       </Container>
     </header>
