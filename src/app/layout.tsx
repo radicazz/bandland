@@ -9,17 +9,20 @@ import { getTranslationsFromCookies } from "@/i18n/server";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const bandlandGothic = Grenze_Gotisch({
   variable: "--font-bandland-gothic",
   subsets: ["latin"],
   weight: "700",
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {

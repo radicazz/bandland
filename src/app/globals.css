@@ -8,7 +8,7 @@
   --text: #f2f2f2;
   --text-muted: #b7b7b7;
   --text-dim: #7a7a7a;
-  --highlight: #e36b6b;
+  --highlight: #e6e2da;
 }
 
 @theme inline {
@@ -64,20 +64,31 @@ body {
   background: color-mix(in srgb, var(--highlight) 30%, transparent);
 }
 
-@keyframes hero-fade {
-  0%,
-  22% {
-    opacity: 1;
-  }
-  33%,
-  100% {
-    opacity: 0;
-  }
+@keyframes hero-fade-3 {
+  0% { opacity: 0; }
+  3.33% { opacity: 1; }
+  23.33% { opacity: 1; }
+  33.33% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes hero-fade-2 {
+  0% { opacity: 0; }
+  5% { opacity: 1; }
+  35% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 0; }
+}
+
+@keyframes hero-fade-1 {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .hero-slide {
   opacity: 0;
-  animation: hero-fade 18s ease-in-out infinite;
   will-change: opacity;
 }
 
