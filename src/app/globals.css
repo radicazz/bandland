@@ -121,6 +121,10 @@ body {
   .menu-tile {
     @apply block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60;
   }
+
+  .card-interactive {
+    @apply relative transition-transform duration-500 ease-out motion-reduce:transition-none md:hover:-translate-y-0.5 md:hover:border-highlight/40 focus-within:-translate-y-0.5 focus-within:ring-2 focus-within:ring-highlight/30 focus-within:ring-offset-4 focus-within:ring-offset-bg;
+  }
 }
 
 /* Respect user's motion preferences (required by AGENTS.md) */
