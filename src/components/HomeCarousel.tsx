@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import type { Translations } from "@/i18n/translations";
 
 type HomeCarouselProps = {
@@ -41,39 +43,41 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
 
       <section className="w-full max-w-6xl">
         <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
-          <article className="card-interactive rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7">
-            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
-              {labels.storeLabel}
-            </p>
-            <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
-              {labels.storeTitle}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-text-muted">
-              {labels.storeDescription}
-            </p>
-            <a
-              className="btn-primary mt-5"
-              href="/merch"
-            >
-              {labels.storeCta}
-            </a>
-          </article>
+          <Link
+            href="/merch"
+            className="card-interactive block rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
+            aria-label={labels.storeCta}
+          >
+            <article>
+              <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
+                {labels.storeLabel}
+              </p>
+              <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
+                {labels.storeTitle}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-text-muted">
+                {labels.storeDescription}
+              </p>
+            </article>
+          </Link>
 
-          <article className="card-interactive rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7">
-            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.liveLabel}</p>
-            <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
-              {labels.liveTitle}
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-text-muted">
-              {labels.liveDescription}
-            </p>
-            <a
-              className="btn-primary mt-5"
-              href="/shows"
-            >
-              {labels.liveCta}
-            </a>
-          </article>
+          <Link
+            href="/shows"
+            className="card-interactive block rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
+            aria-label={labels.liveCta}
+          >
+            <article>
+              <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
+                {labels.liveLabel}
+              </p>
+              <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
+                {labels.liveTitle}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-text-muted">
+                {labels.liveDescription}
+              </p>
+            </article>
+          </Link>
         </div>
       </section>
     </div>
