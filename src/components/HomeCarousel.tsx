@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ReleasePlayerTabs } from "@/components/ReleasePlayerTabs";
 import type { Translations } from "@/i18n/translations";
 
 type HomeCarouselProps = {
@@ -12,8 +13,10 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
     description: labels.latestReleaseDescription,
     href: "https://tr.ee/7KaRvTpbLN",
     cta: labels.latestReleaseCta,
-    embedUrl:
+    spotifyEmbedUrl:
       "https://open.spotify.com/embed/track/1ZqBftZCkFF0YOmYaQ7v2c?utm_source=generator&theme=0",
+    appleEmbedUrl:
+      "https://embed.music.apple.com/za/album/pappa-soek-n-porsche-single/1866600943?i=1866600944&theme=dark",
   };
 
   return (
@@ -21,23 +24,18 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
       <section className="w-full max-w-6xl">
         <article className="card-interactive rounded-3xl border border-border/70 bg-surface/60 p-4 text-left sm:p-8 lg:p-10">
           <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.pinned}</p>
-          <h2 className="mt-4 break-words text-3xl font-brand uppercase tracking-[0.16em] text-highlight sm:text-4xl lg:text-5xl">
+          <h2 className="mt-4 wrap-break-word text-3xl font-brand uppercase tracking-[0.16em] text-highlight sm:text-4xl lg:text-5xl">
             {latestRelease.title}
           </h2>
-          <p className="mt-4 break-words text-base leading-7 text-text-muted">
+          <p className="mt-4 wrap-break-word text-base leading-7 text-text-muted">
             {latestRelease.description}
           </p>
-          <div className="mt-6 overflow-hidden rounded-2xl border border-border/70 bg-surface/70">
-            <iframe
-              title={`${latestRelease.title} — Spotify player`}
-              src={latestRelease.embedUrl}
-              width="100%"
-              height="152"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="eager"
-              className="block w-full"
-            />
-          </div>
+          <ReleasePlayerTabs
+            title={latestRelease.title}
+            spotifyUrl={latestRelease.spotifyEmbedUrl}
+            appleUrl={latestRelease.appleEmbedUrl}
+            labels={labels}
+          />
         </article>
       </section>
 

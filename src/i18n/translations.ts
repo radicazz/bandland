@@ -26,6 +26,9 @@ export type Translations = {
     latestReleaseTitle: string;
     latestReleaseDescription: string;
     latestReleaseCta: string;
+    playerTabsLabel: string;
+    playerSpotifyLabel: string;
+    playerAppleLabel: string;
     storeLabel: string;
     storeTitle: string;
     storeDescription: string;
@@ -85,9 +88,12 @@ export const translations: Record<Locale, Translations> = {
     },
     home: {
       pinned: "Pinned",
-      latestReleaseTitle: "Latest release",
+      latestReleaseTitle: "Newest release",
       latestReleaseDescription: "Listen to the newest drop.",
       latestReleaseCta: "Listen",
+      playerTabsLabel: "Player selection",
+      playerSpotifyLabel: "Spotify",
+      playerAppleLabel: "Apple Music",
       storeLabel: "Store",
       storeTitle: "Merch",
       storeDescription: "Limited runs and staples. New drops coming soon.",
@@ -148,6 +154,9 @@ export const translations: Record<Locale, Translations> = {
       latestReleaseTitle: "Nuutste vrystelling",
       latestReleaseDescription: "Luister na die nuutste vrystelling.",
       latestReleaseCta: "Luister",
+      playerTabsLabel: "Spelerkeuse",
+      playerSpotifyLabel: "Spotify",
+      playerAppleLabel: "Apple Music",
       storeLabel: "Winkel",
       storeTitle: "Merch",
       storeDescription: "Klassieke items en beperkte lopies. Nuwe vrystellings kom binnekort.",
