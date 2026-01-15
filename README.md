@@ -7,21 +7,27 @@ Modern, TypeScript-first band landing page built with Next.js 16, React 19, and 
 ## Prerequisites
 
 - **Node.js**: v22 (see `.nvmrc`)
-- **npm**: Included with Node.js
+- **npm** (included with Node.js) or **pnpm**
 
 ## Quick Start
 
 ```bash
 # Install dependencies
 npm install
+# or
+pnpm install
 
 # Start dev server
 npm run dev
+# or
+pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Available Scripts
+
+Use `npm` or `pnpm` to run scripts (examples below use `npm`).
 
 | Command                | Description                           |
 | ---------------------- | ------------------------------------- |
@@ -182,6 +188,22 @@ npm run format
 All checks run automatically via pre-commit hooks if you have them configured.
 
 ## Deployment
+
+### VPS (systemd / Nginx)
+
+For a traditional VPS (e.g., Vultr/DigitalOcean/Linode) with systemd:
+
+```bash
+# from the repo root on the server
+./scripts/deploy.sh
+```
+
+The script pulls the latest commits, installs dependencies, builds, and restarts the `bandland` service.
+Override the service name if needed:
+
+```bash
+SERVICE_NAME=bandland ./scripts/deploy.sh
+```
 
 ### Docker (Recommended for Self-Hosting)
 

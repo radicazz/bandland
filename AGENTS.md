@@ -130,12 +130,20 @@ Located in `src/app/globals.css`:
 ## Development Workflow
 
 ```bash
+npm install      # install deps
+pnpm install     # install deps (pnpm)
 npm run dev         # dev server
+pnpm dev            # dev server (pnpm)
 npm test           # run tests
 npm run typecheck  # TypeScript validation
 npm run lint       # ESLint
 npm run format     # Prettier
 ```
+
+## Git Commit Format
+
+- Use Conventional Commits: `feat: ...`, `fix: ...`, `chore: ...`, `refactor: ...`, `test: ...`, `docs: ...`
+- Keep the subject short, present tense, and scoped to a single change
 
 ## Environment Variables
 

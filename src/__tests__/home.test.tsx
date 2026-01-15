@@ -5,9 +5,12 @@ import Home from "../app/page";
 import { site } from "../config/site";
 
 describe("home", () => {
-  it("renders the landing content", () => {
-    render(<Home />);
-    expect(screen.getByText(/Under construction/i)).toBeInTheDocument();
+  it("renders the landing content", async () => {
+    const view = await Home();
+    render(view);
+    expect(screen.getByRole("heading", { name: /Latest release/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Merch/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Shows/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: site.name })).toBeInTheDocument();
   });
 });

@@ -1,5 +1,5 @@
 export const site = {
-  name: "Bandland",
+  name: "schmät",
   description: "Official landing page. Music, shows, and merch coming soon.",
 
   // Add your booking/press contact email here
@@ -7,9 +7,9 @@ export const site = {
 
   // Social media links - set href to null or remove entries you don't need
   socials: [
-    { label: "Instagram", href: "https://instagram.com/bandland" },
-    { label: "TikTok", href: "https://tiktok.com/@bandland" },
-    { label: "YouTube", href: "https://youtube.com/@bandland" },
-    { label: "Spotify", href: "https://open.spotify.com/artist/bandland" },
+    { label: "Instagram", href: "https://www.instagram.com/schmatorkes/" },
+    { label: "Spotify", href: "https://open.spotify.com/artist/6RLhhMPYSX1pCcFUijZi42" },
+    { label: "Apple Music", href: "https://music.apple.com/za/artist/schm%C3%A4t/1800555464" },
+    { label: "Linktree", href: "https://linktr.ee/Schmat" },
   ],
 } as const;

@@ -1,14 +1,10 @@
 import { Container } from "@/components/Container";
-import { site } from "@/config/site";
-
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border/60 bg-bg/70">
-      <Container className="flex h-16 items-center justify-between text-sm text-text-dim">
-        <p>
-          © {new Date().getFullYear()} {site.name}
-        </p>
-        <p>Built for fast shows + fast pages.</p>
+    <footer className="border-t border-border/40 bg-bg/50">
+      <Container className="flex h-auto flex-col items-start gap-2 px-4 py-4 text-sm text-text-dim sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0">
+        <p>© {new Date().getFullYear()} Insites Global</p>
+        <p>Skollie Afrikaans band</p>
       </Container>
     </footer>
   );

@@ -7,10 +7,12 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "server-only": path.resolve(__dirname, "./vitest.server-only.ts"),
     },
   },
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
+    exclude: ["**/node_modules/**", "**/.pnpm-store/**", "**/dist/**"],
   },
 });
