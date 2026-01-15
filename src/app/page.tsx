@@ -49,7 +49,7 @@ export default async function Home() {
   const animationName = getAnimationName(slideCount);
 
   return (
-    <section className="relative min-h-svh -mt-16 overflow-hidden pt-16 pb-16">
+    <section className="relative min-h-svh -mt-16 overflow-hidden pt-16 sm:min-h-[calc(100svh-4rem)]">
       <div aria-hidden className="absolute inset-0">
         {slides.map((src, index) => (
           <div
@@ -79,7 +79,7 @@ export default async function Home() {
         <div className="absolute inset-0 hero-grain" />
       </div>
 
-      <Container className="relative flex min-h-[100svh] items-start justify-center py-16">
+      <Container className="relative flex items-start justify-center py-16">
         <h1 className="sr-only">{site.name}</h1>
         <HomeCarousel labels={labels.home} />
       </Container>
