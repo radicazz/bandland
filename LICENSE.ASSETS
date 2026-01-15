@@ -1,0 +1,21 @@
+# License for Brand Assets
+
+All visual assets contained in this repository, including but not limited to:
+
+- Files in `public/logos/`
+- Files in `public/slideshow/`
+- Album artwork, promotional images, and band photography
+- Any other brand-specific visual content
+
+**ARE NOT** included in the open-source license of this project.
+
+These assets are the exclusive property of Bandland and remain under copyright.
+Any use, modification, reproduction, or distribution of these assets without
+explicit written permission is strictly prohibited.
+
+For licensing inquiries regarding brand assets, please contact the project maintainers.
+
+---
+
+**Note:** All source code and non-asset content of this project are licensed
+separately under the terms specified in the main `LICENSE` file.

@@ -37,3 +37,24 @@ Open http://localhost:3000
 ## Environment
 
 Copy `env.example` to `.env.local` and set `NEXT_PUBLIC_SITE_URL`.
+
+## Licensing
+
+This project uses a **dual licensing model**:
+
+### Code License
+All source code is licensed under the [MIT License](./LICENSE). This includes:
+- The Next.js application code
+- Components and utilities in `src/`
+- Configuration files
+- Content schemas and loaders
+
+You're free to use, modify, and distribute the code according to the MIT terms.
+
+### Brand Assets License
+Visual assets in this repository are **NOT** included in the open-source license. This includes:
+- Files in `public/logos/`
+- Files in `public/slideshow/`
+- Album artwork, promotional images, and band photography
+
+These assets are proprietary and remain under copyright. Any use, modification, or distribution requires explicit written permission. See [`LICENSE.ASSETS`](./LICENSE.ASSETS) for details.
