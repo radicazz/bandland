@@ -13,7 +13,7 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
     href: "https://tr.ee/7KaRvTpbLN",
     cta: labels.latestReleaseCta,
     embedUrl:
-      "https://open.spotify.com/embed/track/4vV3oxYqzSUBXBODbrKAmO?utm_source=generator&theme=0",
+      "https://open.spotify.com/embed/track/1ZqBftZCkFF0YOmYaQ7v2c?utm_source=generator&theme=0",
   };
 
   return (
