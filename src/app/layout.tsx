@@ -30,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
     title: {
-      default: site.name,
+      default: "Schmät - Skollie Afrikaans Band",
       template: `%s · ${site.name}`,
     },
     description: labels.meta.description,

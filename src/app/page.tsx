@@ -49,7 +49,7 @@ export default async function Home() {
   const animationName = getAnimationName(slideCount);
 
   return (
-    <section className="relative min-h-[100svh] -mt-16 overflow-hidden pt-16 pb-16">
+    <section className="relative min-h-svh -mt-16 overflow-hidden pt-16 pb-16">
       <div aria-hidden className="absolute inset-0">
         {slides.map((src, index) => (
           <div

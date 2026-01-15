@@ -1,5 +1,5 @@
 export const site = {
-  name: "schmat",
+  name: "schmät",
   description: "Official landing page. Music, shows, and merch coming soon.",
 
   // Add your booking/press contact email here

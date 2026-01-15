@@ -2,6 +2,7 @@
 
 import type { SVGProps } from "react";
 import { useEffect, useId, useRef, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -119,6 +120,13 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               onClick={() => setIsMenuOpen((prev) => !prev)}
               className="flex min-h-11 items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight"
             >
+              <Image
+                src="/logos/schmat-rat.png"
+                alt="Schmat logo"
+                width={28}
+                height={28}
+                className="h-7 w-7"
+              />
               {site.name}
               <svg
                 viewBox="0 0 24 24"
