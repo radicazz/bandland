@@ -14,8 +14,10 @@ import {
   type Show,
 } from "@/content/schema";
 
-const CONTENT_ROOT = path.join(process.cwd(), "content");
-const HISTORY_ROOT = path.join(CONTENT_ROOT, ".history");
+const CONTENT_ROOT =
+  process.env.CONTENT_DIR?.trim() || path.join(process.cwd(), "content");
+const HISTORY_ROOT =
+  process.env.CONTENT_HISTORY_DIR?.trim() || path.join(CONTENT_ROOT, ".history");
 const MAX_BACKUPS = 50;
 
 const CONTENT_FILES = {
@@ -32,6 +34,10 @@ function resolveContentPath(key: ContentKey) {
 
 async function ensureHistoryDir() {
   await fs.mkdir(HISTORY_ROOT, { recursive: true });
+}
+
+async function ensureContentDir(filePath: string) {
+  await fs.mkdir(path.dirname(filePath), { recursive: true });
 }
 
 function buildBackupName(filePath: string) {
@@ -102,6 +108,7 @@ async function writeJsonFile<T>(key: ContentKey, schema: z.ZodType<T>, data: T) 
   const filePath = resolveContentPath(key);
   const validated = schema.parse(data);
   await createBackup(filePath);
+  await ensureContentDir(filePath);
   const tempPath = `${filePath}.${randomUUID()}.tmp`;
   const serialized = `${JSON.stringify(validated, null, 2)}\n`;
   await fs.writeFile(tempPath, serialized, "utf8");
@@ -111,7 +118,7 @@ async function writeJsonFile<T>(key: ContentKey, schema: z.ZodType<T>, data: T) 
 }
 
 export async function readShows() {
-  return readJsonFile("shows", showSchema.array());
+  return readJsonFile("shows", showSchema.array(), []);
 }
 
 export async function writeShows(shows: Show[]) {
@@ -119,7 +126,7 @@ export async function writeShows(shows: Show[]) {
 }
 
 export async function readMerch() {
-  return readJsonFile("merch", merchItemSchema.array());
+  return readJsonFile("merch", merchItemSchema.array(), []);
 }
 
 export async function writeMerch(items: MerchItem[]) {

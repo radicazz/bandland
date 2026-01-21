@@ -30,7 +30,6 @@ export default async function MerchPage() {
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-text-muted">
           {labels.merch.introPrefix}
-          <span className="font-mono text-text">content/merch.json</span>
           {labels.merch.introSuffix}
         </p>
 

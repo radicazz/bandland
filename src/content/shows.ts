@@ -1,10 +1,10 @@
 import { unstable_cache } from "next/cache";
-import showsJson from "../../content/shows.json";
-import { showSchema, type Show } from "@/content/schema";
+import type { Show } from "@/content/schema";
+import { readShows } from "@/lib/content-store";
 
 export const getShows = unstable_cache(
   async (): Promise<Show[]> => {
-    return showSchema.array().parse(showsJson);
+    return readShows();
   },
   ["shows-data"],
   {

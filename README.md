@@ -31,6 +31,7 @@ Open http://localhost:3000
 ## Admin panel
 
 Admin access lives at `/admin` and writes directly to the JSON content files.
+In production, you can keep these files outside the repo by setting `CONTENT_DIR`.
 
 Setup:
 1. Copy `env.example` to `.env.local`
@@ -43,6 +44,32 @@ Data written by the admin panel:
 - `content/merch.json`
 - `content/admin-audit.json`
 - Backup snapshots in `content/.history/`
+
+## VPS deployment (recommended data layout)
+
+To keep admin edits persistent while still deploying code updates, store content
+JSON outside the git repo and point the app to it.
+
+1. Create a data directory on the VPS
+
+   ```bash
+   sudo mkdir -p /var/lib/bandland/content
+   sudo chown -R <service-user>:<service-user> /var/lib/bandland/content
+   ```
+
+2. Copy your current content files once
+
+   ```bash
+   cp content/shows.json /var/lib/bandland/content/
+   cp content/merch.json /var/lib/bandland/content/
+   ```
+
+3. Set environment variables on the service
+
+   - `CONTENT_DIR=/var/lib/bandland/content`
+   - Optional: `CONTENT_HISTORY_DIR=/var/lib/bandland/content/.history`
+
+4. Deploy as usual (your existing deploy script still works)
 
 ## Common scripts
 

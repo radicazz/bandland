@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 
 import type { Show } from "@/content/schema";
 import {
@@ -36,7 +36,7 @@ function FieldError({ message }: { message: string | undefined }) {
 }
 
 export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) {
-  const [state, formAction] = useFormState(action, initialAdminFormState);
+  const [state, formAction] = useActionState(action, initialAdminFormState);
   const [imagePreview, setImagePreview] = useState(
     initialValues?.imageUrl ?? "",
   );

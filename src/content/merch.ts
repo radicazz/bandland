@@ -1,10 +1,10 @@
 import { unstable_cache } from "next/cache";
-import merchJson from "../../content/merch.json";
-import { merchItemSchema, type MerchItem } from "@/content/schema";
+import type { MerchItem } from "@/content/schema";
+import { readMerch } from "@/lib/content-store";
 
 export const getMerchItems = unstable_cache(
   async (): Promise<MerchItem[]> => {
-    return merchItemSchema.array().parse(merchJson);
+    return readMerch();
   },
   ["merch-data"],
   {

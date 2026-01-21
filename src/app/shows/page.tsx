@@ -41,7 +41,6 @@ export default async function ShowsPage() {
         </h1>
         <p className="mt-4 max-w-2xl text-sm leading-6 text-text-muted">
           {labels.shows.introPrefix}
-          <span className="font-mono text-text">content/shows.json</span>
           {labels.shows.introSuffix}
         </p>
 
