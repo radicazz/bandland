@@ -1,8 +1,9 @@
-import { auth } from "@/auth";
+import type { NextAuthRequest } from "next-auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export default auth((request: NextRequest) => {
+import { auth } from "@/auth";
+
+export default auth((request: NextAuthRequest) => {
   if (request.nextUrl.pathname === "/admin") {
     return NextResponse.next();
   }

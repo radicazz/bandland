@@ -40,6 +40,7 @@ Rules:
 - Home hero uses a slideshow sourced from `public/slideshow/` (image files only)
 - Latest release card with Spotify embed in `src/components/HomeCarousel.tsx`
 - Shows + Merch pages read JSON from `content/`
+- Admin panel at `/admin` for managing shows + merch
 - Locale toggle in header; translations in `src/i18n/translations.ts`
 
 ## Content System
@@ -49,21 +50,42 @@ Location: `content/` (JSON files)
 Shows (`content/shows.json`)
 ```ts
 {
-  id: string,
+  id: string,          // uuid
   date: string,        // ISO 8601 with timezone
   venue: string,
   city: string,
-  ticketUrl?: string
+  price?: string,
+  ticketUrl?: string,
+  imageUrl?: string,
+  createdAt: string,
+  updatedAt: string
 }
 ```
 
 Merch (`content/merch.json`)
 ```ts
 {
-  id: string,
+  id: string,          // uuid
   name: string,
+  description?: string,
+  price: string,
   href: string,        // valid URL required
-  price?: string
+  imageUrl?: string,
+  createdAt: string,
+  updatedAt: string
+}
+```
+
+Admin audit (`content/admin-audit.json`)
+```ts
+{
+  id: string,          // uuid
+  actor: string,
+  action: "create" | "update" | "delete",
+  entity: "shows" | "merch",
+  entityId: string,    // uuid
+  createdAt: string,
+  details?: string
 }
 ```
 
@@ -94,6 +116,7 @@ Location: `src/config/site.ts`
 - `SiteHeader` — nav + locale toggle + socials
 - `SiteFooter` — copyright + tagline
 - `HomeCarousel` — latest release + feature tiles
+- Admin components in `src/components/admin/`
 
 Pattern: simple, functional components; minimal client JS (currently only header).
 
@@ -102,6 +125,7 @@ Pattern: simple, functional components; minimal client JS (currently only header
 - `/` — Home (slideshow hero + latest release)
 - `/shows` — Show list with ticket links
 - `/merch` — Merch grid with external links
+- `/admin` — Admin login + protected CRUD routes
 
 SEO:
 - `src/app/sitemap.ts`
@@ -156,12 +180,21 @@ npm run format
 ## Environment Variables
 
 - `NEXT_PUBLIC_SITE_URL` — canonical site URL (metadata/sitemap)
+- `ADMIN_PASSWORD_HASH` — bcrypt hash for admin login
+- `AUTH_SECRET` — Auth.js secret
+- `AUTH_URL` — canonical URL for Auth.js
 
 ## Adding Content
 
 1. Edit JSON files in `content/`
 2. Schema validation runs on page load
 3. Restart dev server to see changes
+
+## Admin Panel Notes
+
+- Admin writes to `content/shows.json`, `content/merch.json`, and `content/admin-audit.json`
+- Backups are stored in `content/.history/` (keep in gitignore if needed)
+- Server actions enforce Zod validation before writing
 
 ## Extending
 

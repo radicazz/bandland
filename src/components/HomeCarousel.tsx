@@ -1,13 +1,16 @@
-import Link from "next/link";
-
 import { ReleasePlayerTabs } from "@/components/ReleasePlayerTabs";
-import type { Translations } from "@/i18n/translations";
+import { MerchCarousel } from "@/components/MerchCarousel";
+import { UpcomingShow } from "@/components/UpcomingShow";
+import { getMerchItems } from "@/content/merch";
+import { getShows } from "@/content/shows";
+import type { Locale, Translations } from "@/i18n/translations";
 
 type HomeCarouselProps = {
   labels: Translations["home"];
+  locale: Locale;
 };
 
-export function HomeCarousel({ labels }: HomeCarouselProps) {
+export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
   const latestRelease = {
     title: labels.latestReleaseTitle,
     description: labels.latestReleaseDescription,
@@ -18,6 +21,8 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
     appleEmbedUrl:
       "https://embed.music.apple.com/za/album/pappa-soek-n-porsche-single/1866600943?i=1866600944&theme=dark",
   };
+
+  const [merchItems, shows] = await Promise.all([getMerchItems(), getShows()]);
 
   return (
     <div className="flex w-full flex-col items-center gap-5 px-2 sm:gap-12 sm:px-6">
@@ -41,41 +46,8 @@ export function HomeCarousel({ labels }: HomeCarouselProps) {
 
       <section className="w-full max-w-6xl">
         <div className="grid gap-5 sm:gap-6 md:grid-cols-2">
-          <Link
-            href="/merch"
-            className="card-interactive block rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
-            aria-label={labels.storeCta}
-          >
-            <article>
-              <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
-                {labels.storeLabel}
-              </p>
-              <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
-                {labels.storeTitle}
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-text-muted">
-                {labels.storeDescription}
-              </p>
-            </article>
-          </Link>
-
-          <Link
-            href="/shows"
-            className="card-interactive block rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
-            aria-label={labels.liveCta}
-          >
-            <article>
-              <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
-                {labels.liveLabel}
-              </p>
-              <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
-                {labels.liveTitle}
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-text-muted">
-                {labels.liveDescription}
-              </p>
-            </article>
-          </Link>
+          <MerchCarousel items={merchItems} labels={labels} />
+          <UpcomingShow shows={shows} labels={labels} locale={locale} />
         </div>
       </section>
     </div>

@@ -45,20 +45,36 @@ export default async function MerchPage() {
                 key={item.id}
                 className="rounded-2xl border border-border/70 bg-surface/60 p-6 transition-colors hover:border-highlight/60"
               >
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="text-sm font-semibold text-text">{item.name}</p>
-                  {item.price ? (
-                    <p className="text-sm tabular-nums text-text-dim">{item.price}</p>
+                <div className="grid gap-4 md:grid-cols-[140px_1fr] md:items-start">
+                  {item.imageUrl ? (
+                    <div className="overflow-hidden rounded-xl border border-border/70 bg-bg/50">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.name}
+                        className="h-28 w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
                   ) : null}
+                  <div>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <p className="text-sm font-semibold text-text">{item.name}</p>
+                      <p className="text-sm tabular-nums text-text-dim">{item.price}</p>
+                    </div>
+                    {item.description ? (
+                      <p className="mt-2 text-sm text-text-muted">{item.description}</p>
+                    ) : null}
+                    <a
+                      className="btn-primary mt-4"
+                      href={item.href}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {labels.merch.view}
+                    </a>
+                  </div>
                 </div>
-                <a
-                  className="btn-primary mt-4"
-                  href={item.href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {labels.merch.view}
-                </a>
               </li>
             ))}
           </ul>

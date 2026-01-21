@@ -27,6 +27,10 @@
 .DS_Store
 *.pem
 
+# content backups / audit logs
+/content/.history/
+/content/admin-audit.json
+
 # debug
 *.log
 npm-debug.log*

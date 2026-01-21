@@ -34,7 +34,7 @@ const getSlides = unstable_cache(
 );
 
 export default async function Home() {
-  const { labels } = await getTranslationsFromCookies();
+  const { labels, locale } = await getTranslationsFromCookies();
   const slides = await getSlides();
   const slideCount = Math.max(slides.length, 1);
   const totalDurationSeconds = slideCount * slideIntervalSeconds;
@@ -81,7 +81,7 @@ export default async function Home() {
 
       <Container className="relative flex items-start justify-center py-16">
         <h1 className="sr-only">{site.name}</h1>
-        <HomeCarousel labels={labels.home} />
+        <HomeCarousel labels={labels.home} locale={locale} />
       </Container>
     </section>
   );

@@ -28,6 +28,22 @@ Open http://localhost:3000
 - `src/i18n/translations.ts` — UI copy + locales
 - `public/slideshow/` — hero slideshow images (optional)
 
+## Admin panel
+
+Admin access lives at `/admin` and writes directly to the JSON content files.
+
+Setup:
+1. Copy `env.example` to `.env.local`
+2. Run `npm run setup-access` to generate `ADMIN_PASSWORD_HASH` + `AUTH_SECRET`
+3. Set `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` (e.g. `http://localhost:3000`)
+4. Restart the dev server
+
+Data written by the admin panel:
+- `content/shows.json`
+- `content/merch.json`
+- `content/admin-audit.json`
+- Backup snapshots in `content/.history/`
+
 ## Common scripts
 
 - `npm run build` / `npm run start`
@@ -36,7 +52,11 @@ Open http://localhost:3000
 
 ## Environment
 
-Copy `env.example` to `.env.local` and set `NEXT_PUBLIC_SITE_URL`.
+Copy `env.example` to `.env.local` and set:
+- `NEXT_PUBLIC_SITE_URL`
+- `ADMIN_PASSWORD_HASH`
+- `AUTH_SECRET`
+- `AUTH_URL`
 
 ## Licensing
 

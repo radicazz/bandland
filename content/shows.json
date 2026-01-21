@@ -1,22 +1,13 @@
 [
   {
-    "id": "show-1",
+    "id": "70164137-f515-40b9-be69-d059f433bf21",
     "date": "2026-03-15T20:00:00+02:00",
     "venue": "The Waiting Room",
     "city": "Cape Town, WC",
-    "ticketUrl": "https://example.com/tickets/show-1"
-  },
-  {
-    "id": "show-2",
-    "date": "2026-03-22T21:00:00+02:00",
-    "venue": "The Sheds at 1 Fox",
-    "city": "Johannesburg, GP",
-    "ticketUrl": "https://example.com/tickets/show-2"
-  },
-  {
-    "id": "show-3",
-    "date": "2026-04-05T19:30:00+02:00",
-    "venue": "The Winston",
-    "city": "Durban, KZN"
+    "price": "R200",
+    "ticketUrl": "https://example.com/tickets/show-1",
+    "imageUrl": "https://example.com/images/shows/waiting-room.jpg",
+    "createdAt": "2026-01-21T00:00:00Z",
+    "updatedAt": "2026-01-21T16:47:08.839Z"
   }
 ]

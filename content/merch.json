@@ -1,25 +1,41 @@
 [
   {
-    "id": "merch-1",
+    "id": "0296efd8-140d-4307-b2b1-bf492bc6fe60",
     "name": "Tour T-Shirt",
+    "description": "Soft black tee with the 2026 tour dates.",
+    "price": "R450",
     "href": "https://example.com/merch/tour-tee",
-    "price": "R450"
+    "imageUrl": "https://example.com/images/merch/tour-tee.jpg",
+    "createdAt": "2026-01-21T00:00:00Z",
+    "updatedAt": "2026-01-21T00:00:00Z"
   },
   {
-    "id": "merch-2",
+    "id": "dc87e930-3454-4812-9b8b-2aa874806b0f",
     "name": "Limited Edition Vinyl",
+    "description": "180g press with lyric insert.",
+    "price": "R650",
     "href": "https://example.com/merch/vinyl",
-    "price": "R650"
+    "imageUrl": "https://example.com/images/merch/vinyl.jpg",
+    "createdAt": "2026-01-21T00:00:00Z",
+    "updatedAt": "2026-01-21T00:00:00Z"
   },
   {
-    "id": "merch-3",
+    "id": "5ccb9d0e-91be-4a2d-bd01-9af05a32e7b1",
     "name": "Poster Pack",
+    "description": "Set of 3 screen-printed posters.",
+    "price": "R250",
     "href": "https://example.com/merch/posters",
-    "price": "R250"
+    "imageUrl": "https://example.com/images/merch/posters.jpg",
+    "createdAt": "2026-01-21T00:00:00Z",
+    "updatedAt": "2026-01-21T00:00:00Z"
   },
   {
-    "id": "merch-4",
+    "id": "7300c1be-5294-41e4-adf3-3ba326295359",
     "name": "Full Store",
-    "href": "https://example.com/store"
+    "description": "Browse everything in the official store.",
+    "price": "Varies",
+    "href": "https://example.com/store",
+    "createdAt": "2026-01-21T00:00:00Z",
+    "updatedAt": "2026-01-21T00:00:00Z"
   }
 ]

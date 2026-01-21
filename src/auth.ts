@@ -18,8 +18,14 @@ class AdminSignInError extends CredentialsSignin {
   }
 }
 
+const authSecret = process.env.AUTH_SECRET?.trim();
+const isProduction = process.env.NODE_ENV === "production";
+const sessionCookieName = isProduction
+  ? "__Host-bandland-admin"
+  : "bandland-admin";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  secret: process.env.AUTH_SECRET,
+  ...(authSecret ? { secret: authSecret } : {}),
   trustHost: true,
   session: {
     strategy: "jwt",
@@ -30,12 +36,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   cookies: {
     sessionToken: {
-      name: "__Host-bandland-admin",
+      name: sessionCookieName,
       options: {
         httpOnly: true,
         sameSite: "strict",
         path: "/",
-        secure: process.env.NODE_ENV === "production",
+        secure: isProduction,
       },
     },
   },
@@ -77,3 +83,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
 });
+
+export const { GET, POST } = handlers;
