@@ -12,6 +12,8 @@
     "test:watch": "vitest",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
+    "setup-access": "node scripts/setup-access.mjs",
+    "verify-access": "node scripts/verify-access.mjs",
     "docker:build": "docker build -t bandland .",
     "docker:run": "docker run --rm -p 3000:3000 -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
     "docker:dev": "docker compose --profile dev up --build",
@@ -25,7 +27,9 @@
     "podman:down": "podman-compose down"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "next": "16.0.10",
+    "next-auth": "5.0.0-beta.30",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "zod": "^4.1.12"

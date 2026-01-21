@@ -10,7 +10,7 @@ Located in `src/app/globals.css`:
 --bg: #060606 /* near-black background */ --surface: #0f0f10 /* elevated panels */
   --surface-2: #1a1b1d /* cards */ --border: #2a2b2e /* dividers */ --text: #f2f2f2
   /* primary text */ --text-muted: #b7b7b7 /* secondary text */ --text-dim: #7a7a7a /* metadata */
-  --highlight: #e6e2da /* bone/off-white accent */;
+  --highlight: #e36b6b /* muted red accent */;
 ```
 
 Rules:
