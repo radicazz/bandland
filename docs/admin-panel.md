@@ -1,18 +1,31 @@
-# Admin Panel Integration Plan
+# Admin Panel Integration Plan (In-Project Storage)
 
 ## Overview
 
-A password-protected admin panel at `/admin` allowing band members to manage shows and merch content without technical knowledge. Built with security, maintainability, and scalability as primary concerns.
+A password-protected admin panel at `/admin` allowing band members to manage shows and merch content without technical knowledge. Built with security, maintainability, and a **no-external-dependencies** approach.
+
+## Recommended Method (Better In-Project Approach)
+
+Use the existing `content/` JSON files as the **single source of truth**, and add an admin UI that reads/writes those files via server actions. This avoids external databases and keeps the workflow fully in-project.
+
+**Why this is better for the stated goal:**
+- **No external services or credentials** to manage
+- **Matches the current content system** and Zod validation
+- **Easy backups and rollbacks** via JSON file history or git
+- **Minimal operational complexity** while still enabling CRUD
+
+---
 
 ## Technology Choices
 
 | Concern | Solution | Rationale |
 |---------|----------|-----------|
-| **Database** | Turso (libSQL) | Edge-compatible, serverless, free tier, SQL injection protection via parameterized queries |
+| **Storage** | In-project JSON (`content/*.json`) | Already the content source, zero external dependencies, easy to validate and back up |
 | **Images** | URL input fields | No file upload vulnerabilities, band can use any image host |
 | **Auth** | Auth.js (NextAuth) with Credentials | Maintained auth flow, built-in CSRF for sign-in, secure cookies |
 | **Password** | bcrypt hashing | Industry standard, timing-attack resistant comparison |
 | **Validation** | Zod schemas | Already in use, consistent with codebase |
+| **Writes** | Server Actions + atomic file writes | Avoids API boilerplate, prevents partial writes |
 
 ---
 
@@ -35,15 +48,20 @@ flowchart TB
         F --> H[Manage Merch]
     end
 
-    subgraph Database
-        I[(Turso DB)]
+    subgraph Content Store
+        I[(content/shows.json)]
+        J[(content/merch.json)]
+        K[(content/admin-audit.json)]
     end
 
     G -->|CRUD| I
-    H -->|CRUD| I
+    H -->|CRUD| J
+    G -->|Audit| K
+    H -->|Audit| K
     B -->|Read| I
-    C -->|Read| I
+    C -->|Read| J
     A -->|Read| I
+    A -->|Read| J
 ```
 
 ### Authentication Flow (Auth.js / NextAuth)
@@ -80,7 +98,7 @@ sequenceDiagram
 // src/content/schema.ts
 export const showSchema = z.object({
   id: z.string().uuid(),
-  date: z.string().datetime(),      // ISO 8601 UTC (Z)
+  date: z.string().datetime(),      // ISO 8601 with timezone
   venue: z.string().min(1),
   city: z.string().min(1),
   price: z.string().optional(),     // NEW: e.g. "R150" or "Free"
@@ -106,44 +124,18 @@ export const merchItemSchema = z.object({
 });
 ```
 
-### Database Tables
+### Audit Log Schema (JSON File)
 
-```sql
--- Shows table
-CREATE TABLE shows (
-  id TEXT PRIMARY KEY,
-  date TEXT NOT NULL, -- store in UTC ISO 8601 (Z) for ordering
-  venue TEXT NOT NULL,
-  city TEXT NOT NULL,
-  price TEXT,
-  ticket_url TEXT,
-  image_url TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
--- Merch table
-CREATE TABLE merch (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  description TEXT,
-  price TEXT NOT NULL,
-  href TEXT NOT NULL,
-  image_url TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
--- Optional audit log (recommended)
-CREATE TABLE admin_audit (
-  id TEXT PRIMARY KEY,
-  actor TEXT NOT NULL,             -- e.g. "admin"
-  action TEXT NOT NULL,            -- create/update/delete
-  entity TEXT NOT NULL,            -- shows/merch
-  entity_id TEXT NOT NULL,
-  created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  details TEXT                     -- JSON string
-);
+```typescript
+export const adminAuditSchema = z.object({
+  id: z.string().uuid(),
+  actor: z.string().min(1),        // e.g. "admin"
+  action: z.enum(["create", "update", "delete"]),
+  entity: z.enum(["shows", "merch"]),
+  entityId: z.string().uuid(),
+  createdAt: z.string().datetime(),
+  details: z.string().optional(),  // JSON string (diff or snapshot)
+});
 ```
 
 ---
@@ -154,18 +146,15 @@ CREATE TABLE admin_audit (
 src/
 ├── app/
 │   ├── admin/
-│   │   ├── layout.tsx          # Admin layout with auth check
-│   │   ├── page.tsx            # Login page
-│   │   ├── dashboard/
-│   │   │   └── page.tsx        # Dashboard with overview
-│   │   ├── shows/
-│   │   │   ├── page.tsx        # Shows list
-│   │   │   ├── new/page.tsx    # Create show form
-│   │   │   └── [id]/page.tsx   # Edit show form
-│   │   └── merch/
-│   │       ├── page.tsx        # Merch list
-│   │       ├── new/page.tsx    # Create merch form
-│   │       └── [id]/page.tsx   # Edit merch form
+│   │   ├── (protected)/
+│   │   │   ├── layout.tsx          # Admin layout with auth check
+│   │   │   ├── dashboard/
+│   │   │   │   └── page.tsx        # Dashboard with overview
+│   │   │   ├── shows/
+│   │   │   │   └── page.tsx        # Shows list (placeholder)
+│   │   │   └── merch/
+│   │   │       └── page.tsx        # Merch list (placeholder)
+│   │   └── page.tsx                # Login page
 │   └── api/
 │       └── auth/
 │           └── [...nextauth]/route.ts   # Auth.js route handler
@@ -178,10 +167,15 @@ src/
 │   ├── MerchCarousel.tsx       # NEW: Cycling merch display
 │   └── UpcomingShow.tsx        # NEW: Next show card
 ├── lib/
-│   ├── db.ts                   # Turso client setup
-│   └── admin-actions.ts        # Server actions for forms
+│   ├── content-store.ts        # Read/write JSON + atomic writes
+│   ├── admin-actions.ts        # Server actions for forms
+│   └── rate-limit.ts           # In-memory rate limiter for login
 ├── auth.ts                     # Auth.js (NextAuth) config
 └── middleware.ts               # Auth middleware for /admin/*
+content/
+├── shows.json
+├── merch.json
+└── admin-audit.json
 ```
 
 ---
@@ -196,10 +190,6 @@ ADMIN_PASSWORD_HASH=           # bcrypt hash of admin password
 AUTH_SECRET=                   # high-entropy secret for Auth.js
 AUTH_URL=                      # canonical site URL for Auth.js (e.g., https://example.com)
 
-# Turso database (REQUIRED)
-TURSO_DATABASE_URL=            # libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=              # Turso auth token
-
 # Existing
 NEXT_PUBLIC_SITE_URL=
 ```
@@ -212,10 +202,6 @@ Add to `env.example`:
 ADMIN_PASSWORD_HASH=
 AUTH_SECRET=
 AUTH_URL=
-
-# Turso Database - Get from https://turso.tech/app
-TURSO_DATABASE_URL=
-TURSO_AUTH_TOKEN=
 ```
 
 ---
@@ -242,8 +228,7 @@ TURSO_AUTH_TOKEN=
 - All inputs validated with Zod schemas
 - URLs validated as proper URLs
 - Dates validated as ISO 8601
-- For image URLs, use an allowlist if server-side fetching/Next Image is enabled
-- Parameterized SQL queries (no string interpolation)
+- File writes only allowed to the known `content/` files
 
 ### 5. CSRF Protection
 - Auth.js provides CSRF protection for credential sign-in
@@ -251,8 +236,13 @@ TURSO_AUTH_TOKEN=
 - If Route Handlers are used for mutations, enforce Origin/Referer checks
 
 ### 6. Audit Logging
-- Write create/update/delete actions to `admin_audit`
+- Write create/update/delete actions to `content/admin-audit.json`
 - Use audit entries to power "recent activity" on the dashboard
+
+### 7. Safe File Writes
+- Validate and normalize payloads before writing
+- Write to a temp file then atomic rename
+- Keep a rolling backup (e.g., `content/.history/`) for quick rollback
 
 ---
 
@@ -314,72 +304,72 @@ The shows card will:
 
 ---
 
-## Migration Strategy
+## Migration Strategy (Status Snapshot)
 
-### Phase 1: Database Setup
-1. Create Turso account and database
-2. Install `@libsql/client` package
-3. Run schema migrations
-4. Migrate existing JSON data to database
-
-### Phase 2: API Migration
-1. Update content loaders to read from database
-2. Keep JSON files as fallback during transition
-3. Add cache invalidation on mutations
-
-### Phase 3: Admin Panel
+### Phase 1: Admin Access Scaffolding — **DONE**
 1. Build authentication system
-2. Create CRUD forms and API routes
-3. Test all operations
+2. Add login page and protected layout
+3. Wire middleware route protection
 
-### Phase 4: Frontend Updates
+### Phase 2: Content Model Updates — **PENDING**
+1. Extend Zod schemas with new fields
+2. Update JSON files to include `createdAt` and `updatedAt`
+3. Add audit log file (`content/admin-audit.json`)
+
+### Phase 3: Admin Panel CRUD — **IN PROGRESS**
+1. Create CRUD forms and Server Actions
+2. Implement `content-store.ts` with atomic writes + backups
+3. Revalidate public pages on mutations
+
+### Phase 4: Frontend Updates — **PENDING**
 1. Update HomeCarousel with cycling/upcoming features
 2. Update shows/merch pages to use new fields
 3. Add image display where applicable
+
+### Phase 5: Operational Hardening — **PENDING**
+1. Add file-level locking or single-writer guard
+2. Add admin audit review UI
+3. Document backup/restore procedure
 
 ---
 
 ## Implementation Checklist
 
-### Database Setup
-- [ ] Create Turso account and database
-- [ ] Install `@libsql/client` dependency
-- [ ] Create `src/lib/db.ts` with client configuration
-- [ ] Create database schema with shows and merch tables
-- [ ] Create `admin_audit` table for logging changes
-- [ ] Create migration script to import existing JSON data
-- [ ] Update `src/content/shows.ts` to read from database
-- [ ] Update `src/content/merch.ts` to read from database
+### Storage Layer
+- [ ] Create `src/lib/content-store.ts` for safe JSON read/write
+- [ ] Add atomic write utility (temp file + rename)
+- [ ] Implement backups in `content/.history/`
+- [ ] Add Zod validation before every write
 
 ### Authentication System (Auth.js / NextAuth)
-- [ ] Add `ADMIN_PASSWORD_HASH`, `AUTH_SECRET`, `AUTH_URL` and Turso env vars to `env.example`
-- [ ] Install `next-auth` and `bcryptjs` (or force Node runtime if using `bcrypt`)
-- [ ] Create `src/auth.ts` with Credentials provider (single admin account)
-- [ ] Add `src/app/api/auth/[...nextauth]/route.ts`
-- [ ] Create `src/middleware.ts` to protect admin routes
-- [ ] Add login rate limiting in the Credentials authorize flow
-- [ ] Create admin login page at `src/app/admin/page.tsx` (custom sign-in)
+- [x] Add `ADMIN_PASSWORD_HASH`, `AUTH_SECRET`, `AUTH_URL` to `env.example`
+- [x] Install `next-auth` and `bcryptjs` (or force Node runtime if using `bcrypt`)
+- [x] Create `src/auth.ts` with Credentials provider (single admin account)
+- [x] Add `src/app/api/auth/[...nextauth]/route.ts`
+- [x] Create `src/middleware.ts` to protect admin routes
+- [x] Add login rate limiting in the Credentials authorize flow
+- [x] Create admin login page at `src/app/admin/page.tsx` (custom sign-in)
 
 ### Admin Dashboard
-- [ ] Create `src/app/admin/layout.tsx` with auth check
-- [ ] Create `src/app/admin/dashboard/page.tsx` with overview
-- [ ] Create `src/components/admin/AdminNav.tsx`
-- [ ] Populate "recent activity" from `admin_audit`
+- [x] Create `src/app/admin/(protected)/layout.tsx` with auth check
+- [x] Create `src/app/admin/(protected)/dashboard/page.tsx` with overview
+- [x] Create `src/components/admin/AdminNav.tsx`
+- [ ] Populate "recent activity" from `content/admin-audit.json`
 
 ### Shows Management
 - [ ] Update Zod schema with new show fields
 - [ ] Add shows CRUD Server Actions in `src/lib/admin-actions.ts`
-- [ ] Create `src/app/admin/shows/page.tsx` (list view)
-- [ ] Create `src/app/admin/shows/new/page.tsx` (create form)
-- [ ] Create `src/app/admin/shows/[id]/page.tsx` (edit form)
+- [x] Create `src/app/admin/(protected)/shows/page.tsx` (list view placeholder)
+- [ ] Create `src/app/admin/(protected)/shows/new/page.tsx` (create form)
+- [ ] Create `src/app/admin/(protected)/shows/[id]/page.tsx` (edit form)
 - [ ] Create `src/components/admin/ShowForm.tsx`
 
 ### Merch Management
 - [ ] Update Zod schema with new merch fields
 - [ ] Add merch CRUD Server Actions in `src/lib/admin-actions.ts`
-- [ ] Create `src/app/admin/merch/page.tsx` (list view)
-- [ ] Create `src/app/admin/merch/new/page.tsx` (create form)
-- [ ] Create `src/app/admin/merch/[id]/page.tsx` (edit form)
+- [x] Create `src/app/admin/(protected)/merch/page.tsx` (list view placeholder)
+- [ ] Create `src/app/admin/(protected)/merch/new/page.tsx` (create form)
+- [ ] Create `src/app/admin/(protected)/merch/[id]/page.tsx` (edit form)
 - [ ] Create `src/components/admin/MerchForm.tsx`
 
 ### Home Page Updates
@@ -389,8 +379,8 @@ The shows card will:
 - [ ] Add reduced motion support for cycling animation
 
 ### Testing & Documentation
-- [ ] Add tests for auth utilities
-- [ ] Add tests for API routes
+- [ ] Add tests for auth utilities (rate limiter covered; auth flow still needed)
+- [ ] Add tests for Server Actions
 - [ ] Add tests for admin components
 - [ ] Update `AGENTS.md` with admin panel documentation
 - [ ] Update `README.md` with setup instructions
