@@ -24,22 +24,10 @@ export function UpcomingShow({ shows, labels, locale }: UpcomingShowProps) {
   return (
     <Link
       href="/shows"
-      className="card-interactive relative block overflow-hidden rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
+      className="card-interactive block rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
       aria-label={labels.liveCta}
     >
-      <div aria-hidden className="absolute inset-0">
-        {upcoming?.imageUrl ? (
-          <img
-            src={upcoming.imageUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : null}
-        <div className="absolute inset-0 bg-bg/70" />
-        <div className="absolute inset-0 hero-grain" />
-      </div>
-
-      <article className="relative">
+      <article>
         <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
           {labels.liveLabel}
         </p>

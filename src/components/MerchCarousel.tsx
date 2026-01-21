@@ -58,34 +58,13 @@ export function MerchCarousel({ items, labels }: MerchCarouselProps) {
   }, [activeIndex, itemsWithImages.length]);
 
   const activeItem = itemsWithImages[activeIndex];
-  const showImages = itemsWithImages.length > 0;
-
   return (
     <Link
       href="/merch"
-      className="card-interactive relative block overflow-hidden rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
+      className="card-interactive relative block rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
       aria-label={labels.storeCta}
     >
-      {showImages ? (
-        <div aria-hidden className="absolute inset-0">
-          {itemsWithImages.map((item, index) => (
-            <img
-              key={item.id}
-              src={item.imageUrl ?? ""}
-              alt=""
-              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-                index === activeIndex ? "opacity-100" : "opacity-0"
-              }`}
-            />
-          ))}
-          <div className="absolute inset-0 bg-bg/70" />
-          <div className="absolute inset-0 hero-grain" />
-        </div>
-      ) : (
-        <div aria-hidden className="absolute inset-0 bg-bg/40" />
-      )}
-
-      <article className="relative">
+      <article>
         <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
           {labels.storeLabel}
         </p>
