@@ -36,8 +36,8 @@ if [ -f "$REPO_DIR/.env.production" ]; then
     if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
       continue
     fi
-    # Remove quotes and add as Environment directive
-    cleaned=$(echo "$line" | sed "s/^['\"]//;s/['\"]$//")
+    # Extract key=value, remove quotes, unescape \$
+    cleaned=$(echo "$line" | sed "s/^['\"]//;s/['\"]$//;s/\\\\\$/\$/g")
     SERVICE_CONTENT="$SERVICE_CONTENT
 Environment=$cleaned"
   done < "$REPO_DIR/.env.production"
@@ -48,8 +48,8 @@ elif [ -f "$REPO_DIR/.env.local" ]; then
     if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
       continue
     fi
-    # Remove quotes and add as Environment directive
-    cleaned=$(echo "$line" | sed "s/^['\"]//;s/['\"]$//")
+    # Extract key=value, remove quotes, unescape \$
+    cleaned=$(echo "$line" | sed "s/^['\"]//;s/['\"]$//;s/\\\\\$/\$/g")
     SERVICE_CONTENT="$SERVICE_CONTENT
 Environment=$cleaned"
   done < "$REPO_DIR/.env.local"
