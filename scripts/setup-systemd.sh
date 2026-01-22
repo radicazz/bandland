@@ -36,10 +36,14 @@ if [ -f "$REPO_DIR/.env.production" ]; then
     if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
       continue
     fi
-    # Extract key=value, remove quotes, unescape \$
-    cleaned=$(echo "$line" | sed "s/^['\"]//;s/['\"]$//;s/\\\\\$/\$/g")
+    # Extract key and value
+    key=$(echo "$line" | cut -d= -f1)
+    value=$(echo "$line" | cut -d= -f2-)
+    # Remove surrounding quotes from value if present
+    value=$(echo "$value" | sed "s/^['\"]//;s/['\"]$//")
+    # Add as quoted Environment directive
     SERVICE_CONTENT="$SERVICE_CONTENT
-Environment=$cleaned"
+Environment=\"$key=$value\""
   done < "$REPO_DIR/.env.production"
 elif [ -f "$REPO_DIR/.env.local" ]; then
   echo "  Loading env from: .env.local"
@@ -48,10 +52,14 @@ elif [ -f "$REPO_DIR/.env.local" ]; then
     if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
       continue
     fi
-    # Extract key=value, remove quotes, unescape \$
-    cleaned=$(echo "$line" | sed "s/^['\"]//;s/['\"]$//;s/\\\\\$/\$/g")
+    # Extract key and value
+    key=$(echo "$line" | cut -d= -f1)
+    value=$(echo "$line" | cut -d= -f2-)
+    # Remove surrounding quotes from value if present, unescape \$
+    value=$(echo "$value" | sed "s/^['\"]//;s/['\"]$//;s/\\\\\$/\$/g")
+    # Add as quoted Environment directive
     SERVICE_CONTENT="$SERVICE_CONTENT
-Environment=$cleaned"
+Environment=\"$key=$value\""
   done < "$REPO_DIR/.env.local"
 fi
 
