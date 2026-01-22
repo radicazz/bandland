@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { randomBytes } from "node:crypto";
-import { access, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import readline from "node:readline/promises";
 import bcrypt from "bcryptjs";
@@ -58,20 +58,26 @@ AUTH_URL=${siteUrl}
 NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}
 `;
 
-  const envLocalPath = resolve(process.cwd(), ".env.local");
-  const envPath = resolve(process.cwd(), ".env");
+  // Use .env.production for production, .env.local for dev
+  const envFilePath = isProduction
+    ? resolve(process.cwd(), ".env.production")
+    : resolve(process.cwd(), ".env.local");
 
-  const targets = [envLocalPath];
-  try {
-    await access(envPath);
-    targets.push(envPath);
-  } catch {
-    // .env is optional; prefer .env.local for Next.js
-  }
-
-  await Promise.all(targets.map((target) => writeFile(target, envContents, "utf8")));
-  for (const target of targets) {
-    console.log(`Wrote ${target}`);
+  await writeFile(envFilePath, envContents, "utf8");
+  console.log(`✓ Wrote ${envFilePath}`);
+  
+  if (isProduction) {
+    console.log("\nProduction environment configured.");
+    console.log("Next steps:");
+    console.log("  1. Create content directory:");
+    const contentDir = contentDirSection.trim() ? contentDirSection.split("=")[1] : "/var/lib/bandland/content";
+    console.log(`     sudo mkdir -p ${contentDir}`);
+    console.log(`     sudo chown -R www-data:www-data ${contentDir}`);
+    console.log("  2. Rebuild the app: npm run build");
+    console.log("  3. Restart the service: sudo systemctl restart bandland");
+  } else {
+    console.log("\nDevelopment environment configured.");
+    console.log("Start the dev server: npm run dev");
   }
 };
 
