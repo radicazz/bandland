@@ -41,6 +41,8 @@ if [ -f "$REPO_DIR/.env.production" ]; then
     value=$(echo "$line" | cut -d= -f2-)
     # Remove surrounding quotes from value if present
     value=$(echo "$value" | sed "s/^['\"]//;s/['\"]$//")
+    # Escape $ for systemd (double $$ to prevent expansion)
+    value=$(echo "$value" | sed 's/\$/\$\$/g')
     # Add as quoted Environment directive
     SERVICE_CONTENT="$SERVICE_CONTENT
 Environment=\"$key=$value\""
