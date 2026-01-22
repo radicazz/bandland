@@ -3,7 +3,7 @@
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 
 import { auth } from "@/auth";
 import type { MerchItem, Show } from "@/content/schema";
@@ -127,7 +127,7 @@ export async function createShowAction(
     details: JSON.stringify({ after: nextShow }),
   });
 
-  revalidateTag("shows", "default");
+  updateTag("shows");
   redirect("/admin/shows");
 }
 
@@ -197,7 +197,7 @@ export async function updateShowAction(
     details: JSON.stringify({ before, after: nextShow }),
   });
 
-  revalidateTag("shows", "default");
+  updateTag("shows");
   redirect("/admin/shows");
 }
 
@@ -226,7 +226,7 @@ export async function deleteShowAction(formData: FormData) {
     ...(deleteDetails ? { details: deleteDetails } : {}),
   });
 
-  revalidateTag("shows", "default");
+  updateTag("shows");
   redirect("/admin/shows");
 }
 
@@ -272,7 +272,7 @@ export async function createMerchAction(
     details: JSON.stringify({ after: nextItem }),
   });
 
-  revalidateTag("merch", "default");
+  updateTag("merch");
   redirect("/admin/merch");
 }
 
@@ -341,7 +341,7 @@ export async function updateMerchAction(
     details: JSON.stringify({ before, after: nextItem }),
   });
 
-  revalidateTag("merch", "default");
+  updateTag("merch");
   redirect("/admin/merch");
 }
 
@@ -370,6 +370,6 @@ export async function deleteMerchAction(formData: FormData) {
     ...(deleteDetails ? { details: deleteDetails } : {}),
   });
 
-  revalidateTag("merch", "default");
+  updateTag("merch");
   redirect("/admin/merch");
 }
