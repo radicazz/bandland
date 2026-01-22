@@ -53,27 +53,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials, request) {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) {
+          console.error("[Auth] Invalid credentials schema");
           return null;
         }
 
         const passwordHash = process.env.ADMIN_PASSWORD_HASH?.trim();
         if (!passwordHash) {
+          console.error("[Auth] ADMIN_PASSWORD_HASH missing from environment");
           throw new AdminSignInError("missing_hash");
         }
+
+        console.log("[Auth] Hash loaded, length:", passwordHash.length);
 
         const headers = request?.headers ?? new Headers();
         const ip = getClientIp(headers);
         const { allowed } = loginLimiter.check(ip);
         if (!allowed) {
+          console.error("[Auth] Rate limited:", ip);
           throw new AdminSignInError("rate_limited");
         }
 
         const normalizedPassword = parsed.data.password.trim();
         if (!normalizedPassword) {
+          console.error("[Auth] Empty password after trim");
           throw new AdminSignInError("missing_password");
         }
 
+        console.log("[Auth] Comparing password, input length:", normalizedPassword.length);
         const isValid = await bcrypt.compare(normalizedPassword, passwordHash);
+        console.log("[Auth] Password valid:", isValid);
+        
         if (!isValid) {
           throw new AdminSignInError("invalid_password");
         }
