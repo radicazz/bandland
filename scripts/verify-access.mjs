@@ -56,7 +56,7 @@ const loadPasswordHash = async () => {
     return { hash: fromEnv, source: "process.env" };
   }
 
-  const envCandidates = [".env.local", ".env"];
+  const envCandidates = [".env.production", ".env.local", ".env"];
   for (const filename of envCandidates) {
     const envPath = resolve(process.cwd(), filename);
     const hash = await parseHashFromFile(envPath);
@@ -80,7 +80,7 @@ const run = async () => {
   const result = await loadPasswordHash();
   if (!result) {
     console.error(
-      "ADMIN_PASSWORD_HASH not found. Run pnpm setup-access to generate .env.local.",
+      "ADMIN_PASSWORD_HASH not found. Run npm run setup-access to generate env file.",
     );
     process.exitCode = 1;
     return;
