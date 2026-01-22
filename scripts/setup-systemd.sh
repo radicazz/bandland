@@ -17,8 +17,8 @@ echo "  Repository: $REPO_DIR"
 echo "  User: $SERVICE_USER"
 echo ""
 
-cat > "$UNIT_FILE" <<EOF
-[Unit]
+# Start building the service file
+SERVICE_CONTENT="[Unit]
 Description=Bandland Next.js
 After=network.target
 
@@ -26,16 +26,44 @@ After=network.target
 Type=simple
 User=$SERVICE_USER
 WorkingDirectory=$REPO_DIR
-Environment=NODE_ENV=production
-EnvironmentFile=-$REPO_DIR/.env.local
-EnvironmentFile=-$REPO_DIR/.env.production
+Environment=NODE_ENV=production"
+
+# Load environment variables from .env.production if it exists
+if [ -f "$REPO_DIR/.env.production" ]; then
+  echo "  Loading env from: .env.production"
+  while IFS= read -r line; do
+    # Skip empty lines and comments
+    if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
+      continue
+    fi
+    # Remove quotes and add as Environment directive
+    cleaned=$(echo "$line" | sed "s/^['\"]//;s/['\"]$//")
+    SERVICE_CONTENT="$SERVICE_CONTENT
+Environment=$cleaned"
+  done < "$REPO_DIR/.env.production"
+elif [ -f "$REPO_DIR/.env.local" ]; then
+  echo "  Loading env from: .env.local"
+  while IFS= read -r line; do
+    # Skip empty lines and comments
+    if [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]]; then
+      continue
+    fi
+    # Remove quotes and add as Environment directive
+    cleaned=$(echo "$line" | sed "s/^['\"]//;s/['\"]$//")
+    SERVICE_CONTENT="$SERVICE_CONTENT
+Environment=$cleaned"
+  done < "$REPO_DIR/.env.local"
+fi
+
+SERVICE_CONTENT="$SERVICE_CONTENT
 ExecStart=/usr/bin/npm run start
 Restart=always
 RestartSec=5
 
 [Install]
-WantedBy=multi-user.target
-EOF
+WantedBy=multi-user.target"
+
+echo "$SERVICE_CONTENT" > "$UNIT_FILE"
 
 echo "✓ Created $UNIT_FILE"
 echo ""
