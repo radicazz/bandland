@@ -34,10 +34,8 @@ const run = async () => {
   const passwordHash = await bcrypt.hash(password, 12);
   const authSecret = randomBytes(32).toString("base64");
   
-  // For .env files, wrap the hash in quotes to prevent shell interpretation
-  const finalPasswordHash = isProduction 
-    ? `"${passwordHash}"` 
-    : passwordHash.replaceAll("$", "\\$");
+  // Don't escape $ - Next.js properly loads .env files
+  const finalPasswordHash = passwordHash;
 
   let contentDirSection = "";
   if (isProduction) {

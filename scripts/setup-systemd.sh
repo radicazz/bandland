@@ -64,7 +64,7 @@ Environment=\"$key=$value\""
 fi
 
 SERVICE_CONTENT="$SERVICE_CONTENT
-ExecStart=/usr/bin/node .next/standalone/server.js
+ExecStart=/usr/bin/npm run start
 Restart=always
 RestartSec=5
 
