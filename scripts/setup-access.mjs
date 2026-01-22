@@ -34,8 +34,8 @@ const run = async () => {
   const passwordHash = await bcrypt.hash(password, 12);
   const authSecret = randomBytes(32).toString("base64");
   
-  // Keep hash as-is; .env parsing handles $ safely.
-  const finalPasswordHash = passwordHash;
+  // Escape $ to prevent dotenv-expand from stripping bcrypt prefixes.
+  const finalPasswordHash = passwordHash.replaceAll("$", "\\$");
 
   let contentDirSection = "";
   let contentDir = "/var/lib/bandland/content";

@@ -23,12 +23,20 @@ if (hash.length !== 60) {
   console.log(
     "\n⚠️  WARNING: bcrypt hashes should be exactly 60 characters long.",
   );
-  if (hash.includes("$$")) {
+  if (!hasBcryptPrefix) {
     console.log(
-      "   This looks double-escaped. If you used a systemd Environment= line,",
+      "   The bcrypt prefix looks missing. If you're using .env files,",
     );
     console.log(
-      "   prefer EnvironmentFile= to avoid $$ escaping issues.",
+      "   escape $ as \\$ (dotenv-expand will strip unescaped $).",
+    );
+  }
+  if (hash.includes("$$")) {
+    console.log(
+      "   This looks double-escaped. Prefer using a systemd EnvironmentFile=,",
+    );
+    console.log(
+      "   or escape $ as \\$ in .env files.",
     );
   }
 }

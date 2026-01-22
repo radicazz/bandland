@@ -29,19 +29,19 @@ if [ -z "$NPM_BIN" ]; then
   exit 1
 fi
 
-ENV_FILE=""
+ENV_SOURCE_FILE=""
 if [ -n "$ENV_FILE_OVERRIDE" ]; then
   if [ ! -f "$ENV_FILE_OVERRIDE" ]; then
     echo "Error: environment file not found: $ENV_FILE_OVERRIDE"
     exit 1
   fi
-  ENV_FILE="$(cd "$(dirname "$ENV_FILE_OVERRIDE")" && pwd)/$(basename "$ENV_FILE_OVERRIDE")"
+  ENV_SOURCE_FILE="$(cd "$(dirname "$ENV_FILE_OVERRIDE")" && pwd)/$(basename "$ENV_FILE_OVERRIDE")"
 elif [ -f "$REPO_DIR/.env.production" ]; then
-  ENV_FILE="$REPO_DIR/.env.production"
+  ENV_SOURCE_FILE="$REPO_DIR/.env.production"
 elif [ -f "$REPO_DIR/.env.local" ]; then
-  ENV_FILE="$REPO_DIR/.env.local"
+  ENV_SOURCE_FILE="$REPO_DIR/.env.local"
 elif [ -f "$REPO_DIR/.env" ]; then
-  ENV_FILE="$REPO_DIR/.env"
+  ENV_SOURCE_FILE="$REPO_DIR/.env"
 fi
 
 UNIT_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
@@ -49,8 +49,18 @@ UNIT_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
 echo "Creating systemd service: $SERVICE_NAME"
 echo "  Repository: $REPO_DIR"
 echo "  User: $SERVICE_USER"
-if [ -n "$ENV_FILE" ]; then
-  echo "  Environment file: $ENV_FILE"
+SYSTEMD_ENV_FILE=""
+if [ -n "$ENV_SOURCE_FILE" ]; then
+  SYSTEMD_ENV_FILE="$REPO_DIR/.env.systemd"
+  echo "  Source env file: $ENV_SOURCE_FILE"
+  echo "  Systemd env file: $SYSTEMD_ENV_FILE"
+
+  # Filter out ADMIN_PASSWORD_HASH so dotenv-expand can set it from .env.production.
+  $SUDO awk '
+    /^[[:space:]]*ADMIN_PASSWORD_HASH[[:space:]]*=/ { next }
+    { print }
+  ' "$ENV_SOURCE_FILE" | $SUDO tee "$SYSTEMD_ENV_FILE" >/dev/null
+  $SUDO chmod 600 "$SYSTEMD_ENV_FILE"
 else
   echo "  Environment file: (none found)"
 fi
@@ -66,9 +76,9 @@ User=$SERVICE_USER
 WorkingDirectory=$REPO_DIR
 Environment=NODE_ENV=production"
 
-if [ -n "$ENV_FILE" ]; then
+if [ -n "$SYSTEMD_ENV_FILE" ]; then
   SERVICE_CONTENT="$SERVICE_CONTENT
-EnvironmentFile=$ENV_FILE"
+EnvironmentFile=$SYSTEMD_ENV_FILE"
 fi
 
 SERVICE_CONTENT="$SERVICE_CONTENT
@@ -89,7 +99,7 @@ $SUDO systemctl enable "$SERVICE_NAME"
 echo "✓ Service enabled"
 echo ""
 
-if [ -n "$ENV_FILE" ]; then
+if [ -n "$SYSTEMD_ENV_FILE" ]; then
   echo "Environment file found. Starting service..."
   $SUDO systemctl restart "$SERVICE_NAME"
   echo "✓ Service started"
