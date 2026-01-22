@@ -11,10 +11,16 @@ const rl = readline.createInterface({
 });
 
 const run = async () => {
-  const siteUrlInput = await rl.question(
-    "Site URL (default http://localhost:3000): ",
+  const envInput = await rl.question(
+    "Environment (dev/prod, default dev): ",
   );
-  const siteUrl = siteUrlInput.trim() || "http://localhost:3000";
+  const environment = envInput.trim().toLowerCase() || "dev";
+  const isProduction = environment === "prod" || environment === "production";
+
+  const siteUrlInput = await rl.question(
+    `Site URL (default ${isProduction ? "https://example.com" : "http://localhost:3000"}): `,
+  );
+  const siteUrl = siteUrlInput.trim() || (isProduction ? "https://example.com" : "http://localhost:3000");
 
   const passwordInput = await rl.question("Admin password: ");
   const password = passwordInput.trim();
@@ -29,6 +35,18 @@ const run = async () => {
   const authSecret = randomBytes(32).toString("base64");
   const escapedPasswordHash = passwordHash.replaceAll("$", "\\$");
 
+  let contentDirSection = "";
+  if (isProduction) {
+    const contentDirInput = await rl.question(
+      "Content directory (default /var/lib/bandland/content): ",
+    );
+    const contentDir = contentDirInput.trim() || "/var/lib/bandland/content";
+    contentDirSection = `
+# Content storage outside repo
+CONTENT_DIR=${contentDir}
+`;
+  }
+
   const envContents = `# Admin Panel
 # Generate hash: npx bcrypt-cli hash "your-password" 12
 ADMIN_PASSWORD_HASH=${escapedPasswordHash}
@@ -37,7 +55,7 @@ AUTH_URL=${siteUrl}
 
 # Used for generating absolute URLs in metadata/OG.
 # In production, set this to your canonical site URL (e.g. https://bandland.com).
-NEXT_PUBLIC_SITE_URL=${siteUrl}
+NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}
 `;
 
   const envLocalPath = resolve(process.cwd(), ".env.local");
