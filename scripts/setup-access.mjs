@@ -33,7 +33,10 @@ const run = async () => {
 
   const passwordHash = await bcrypt.hash(password, 12);
   const authSecret = randomBytes(32).toString("base64");
-  const escapedPasswordHash = passwordHash.replaceAll("$", "\\$");
+  
+  // Only escape $ for shell environments (.env.local used in dev)
+  // .env.production is loaded by Next.js which handles $ correctly
+  const finalPasswordHash = isProduction ? passwordHash : passwordHash.replaceAll("$", "\\$");
 
   let contentDirSection = "";
   if (isProduction) {
@@ -49,7 +52,7 @@ CONTENT_DIR=${contentDir}
 
   const envContents = `# Admin Panel
 # Generate hash: npx bcrypt-cli hash "your-password" 12
-ADMIN_PASSWORD_HASH=${escapedPasswordHash}
+ADMIN_PASSWORD_HASH=${finalPasswordHash}
 AUTH_SECRET='${authSecret}'
 AUTH_URL=${siteUrl}
 
