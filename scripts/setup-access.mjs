@@ -34,15 +34,16 @@ const run = async () => {
   const passwordHash = await bcrypt.hash(password, 12);
   const authSecret = randomBytes(32).toString("base64");
   
-  // Don't escape $ - Next.js properly loads .env files
+  // Keep hash as-is; .env parsing handles $ safely.
   const finalPasswordHash = passwordHash;
 
   let contentDirSection = "";
+  let contentDir = "/var/lib/bandland/content";
   if (isProduction) {
     const contentDirInput = await rl.question(
       "Content directory (default /var/lib/bandland/content): ",
     );
-    const contentDir = contentDirInput.trim() || "/var/lib/bandland/content";
+    contentDir = contentDirInput.trim() || "/var/lib/bandland/content";
     contentDirSection = `
 # Content storage outside repo
 CONTENT_DIR=${contentDir}
@@ -51,7 +52,7 @@ CONTENT_DIR=${contentDir}
 
   const envContents = `# Admin Panel
 # Generate hash: npx bcrypt-cli hash "your-password" 12
-ADMIN_PASSWORD_HASH=${finalPasswordHash}
+ADMIN_PASSWORD_HASH='${finalPasswordHash}'
 AUTH_SECRET='${authSecret}'
 AUTH_URL=${siteUrl}
 
@@ -72,7 +73,6 @@ NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}
     console.log("\nProduction environment configured.");
     console.log("Next steps:");
     console.log("  1. Create content directory:");
-    const contentDir = contentDirSection.trim() ? contentDirSection.split("=")[1] : "/var/lib/bandland/content";
     console.log(`     sudo mkdir -p ${contentDir}`);
     console.log(`     sudo chown -R www-data:www-data ${contentDir}`);
     console.log("  2. Rebuild the app: npm run build");

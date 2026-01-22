@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="${REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 DEFAULT_SERVICE_NAME="bandland"
 SERVICE_NAME="${SERVICE_NAME:-$DEFAULT_SERVICE_NAME}"
 
-if [ ! -f package.json ]; then
-  echo "Run this script from the repo root (package.json not found)."
+if [ ! -f "$REPO_DIR/package.json" ]; then
+  echo "Run this script from the repo root or set REPO_DIR (package.json not found)."
   exit 1
+fi
+
+cd "$REPO_DIR"
+
+SUDO=""
+if [ "${EUID:-$(id -u)}" -ne 0 ] && command -v sudo >/dev/null 2>&1; then
+  SUDO="sudo"
 fi
 
 git pull --ff-only
@@ -21,7 +30,7 @@ npm run build
 
 if command -v systemctl >/dev/null 2>&1; then
   if systemctl list-unit-files | grep -q "^${SERVICE_NAME}\\.service"; then
-    sudo systemctl restart "${SERVICE_NAME}"
+    $SUDO systemctl restart "${SERVICE_NAME}"
   else
     echo "Skipping restart: ${SERVICE_NAME}.service not found."
   fi

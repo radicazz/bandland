@@ -13,8 +13,25 @@ if (!hash) {
 console.log("Hash found in environment:");
 console.log(`  Length: ${hash.length}`);
 console.log(`  First 20 chars: ${hash.substring(0, 20)}`);
-console.log(`  Starts with $2a$ or $2b$: ${hash.startsWith("$2a$") || hash.startsWith("$2b$")}`);
+const hasBcryptPrefix =
+  hash.startsWith("$2a$") || hash.startsWith("$2b$") || hash.startsWith("$2y$");
+console.log(`  Starts with bcrypt prefix: ${hasBcryptPrefix}`);
 console.log(`  Contains backslash: ${hash.includes("\\")}`);
+console.log(`  Contains double $$: ${hash.includes("$$")}`);
+
+if (hash.length !== 60) {
+  console.log(
+    "\n⚠️  WARNING: bcrypt hashes should be exactly 60 characters long.",
+  );
+  if (hash.includes("$$")) {
+    console.log(
+      "   This looks double-escaped. If you used a systemd Environment= line,",
+    );
+    console.log(
+      "   prefer EnvironmentFile= to avoid $$ escaping issues.",
+    );
+  }
+}
 
 if (hash.includes("\\")) {
   console.log("\n⚠️  WARNING: Hash contains backslashes - this will cause auth to fail!");

@@ -86,6 +86,21 @@ const run = async () => {
     return;
   }
 
+  const hasBcryptPrefix =
+    result.hash.startsWith("$2a$") ||
+    result.hash.startsWith("$2b$") ||
+    result.hash.startsWith("$2y$");
+  if (result.hash.length !== 60 || !hasBcryptPrefix) {
+    console.error(
+      `Warning: ADMIN_PASSWORD_HASH looks unusual (length ${result.hash.length}).`,
+    );
+    if (result.hash.includes("$$")) {
+      console.error(
+        "It contains $$ which often means the hash was double-escaped for systemd.",
+      );
+    }
+  }
+
   const matches = await bcrypt.compare(password, result.hash);
   if (matches) {
     console.log(`Password matches ADMIN_PASSWORD_HASH (${result.source}).`);
