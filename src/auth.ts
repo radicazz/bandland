@@ -64,6 +64,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         console.log("[Auth] Hash loaded, length:", passwordHash.length);
+        console.log("[Auth] Hash first 20:", passwordHash.substring(0, 20));
+        console.log("[Auth] Hash last 20:", passwordHash.substring(passwordHash.length - 20));
 
         const headers = request?.headers ?? new Headers();
         const ip = getClientIp(headers);
