@@ -34,9 +34,10 @@ const run = async () => {
   const passwordHash = await bcrypt.hash(password, 12);
   const authSecret = randomBytes(32).toString("base64");
   
-  // Only escape $ for shell environments (.env.local used in dev)
-  // .env.production is loaded by Next.js which handles $ correctly
-  const finalPasswordHash = isProduction ? passwordHash : passwordHash.replaceAll("$", "\\$");
+  // For .env files, wrap the hash in quotes to prevent shell interpretation
+  const finalPasswordHash = isProduction 
+    ? `"${passwordHash}"` 
+    : passwordHash.replaceAll("$", "\\$");
 
   let contentDirSection = "";
   if (isProduction) {
