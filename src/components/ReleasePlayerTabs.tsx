@@ -36,14 +36,14 @@ export function ReleasePlayerTabs({
       key: "spotify" as const,
       label: labels.playerSpotifyLabel,
       src: spotifyUrl,
-      height: 152,
+      heightClass: "h-20 sm:h-[152px]",
       allow: "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
     },
     {
       key: "apple" as const,
       label: labels.playerAppleLabel,
       src: appleUrl,
-      height: 150,
+      heightClass: "h-[175px] sm:h-[175px]",
       allow: "autoplay *; encrypted-media *; fullscreen *; clipboard-write",
       sandbox:
         "allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation",
@@ -106,11 +106,10 @@ export function ReleasePlayerTabs({
                   title={`${title} — ${tab.label} player`}
                   src={tab.src}
                   width="100%"
-                  height={tab.height}
                   allow={tab.allow}
                   sandbox={tab.sandbox}
                   loading="eager"
-                  className="block w-full"
+                  className={`block w-full ${tab.heightClass}`}
                 />
               ) : null}
             </div>

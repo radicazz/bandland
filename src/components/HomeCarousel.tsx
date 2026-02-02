@@ -29,10 +29,10 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
       <section className="w-full max-w-6xl">
         <article className="card-interactive rounded-3xl border border-border/70 bg-surface/60 p-4 text-left sm:p-8 lg:p-10">
           <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.pinned}</p>
-          <h2 className="mt-4 wrap-break-word text-3xl font-brand uppercase tracking-[0.16em] text-highlight sm:text-4xl lg:text-5xl">
+          <h2 className="mt-4 break-words text-3xl font-brand uppercase tracking-[0.16em] text-highlight sm:text-4xl lg:text-5xl">
             {latestRelease.title}
           </h2>
-          <p className="mt-4 wrap-break-word text-base leading-7 text-text-muted">
+          <p className="mt-4 break-words text-base leading-7 text-text-muted">
             {latestRelease.description}
           </p>
           <ReleasePlayerTabs
