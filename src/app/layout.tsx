@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Grenze_Gotisch } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { embed } from "@/config/embed";
 import { site } from "@/config/site";
 import { getTranslationsFromCookies } from "@/i18n/server";
 
@@ -26,23 +27,38 @@ const bandlandGothic = Grenze_Gotisch({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { labels } = await getTranslationsFromCookies();
+  const { labels, locale } = await getTranslationsFromCookies();
+  const description = labels.meta.description;
+  const ogLocale = locale === "af" ? "af_ZA" : "en_US";
+
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
     title: {
       default: "Schmät - Skollie Afrikaans Band",
       template: `%s · ${site.name}`,
     },
-    description: labels.meta.description,
+    description,
     openGraph: {
       title: site.name,
-      description: labels.meta.description,
+      description,
       type: "website",
+      siteName: site.name,
+      locale: ogLocale,
+      url: "/",
+      images: [
+        {
+          url: embed.og.path,
+          width: embed.og.width,
+          height: embed.og.height,
+          alt: embed.og.alt,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: site.name,
-      description: labels.meta.description,
+      description,
+      images: [embed.twitter.path],
     },
   };
 }

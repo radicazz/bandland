@@ -1,57 +1,116 @@
 import { ImageResponse } from "next/og";
 
+import { embed, getPublicUrl } from "@/config/embed";
 import { site } from "@/config/site";
 
 export const runtime = "edge";
 
 export const size = {
-  width: 1200,
-  height: 630,
+  width: embed.og.width,
+  height: embed.og.height,
 };
 
 export const contentType = "image/png";
 
 export default function OpenGraphImage() {
+  const heroImage = getPublicUrl(embed.og.path);
+  const logo = getPublicUrl(embed.logoPath);
+
   return new ImageResponse(
     <div
       style={{
-        background: "#060606",
-        color: "#F2F2F2",
         width: "100%",
         height: "100%",
         display: "flex",
-        padding: 80,
-        alignItems: "flex-end",
-        justifyContent: "space-between",
+        position: "relative",
         fontFamily: "ui-sans-serif, system-ui, -apple-system, Segoe UI, Arial",
       }}
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div
-          style={{
-            fontSize: 18,
-            letterSpacing: "0.3em",
-            textTransform: "uppercase",
-            color: "#7A7A7A",
-          }}
-        >
-          Under construction
-        </div>
-        <div style={{ fontSize: 84, fontWeight: 700, letterSpacing: "-0.02em" }}>{site.name}</div>
-        <div style={{ fontSize: 26, lineHeight: 1.4, maxWidth: 820, color: "#B7B7B7" }}>
-          {site.description}
-        </div>
-      </div>
-      <div
+      <img
+        src={heroImage}
+        alt=""
         style={{
-          width: 220,
-          height: 220,
-          borderRadius: 9999,
-          border: "1px solid rgba(242,242,242,0.18)",
-          background:
-            "radial-gradient(circle at 30% 20%, rgba(230,226,218,0.20), rgba(6,6,6,0) 60%)",
+          position: "absolute",
+          inset: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
         }}
       />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          background:
+            "linear-gradient(180deg, rgba(6,6,6,0.25) 0%, rgba(6,6,6,0.85) 65%, rgba(6,6,6,0.95) 100%)",
+        }}
+      />
+      <div
+        style={{
+          display: "flex",
+          width: "100%",
+          padding: 72,
+          marginTop: "auto",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 28,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 12,
+            maxWidth: 780,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              fontSize: 20,
+              letterSpacing: "0.3em",
+              textTransform: "uppercase",
+              color: "rgba(242,242,242,0.82)",
+            }}
+          >
+            {site.name}
+          </div>
+          <div
+            style={{
+              display: "flex",
+              fontSize: 74,
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              color: "#F2F2F2",
+            }}
+          >
+            Music, shows, merch.
+          </div>
+          <div style={{ display: "flex", fontSize: 28, lineHeight: 1.35, color: "#B7B7B7" }}>
+            {site.description}
+          </div>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 196,
+            height: 196,
+            borderRadius: 24,
+            overflow: "hidden",
+            border: "1px solid rgba(242,242,242,0.35)",
+            background: "rgba(15,15,16,0.65)",
+          }}
+        >
+          <img
+            src={logo}
+            alt=""
+            style={{ width: "100%", height: "100%", objectFit: "contain", padding: 22 }}
+          />
+        </div>
+      </div>
     </div>,
     size,
   );
