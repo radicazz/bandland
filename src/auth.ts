@@ -20,12 +20,11 @@ class AdminSignInError extends CredentialsSignin {
 
 const authSecret = process.env.AUTH_SECRET?.trim();
 const isProduction = process.env.NODE_ENV === "production";
-const sessionCookieName = isProduction
-  ? "__Host-bandland-admin"
-  : "bandland-admin";
+const resolvedAuthSecret = authSecret || (isProduction ? undefined : "bandland-dev-auth-secret");
+const sessionCookieName = isProduction ? "__Host-bandland-admin" : "bandland-admin";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  ...(authSecret ? { secret: authSecret } : {}),
+  ...(resolvedAuthSecret ? { secret: resolvedAuthSecret } : {}),
   trustHost: true,
   session: {
     strategy: "jwt",
@@ -84,7 +83,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         console.log("[Auth] Comparing password, input length:", normalizedPassword.length);
         const isValid = await bcrypt.compare(normalizedPassword, passwordHash);
         console.log("[Auth] Password valid:", isValid);
-        
+
         if (!isValid) {
           throw new AdminSignInError("invalid_password");
         }
