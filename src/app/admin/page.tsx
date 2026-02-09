@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { signIn, auth } from "@/auth";
 import { Container } from "@/components/Container";
+import { PasswordField } from "@/components/admin/PasswordField";
 
 type AdminPageProps = {
   searchParams?: Promise<{
@@ -15,8 +16,7 @@ async function authenticate(formData: FormData) {
   "use server";
   const passwordValue = formData.get("password");
 
-  const password =
-    typeof passwordValue === "string" ? passwordValue.trim() : "";
+  const password = typeof passwordValue === "string" ? passwordValue.trim() : "";
 
   if (password.length === 0) {
     redirect("/admin?error=missing");
@@ -30,9 +30,7 @@ async function authenticate(formData: FormData) {
     }
     if (error instanceof AuthError) {
       const type =
-        typeof error.type === "string" && error.type.length > 0
-          ? error.type
-          : "AuthError";
+        typeof error.type === "string" && error.type.length > 0 ? error.type : "AuthError";
       redirect(`/admin?error=auth&code=${encodeURIComponent(type)}`);
     }
     throw error;
@@ -55,23 +53,21 @@ export default async function AdminLoginPage({ searchParams }: AdminPageProps) {
         ? "Admin access is not configured. Run pnpm setup-access and restart the dev server."
         : error === "credentials" && code === "rate_limited"
           ? "Too many attempts. Try again in about 15 minutes."
-      : error === "credentials" && code === "invalid_password"
-        ? "Password did not match. Please try again."
-        : error === "credentials" && code === "missing_password"
-          ? "Password is required."
-          : error === "credentials"
-            ? "Invalid credentials. Please try again."
-            : error === "auth" && code === "MissingSecret"
-              ? "AUTH_SECRET is missing. Run pnpm setup-access and restart the dev server."
-              : error === "auth" && code === "InvalidCallbackUrl"
-                ? "Invalid callback URL. Check AUTH_URL and NEXT_PUBLIC_SITE_URL."
-                : error === "auth"
-                  ? "Sign-in failed due to a configuration issue. Check server logs."
-                  : error
-                    ? "Unable to sign in. Please try again."
-                    : null
-      ;
-
+          : error === "credentials" && code === "invalid_password"
+            ? "Password did not match. Please try again."
+            : error === "credentials" && code === "missing_password"
+              ? "Password is required."
+              : error === "credentials"
+                ? "Invalid credentials. Please try again."
+                : error === "auth" && code === "MissingSecret"
+                  ? "AUTH_SECRET is missing. Run pnpm setup-access and restart the dev server."
+                  : error === "auth" && code === "InvalidCallbackUrl"
+                    ? "Invalid callback URL. Check AUTH_URL and NEXT_PUBLIC_SITE_URL."
+                    : error === "auth"
+                      ? "Sign-in failed due to a configuration issue. Check server logs."
+                      : error
+                        ? "Unable to sign in. Please try again."
+                        : null;
   return (
     <Container className="flex min-h-[calc(100dvh-4rem)] items-center justify-center py-16">
       <div className="w-full max-w-md rounded-2xl border border-border/70 bg-surface/70 p-8">
@@ -81,17 +77,13 @@ export default async function AdminLoginPage({ searchParams }: AdminPageProps) {
           Enter the shared password to manage shows and merch.
         </p>
         <form action={authenticate} className="mt-6 space-y-4">
-          <label className="block text-xs uppercase tracking-[0.3em] text-text-dim">
-            Password
-            <input
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="mt-2 w-full rounded-xl border border-border/70 bg-bg/60 px-4 py-3 text-sm text-text placeholder:text-text-dim"
-              placeholder="••••••••"
-            />
-          </label>
+          <PasswordField
+            name="password"
+            label="Password"
+            autoComplete="current-password"
+            required
+            placeholder="••••••••"
+          />
           {message ? (
             <p className="text-sm text-highlight" role="status" aria-live="polite">
               {message}
