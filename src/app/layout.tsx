@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Grenze_Gotisch } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { embed } from "@/config/embed";
+import { embed, getMetadataBase } from "@/config/embed";
 import { site } from "@/config/site";
 import { getTranslationsFromCookies } from "@/i18n/server";
 
@@ -32,7 +32,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const ogLocale = locale === "af" ? "af_ZA" : "en_US";
 
   return {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+    metadataBase: getMetadataBase(),
     title: {
       default: "Schmät - Skollie Afrikaans Band",
       template: `%s · ${site.name}`,
