@@ -1,8 +1,19 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import Home from "../app/page";
 import { site } from "../config/site";
+
+vi.mock("../components/HomeCarousel", () => ({
+  HomeCarousel: function HomeCarouselMock() {
+    return (
+      <div>
+        <h2>Merch</h2>
+        <h2>Shows</h2>
+      </div>
+    );
+  },
+}));
 
 describe("home", () => {
   it("renders the landing content", async () => {

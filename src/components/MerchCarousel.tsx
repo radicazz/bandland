@@ -14,10 +14,7 @@ type MerchCarouselProps = {
 };
 
 export function MerchCarousel({ items, labels }: MerchCarouselProps) {
-  const itemsWithImages = useMemo(
-    () => items.filter((item) => Boolean(item.imageUrl)),
-    [items],
-  );
+  const itemsWithImages = useMemo(() => items.filter((item) => Boolean(item.imageUrl)), [items]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
 
@@ -51,13 +48,9 @@ export function MerchCarousel({ items, labels }: MerchCarouselProps) {
     return () => window.clearInterval(interval);
   }, [itemsWithImages.length, reduceMotion]);
 
-  useEffect(() => {
-    if (activeIndex >= itemsWithImages.length) {
-      setActiveIndex(0);
-    }
-  }, [activeIndex, itemsWithImages.length]);
-
-  const activeItem = itemsWithImages[activeIndex];
+  const normalizedActiveIndex =
+    itemsWithImages.length > 0 ? activeIndex % itemsWithImages.length : 0;
+  const activeItem = itemsWithImages[normalizedActiveIndex];
   return (
     <Link
       href="/merch"
@@ -65,9 +58,7 @@ export function MerchCarousel({ items, labels }: MerchCarouselProps) {
       aria-label={labels.storeCta}
     >
       <article>
-        <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
-          {labels.storeLabel}
-        </p>
+        <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.storeLabel}</p>
         <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
           {activeItem?.name ?? labels.storeTitle}
         </h2>
@@ -77,9 +68,7 @@ export function MerchCarousel({ items, labels }: MerchCarouselProps) {
         <p className="mt-3 text-sm leading-6 text-text-muted">
           {activeItem?.description ?? labels.storeDescription}
         </p>
-        <p className="mt-4 text-xs uppercase tracking-[0.3em] text-text-dim">
-          {labels.storeCta}
-        </p>
+        <p className="mt-4 text-xs uppercase tracking-[0.3em] text-text-dim">{labels.storeCta}</p>
       </article>
     </Link>
   );
