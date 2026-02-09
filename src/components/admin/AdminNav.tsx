@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { signOut } from "@/auth";
 
 async function signOutAction() {
   "use server";
-  await signOut({ redirectTo: "/admin" });
+  await signOut({ redirect: false });
+  redirect("/admin");
 }
 
 export function AdminNav() {
