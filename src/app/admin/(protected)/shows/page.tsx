@@ -38,9 +38,20 @@ export default async function AdminShowsPage() {
             >
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <p className="break-words text-xs uppercase tracking-[0.3em] text-text-dim">
-                    {formatShowDate(show.date)}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      className={`inline-flex min-h-7 items-center rounded-full border px-2.5 text-[10px] font-semibold uppercase tracking-[0.22em] ${
+                        show.hasHappened
+                          ? "border-border/70 bg-surface/50 text-text-muted"
+                          : "border-highlight/40 bg-highlight/10 text-highlight"
+                      }`}
+                    >
+                      {show.hasHappened ? "Happened" : "Upcoming"}
+                    </span>
+                    <p className="break-words text-xs uppercase tracking-[0.3em] text-text-dim">
+                      {formatShowDate(show.date)}
+                    </p>
+                  </div>
                   <p className="mt-2 break-words text-base font-semibold text-text">{show.venue}</p>
                   <p className="break-words text-sm text-text-muted">{show.city}</p>
                   {show.price ? (

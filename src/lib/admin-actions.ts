@@ -19,6 +19,7 @@ import {
 
 const showInputSchema = z.object({
   date: z.string().datetime({ offset: true }),
+  hasHappened: z.boolean(),
   venue: z.string().min(1),
   city: z.string().min(1),
   price: z.string().min(1).optional(),
@@ -41,6 +42,10 @@ function normalizeInput(value: FormDataEntryValue | null) {
 function optionalInput(value: FormDataEntryValue | null) {
   const normalized = normalizeInput(value);
   return normalized.length > 0 ? normalized : undefined;
+}
+
+function booleanInput(value: FormDataEntryValue | null) {
+  return value !== null;
 }
 
 function formatZodErrors(error: z.ZodError) {
@@ -93,6 +98,7 @@ export async function createShowAction(
 
   const input = {
     date: normalizeInput(formData.get("date")),
+    hasHappened: booleanInput(formData.get("hasHappened")),
     venue: normalizeInput(formData.get("venue")),
     city: normalizeInput(formData.get("city")),
     price: optionalInput(formData.get("price")),
@@ -148,6 +154,7 @@ export async function updateShowAction(
 
   const input = {
     date: normalizeInput(formData.get("date")),
+    hasHappened: booleanInput(formData.get("hasHappened")),
     venue: normalizeInput(formData.get("venue")),
     city: normalizeInput(formData.get("city")),
     price: optionalInput(formData.get("price")),

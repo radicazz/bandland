@@ -2,6 +2,7 @@
   {
     "id": "70164137-f515-40b9-be69-d059f433bf21",
     "date": "2026-03-15T20:00:00+02:00",
+    "hasHappened": false,
     "venue": "The Waiting Room",
     "city": "Cape Town, WC",
     "price": "R200",

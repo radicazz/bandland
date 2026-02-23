@@ -3,6 +3,7 @@ import { z } from "zod";
 export const showSchema = z.object({
   id: z.string().uuid(),
   date: z.string().datetime({ offset: true }),
+  hasHappened: z.boolean(),
   venue: z.string().min(1),
   city: z.string().min(1),
   price: z.string().min(1).optional(),

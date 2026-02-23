@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useId, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { ContentImage } from "@/components/ContentImage";
@@ -54,6 +54,8 @@ function FieldError({ message }: { message: string | undefined }) {
 
 export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) {
   const [state, formAction] = useActionState(action, initialAdminFormState);
+  const hasHappenedId = useId();
+  const hasHappenedHintId = useId();
   const [imagePreview, setImagePreview] = useState(
     initialValues?.imageUrl ?? "",
   );
@@ -130,6 +132,34 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
         <p className="text-xs text-text-dim sm:col-span-2">
           Timezone: SAST (UTC+02:00)
         </p>
+      </fieldset>
+
+      <fieldset className="rounded-2xl border border-border/60 bg-bg/30 p-4 sm:p-5">
+        <legend className="px-1 text-xs uppercase tracking-[0.3em] text-text-dim">
+          Show Status
+        </legend>
+        <div className="mt-3 flex items-start gap-3">
+          <input
+            id={hasHappenedId}
+            name="hasHappened"
+            type="checkbox"
+            value="on"
+            defaultChecked={initialValues?.hasHappened ?? false}
+            aria-describedby={hasHappenedHintId}
+            className="mt-0.5 h-4 w-4 rounded border border-border/70 bg-bg/60 accent-[var(--highlight)]"
+          />
+          <div className="min-w-0">
+            <label
+              htmlFor={hasHappenedId}
+              className="block text-sm font-medium text-text"
+            >
+              Already happened
+            </label>
+            <p id={hasHappenedHintId} className="mt-1 text-xs text-text-muted">
+              Mark this if the show is completed, even if the date changes later.
+            </p>
+          </div>
+        </div>
       </fieldset>
 
       <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
