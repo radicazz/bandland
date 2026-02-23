@@ -31,57 +31,86 @@ export default async function AdminShowsPage() {
         </div>
       ) : (
         <ul className="mt-6 grid gap-4">
-          {shows.map((show) => (
-            <li
-              key={show.id}
-              className="rounded-2xl border border-border/70 bg-bg/60 p-4 sm:p-5"
-            >
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex min-h-7 items-center rounded-full border px-2.5 text-[10px] font-semibold uppercase tracking-[0.22em] ${
-                        show.hasHappened
-                          ? "border-border/70 bg-surface/50 text-text-muted"
-                          : "border-highlight/40 bg-highlight/10 text-highlight"
-                      }`}
-                    >
-                      {show.hasHappened ? "Happened" : "Upcoming"}
-                    </span>
-                    <p className="break-words text-xs uppercase tracking-[0.3em] text-text-dim">
-                      {formatShowDate(show.date)}
+          {shows.map((show) => {
+            const hasSplitPrice = Boolean(show.priceOnline || show.priceDoor);
+
+            return (
+              <li
+                key={show.id}
+                className="rounded-2xl border border-border/70 bg-bg/60 p-4 sm:p-5"
+              >
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`inline-flex min-h-7 items-center rounded-full border px-2.5 text-[10px] font-semibold uppercase tracking-[0.22em] ${
+                          show.hasHappened
+                            ? "border-border/70 bg-surface/50 text-text-muted"
+                            : "border-highlight/40 bg-highlight/10 text-highlight"
+                        }`}
+                      >
+                        {show.hasHappened ? "Happened" : "Upcoming"}
+                      </span>
+                      <p className="break-words text-xs uppercase tracking-[0.3em] text-text-dim">
+                        {formatShowDate(show.date)}
+                      </p>
+                    </div>
+                    <p className="mt-2 break-words text-base font-semibold text-text">
+                      {show.venue}
                     </p>
+                    <p className="break-words text-sm text-text-muted">{show.city}</p>
+                    {show.timeFrame ? (
+                      <p className="mt-2 break-words text-sm text-text-muted">
+                        Time frame: <span className="text-text">{show.timeFrame}</span>
+                      </p>
+                    ) : null}
+                    {hasSplitPrice ? (
+                      <div className="mt-2 grid gap-1 text-sm text-text">
+                        {show.priceOnline ? (
+                          <p className="break-words">
+                            <span className="text-text-muted">Online:</span>{" "}
+                            <span className="tabular-nums">{show.priceOnline}</span>
+                          </p>
+                        ) : null}
+                        {show.priceDoor ? (
+                          <p className="break-words">
+                            <span className="text-text-muted">Door:</span>{" "}
+                            <span className="tabular-nums">{show.priceDoor}</span>
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : show.price ? (
+                      <p className="mt-2 break-words text-sm tabular-nums text-text">
+                        {show.price}
+                      </p>
+                    ) : null}
                   </div>
-                  <p className="mt-2 break-words text-base font-semibold text-text">{show.venue}</p>
-                  <p className="break-words text-sm text-text-muted">{show.city}</p>
-                  {show.price ? (
-                    <p className="mt-2 break-words text-sm tabular-nums text-text">
-                      {show.price}
-                    </p>
-                  ) : null}
+                  <div className="grid w-full gap-3 sm:w-auto sm:grid-flow-col sm:auto-cols-max sm:items-center">
+                    <Link
+                      href={`/admin/shows/${show.id}`}
+                      className="btn-primary w-full sm:w-auto"
+                    >
+                      Edit
+                    </Link>
+                    <form action={deleteShowAction} className="w-full sm:w-auto">
+                      <input type="hidden" name="id" value={show.id} />
+                      <DeleteButton confirmMessage="Delete this show?" />
+                    </form>
+                  </div>
                 </div>
-                <div className="grid w-full gap-3 sm:w-auto sm:grid-flow-col sm:auto-cols-max sm:items-center">
-                  <Link href={`/admin/shows/${show.id}`} className="btn-primary w-full sm:w-auto">
-                    Edit
-                  </Link>
-                  <form action={deleteShowAction} className="w-full sm:w-auto">
-                    <input type="hidden" name="id" value={show.id} />
-                    <DeleteButton confirmMessage="Delete this show?" />
-                  </form>
-                </div>
-              </div>
-              {show.ticketUrl ? (
-                <a
-                  className="mt-4 inline-flex break-all text-xs uppercase tracking-[0.3em] text-highlight"
-                  href={show.ticketUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Ticket link
-                </a>
-              ) : null}
-            </li>
-          ))}
+                {show.ticketUrl ? (
+                  <a
+                    className="mt-4 inline-flex break-all text-xs uppercase tracking-[0.3em] text-highlight"
+                    href={show.ticketUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Ticket link
+                  </a>
+                ) : null}
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

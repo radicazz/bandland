@@ -14,9 +14,12 @@ const baseShow: Show = {
   id: "70164137-f515-40b9-be69-d059f433bf21",
   date: "2026-03-15T20:00:00+02:00",
   hasHappened: true,
+  timeFrame: "6pm - late",
   venue: "The Waiting Room",
   city: "Cape Town, WC",
   price: "R200",
+  priceOnline: "R180",
+  priceDoor: "R220",
   ticketUrl: "https://example.com/tickets/show-1",
   imageUrl: "https://example.com/images/shows/waiting-room.jpg",
   createdAt: "2026-01-21T00:00:00Z",
@@ -29,12 +32,19 @@ describe("ShowForm", () => {
 
     const checkbox = screen.getByRole("checkbox", { name: /already happened/i });
     expect(checkbox).not.toBeChecked();
+    expect(screen.getByLabelText(/time frame/i)).toHaveValue("");
+    expect(screen.getByLabelText(/online price/i)).toHaveValue("");
+    expect(screen.getByLabelText(/door price/i)).toHaveValue("");
   });
 
-  it("renders the has happened checkbox checked for existing shows when true", () => {
+  it("renders existing show status and pricing fields when editing", () => {
     render(<ShowForm action={noopAction} submitLabel="Save changes" initialValues={baseShow} />);
 
     const checkbox = screen.getByRole("checkbox", { name: /already happened/i });
     expect(checkbox).toBeChecked();
+    expect(screen.getByLabelText(/time frame/i)).toHaveValue("6pm - late");
+    expect(screen.getByLabelText(/online price/i)).toHaveValue("R180");
+    expect(screen.getByLabelText(/door price/i)).toHaveValue("R220");
+    expect(screen.getByLabelText(/general price/i)).toHaveValue("R200");
   });
 });

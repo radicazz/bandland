@@ -40,6 +40,11 @@ export function UpcomingShow({ shows, labels, locale }: UpcomingShowProps) {
             <p className="mt-2 break-words tabular-nums text-text">
               {formatShowDatePretty(upcoming.date, locale)}
             </p>
+            {upcoming.timeFrame ? (
+              <p className="mt-2 break-words text-text-muted">
+                {labels.timeFrameLabel}: <span className="text-text">{upcoming.timeFrame}</span>
+              </p>
+            ) : null}
             {upcoming.price ? (
               <p className="mt-2 break-words tabular-nums text-text">{upcoming.price}</p>
             ) : null}

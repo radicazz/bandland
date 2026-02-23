@@ -20,9 +20,12 @@ import {
 const showInputSchema = z.object({
   date: z.string().datetime({ offset: true }),
   hasHappened: z.boolean(),
+  timeFrame: z.string().min(1).optional(),
   venue: z.string().min(1),
   city: z.string().min(1),
   price: z.string().min(1).optional(),
+  priceOnline: z.string().min(1).optional(),
+  priceDoor: z.string().min(1).optional(),
   ticketUrl: z.string().url().optional(),
   imageUrl: z.string().url().optional(),
 });
@@ -99,9 +102,12 @@ export async function createShowAction(
   const input = {
     date: normalizeInput(formData.get("date")),
     hasHappened: booleanInput(formData.get("hasHappened")),
+    timeFrame: optionalInput(formData.get("timeFrame")),
     venue: normalizeInput(formData.get("venue")),
     city: normalizeInput(formData.get("city")),
     price: optionalInput(formData.get("price")),
+    priceOnline: optionalInput(formData.get("priceOnline")),
+    priceDoor: optionalInput(formData.get("priceDoor")),
     ticketUrl: optionalInput(formData.get("ticketUrl")),
     imageUrl: optionalInput(formData.get("imageUrl")),
   };
@@ -155,9 +161,12 @@ export async function updateShowAction(
   const input = {
     date: normalizeInput(formData.get("date")),
     hasHappened: booleanInput(formData.get("hasHappened")),
+    timeFrame: optionalInput(formData.get("timeFrame")),
     venue: normalizeInput(formData.get("venue")),
     city: normalizeInput(formData.get("city")),
     price: optionalInput(formData.get("price")),
+    priceOnline: optionalInput(formData.get("priceOnline")),
+    priceDoor: optionalInput(formData.get("priceDoor")),
     ticketUrl: optionalInput(formData.get("ticketUrl")),
     imageUrl: optionalInput(formData.get("imageUrl")),
   };

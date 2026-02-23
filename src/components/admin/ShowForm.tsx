@@ -189,7 +189,57 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
       </label>
 
       <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
-        Price (optional)
+        Time Frame (optional)
+        <input
+          name="timeFrame"
+          defaultValue={initialValues?.timeFrame ?? ""}
+          className={`${inputBase} ${state.fieldErrors?.timeFrame ? "border-highlight/70" : "border-border/70"}`}
+          placeholder="6pm - late or 6pm - 8pm"
+          aria-invalid={Boolean(state.fieldErrors?.timeFrame)}
+        />
+        <FieldError message={state.fieldErrors?.timeFrame} />
+        <p className="mt-2 text-xs text-text-dim">
+          Freeform display text for the event window or running time.
+        </p>
+      </label>
+
+      <fieldset className="grid gap-4 rounded-2xl border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
+        <legend className="px-1 text-xs uppercase tracking-[0.3em] text-text-dim">
+          Ticket Pricing
+        </legend>
+
+        <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+          Online Price (optional)
+          <input
+            name="priceOnline"
+            defaultValue={initialValues?.priceOnline ?? ""}
+            className={`${inputBase} ${state.fieldErrors?.priceOnline ? "border-highlight/70" : "border-border/70"} tabular-nums`}
+            placeholder="R180 pre-sale"
+            aria-invalid={Boolean(state.fieldErrors?.priceOnline)}
+          />
+          <FieldError message={state.fieldErrors?.priceOnline} />
+        </label>
+
+        <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+          Door Price (optional)
+          <input
+            name="priceDoor"
+            defaultValue={initialValues?.priceDoor ?? ""}
+            className={`${inputBase} ${state.fieldErrors?.priceDoor ? "border-highlight/70" : "border-border/70"} tabular-nums`}
+            placeholder="R220 at the door"
+            aria-invalid={Boolean(state.fieldErrors?.priceDoor)}
+          />
+          <FieldError message={state.fieldErrors?.priceDoor} />
+        </label>
+
+        <p className="text-xs text-text-dim sm:col-span-2">
+          Split prices will display with icons on the public shows page. If these are empty,
+          the general price below is used as a fallback.
+        </p>
+      </fieldset>
+
+      <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+        General Price (optional fallback)
         <input
           name="price"
           defaultValue={initialValues?.price ?? ""}

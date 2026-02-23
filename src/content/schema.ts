@@ -14,9 +14,12 @@ export const showSchema = z
     date: z.string().datetime({ offset: true }),
     // Backward-compatible for older prod content files; missing values are auto-derived.
     hasHappened: z.boolean().optional(),
+    timeFrame: z.string().min(1).optional(),
     venue: z.string().min(1),
     city: z.string().min(1),
     price: z.string().min(1).optional(),
+    priceOnline: z.string().min(1).optional(),
+    priceDoor: z.string().min(1).optional(),
     ticketUrl: z.string().url().optional(),
     imageUrl: z.string().url().optional(),
     createdAt: z.string().datetime({ offset: true }),

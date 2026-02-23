@@ -37,6 +37,7 @@ export type Translations = {
     liveTitle: string;
     liveDescription: string;
     liveCta: string;
+    timeFrameLabel: string;
   };
   shows: {
     label: string;
@@ -45,6 +46,13 @@ export type Translations = {
     introSuffix: string;
     empty: string;
     tickets: string;
+    timeFrameLabel: string;
+    ticketPriceGuideTitle: string;
+    ticketPriceGuideOnline: string;
+    ticketPriceGuideDoor: string;
+    ticketPriceGuideFallbackNote: string;
+    onlinePriceLabel: string;
+    doorPriceLabel: string;
   };
   merch: {
     label: string;
@@ -102,6 +110,7 @@ export const translations: Record<Locale, Translations> = {
       liveTitle: "Shows",
       liveDescription: "Upcoming dates, tickets, and venue details.",
       liveCta: "View shows",
+      timeFrameLabel: "Time frame",
     },
     shows: {
       label: "Live",
@@ -110,6 +119,14 @@ export const translations: Record<Locale, Translations> = {
       introSuffix: "",
       empty: "No dates announced yet.",
       tickets: "Tickets",
+      timeFrameLabel: "Time frame",
+      ticketPriceGuideTitle: "Ticket Price Guide",
+      ticketPriceGuideOnline: "Online price",
+      ticketPriceGuideDoor: "At-door price",
+      ticketPriceGuideFallbackNote:
+        "Shows may list one or both prices. If only a general price is available, it is shown without icons.",
+      onlinePriceLabel: "Online",
+      doorPriceLabel: "Door",
     },
     merch: {
       label: "Store",
@@ -165,6 +182,7 @@ export const translations: Record<Locale, Translations> = {
       liveTitle: "Vertonings",
       liveDescription: "Komende datums, kaartjies en lokaalbesonderhede.",
       liveCta: "Sien vertonings",
+      timeFrameLabel: "Tydgleuf",
     },
     shows: {
       label: "Live",
@@ -173,6 +191,14 @@ export const translations: Record<Locale, Translations> = {
       introSuffix: "",
       empty: "Nog geen datums aangekondig nie.",
       tickets: "Kaartjies",
+      timeFrameLabel: "Tydgleuf",
+      ticketPriceGuideTitle: "Kaartjieprysgids",
+      ticketPriceGuideOnline: "Aanlyn prys",
+      ticketPriceGuideDoor: "By-die-deur prys",
+      ticketPriceGuideFallbackNote:
+        "Vertonings kan een of albei pryse wys. As net 'n algemene prys beskikbaar is, word dit sonder ikone gewys.",
+      onlinePriceLabel: "Aanlyn",
+      doorPriceLabel: "Deur",
     },
     merch: {
       label: "Winkel",
