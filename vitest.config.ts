@@ -13,6 +13,12 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
-    exclude: ["**/node_modules/**", "**/.pnpm-store/**", "**/dist/**"],
+    exclude: [
+      "**/node_modules/**",
+      "**/.pnpm-store/**",
+      "**/dist/**",
+      "**/.next/**",
+      "**/coverage/**",
+    ],
   },
 });

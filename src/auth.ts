@@ -62,10 +62,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new AdminSignInError("missing_hash");
         }
 
-        console.log("[Auth] Hash loaded, length:", passwordHash.length);
-        console.log("[Auth] Hash first 20:", passwordHash.substring(0, 20));
-        console.log("[Auth] Hash last 20:", passwordHash.substring(passwordHash.length - 20));
-
         const headers = request?.headers ?? new Headers();
         const ip = getClientIp(headers);
         const { allowed } = loginLimiter.check(ip);
@@ -80,9 +76,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           throw new AdminSignInError("missing_password");
         }
 
-        console.log("[Auth] Comparing password, input length:", normalizedPassword.length);
         const isValid = await bcrypt.compare(normalizedPassword, passwordHash);
-        console.log("[Auth] Password valid:", isValid);
 
         if (!isValid) {
           throw new AdminSignInError("invalid_password");
