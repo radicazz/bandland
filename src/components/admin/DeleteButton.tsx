@@ -16,7 +16,7 @@ export function DeleteButton({
   return (
     <button
       type="submit"
-      className="btn-primary"
+      className="btn-primary w-full sm:w-auto"
       onClick={(event) => {
         if (!confirm(confirmMessage)) {
           event.preventDefault();

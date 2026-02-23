@@ -97,7 +97,7 @@ export default async function RootLayout({
           <main id="content" className="flex-1">
             {children}
           </main>
-          <SiteFooter />
+          <SiteFooter tagline={labels.footer.tagline} />
         </div>
       </body>
     </html>

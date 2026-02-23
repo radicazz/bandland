@@ -38,14 +38,14 @@ export default async function Home() {
   const slides = await getSlides();
   const slideCount = Math.max(slides.length, 1);
   const totalDurationSeconds = slideCount * slideIntervalSeconds;
-  
+
   // Determine which animation to use based on slide count
   const getAnimationName = (slideCount: number) => {
-    if (slideCount === 1) return 'hero-fade-1';
-    if (slideCount === 2) return 'hero-fade-2';
-    return 'hero-fade-3';
+    if (slideCount === 1) return "hero-fade-1";
+    if (slideCount === 2) return "hero-fade-2";
+    return "hero-fade-3";
   };
-  
+
   const animationName = getAnimationName(slideCount);
 
   return (
@@ -59,8 +59,8 @@ export default async function Home() {
               animationName,
               animationDelay: `${index * slideIntervalSeconds}s`,
               animationDuration: `${totalDurationSeconds}s`,
-              animationTimingFunction: 'ease-in-out',
-              animationIterationCount: 'infinite',
+              animationTimingFunction: "ease-in-out",
+              animationIterationCount: "infinite",
             }}
           >
             <Image
@@ -79,7 +79,7 @@ export default async function Home() {
         <div className="absolute inset-0 hero-grain" />
       </div>
 
-      <Container className="relative flex items-start justify-center py-16">
+      <Container className="relative flex items-center justify-center py-10 sm:items-start sm:py-14 lg:py-16">
         <h1 className="sr-only">{site.name}</h1>
         <HomeCarousel labels={labels.home} locale={locale} />
       </Container>

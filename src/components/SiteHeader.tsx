@@ -106,11 +106,23 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
     };
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isMenuOpen]);
+
   return (
     <header className="sticky top-0 z-30 border-b border-border/40 bg-bg/50 backdrop-blur-md">
-      <Container className="relative flex h-16 items-center">
-        <div className="order-1 flex items-center gap-4 sm:order-none">
-          <div className="relative" ref={menuRef}>
+      <Container className="relative">
+        <div className="grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 sm:grid-cols-[auto_1fr_auto] sm:py-0">
+          <div className="relative min-w-0" ref={menuRef}>
             <button
               type="button"
               aria-expanded={isMenuOpen}
@@ -118,7 +130,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               aria-haspopup="menu"
               id={menuButtonId}
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="flex min-h-11 items-center gap-2 px-2 text-lg font-brand tracking-[0.18em] text-text transition-colors hover:text-highlight focus-visible:text-highlight"
+              className="flex min-h-11 max-w-full items-center gap-2 rounded-full px-2 text-left text-base font-brand tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight sm:text-lg sm:tracking-[0.18em]"
             >
               <Image
                 src="/logos/schmat-rat.png"
@@ -127,7 +139,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                 height={28}
                 className="h-7 w-7"
               />
-              {site.name}
+              <span className="truncate">{site.name}</span>
               <svg
                 viewBox="0 0 24 24"
                 aria-hidden="true"
@@ -140,7 +152,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
             </button>
             <div
               id={menuId}
-              className={`fixed left-0 right-0 top-16 z-20 w-full px-4 pt-4 transition duration-200 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-64 sm:px-0 sm:pt-3 ${
+              className={`fixed inset-x-0 top-16 z-20 w-full px-4 pt-3 transition duration-200 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-72 sm:px-0 sm:pt-3 ${
                 isMenuOpen
                   ? "pointer-events-auto translate-y-0 opacity-100"
                   : "pointer-events-none translate-y-2 opacity-0"
@@ -149,7 +161,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               <nav
                 aria-label={labels.nav.explore}
                 aria-hidden={!isMenuOpen}
-                className="rounded-2xl border border-border/70 bg-surface/90 p-5 sm:menu-scroll sm:max-h-[60vh] sm:overflow-y-auto sm:p-4"
+                className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4 sm:max-h-[60vh]"
               >
                 <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
                   {labels.nav.explore}
@@ -230,57 +242,59 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               </nav>
             </div>
           </div>
-        </div>
-        <div className="order-2 ml-auto hidden items-center sm:order-none sm:flex">
-          <ul className="flex items-center gap-2 text-text-dim">
-            {socialLinks.map((social) => {
-              const Icon = socialIcons[social.label as keyof typeof socialIcons];
-              return (
-                <li key={social.label}>
-                  <a
-                    href={social.href ?? undefined}
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-border/70 bg-surface/30 transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={social.label}
-                  >
-                    <Icon className="h-4 w-4" aria-hidden="true" />
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-        <div className="order-3 ml-auto sm:absolute sm:left-1/2 sm:top-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:ml-0 sm:order-none">
-          <div
-            role="group"
-            aria-label={labels.nav.language}
-            className="flex shrink-0 items-center gap-1 rounded-full border border-border/70 bg-surface/60 p-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-text-dim"
-          >
-            <button
-              type="button"
-              aria-pressed={locale === "en"}
-              onClick={() => setLocale("en")}
-              className={`rounded-full px-2 py-1 transition-colors ${
-                locale === "en"
-                  ? "bg-highlight/20 text-highlight"
-                  : "text-text-dim hover:text-highlight focus-visible:text-highlight"
-              }`}
-            >
-              ENG
-            </button>
-            <button
-              type="button"
-              aria-pressed={locale === "af"}
-              onClick={() => setLocale("af")}
-              className={`rounded-full px-2 py-1 transition-colors ${
-                locale === "af"
-                  ? "bg-highlight/20 text-highlight"
-                  : "text-text-dim hover:text-highlight focus-visible:text-highlight"
-              }`}
-            >
-              AFR
-            </button>
+          <div className="justify-self-end sm:col-start-3 sm:row-start-1">
+            <div className="flex items-center gap-2">
+              <div
+                role="group"
+                aria-label={labels.nav.language}
+                className="flex shrink-0 items-center gap-1 rounded-full border border-border/70 bg-surface/60 p-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-text-dim"
+              >
+                <button
+                  type="button"
+                  aria-pressed={locale === "en"}
+                  onClick={() => setLocale("en")}
+                  className={`min-h-8 rounded-full px-2.5 py-1 transition-colors ${
+                    locale === "en"
+                      ? "bg-highlight/20 text-highlight"
+                      : "text-text-dim hover:text-highlight focus-visible:text-highlight"
+                  }`}
+                >
+                  ENG
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={locale === "af"}
+                  onClick={() => setLocale("af")}
+                  className={`min-h-8 rounded-full px-2.5 py-1 transition-colors ${
+                    locale === "af"
+                      ? "bg-highlight/20 text-highlight"
+                      : "text-text-dim hover:text-highlight focus-visible:text-highlight"
+                  }`}
+                >
+                  AFR
+                </button>
+              </div>
+              {socialLinks.length ? (
+                <ul className="hidden items-center gap-2 text-text-dim sm:flex">
+                  {socialLinks.map((social) => {
+                    const Icon = socialIcons[social.label as keyof typeof socialIcons];
+                    return (
+                      <li key={social.label}>
+                        <a
+                          href={social.href ?? undefined}
+                          className="flex h-10 w-10 items-center justify-center rounded-full border border-border/70 bg-surface/30 transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={social.label}
+                        >
+                          <Icon className="h-4 w-4" aria-hidden="true" />
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : null}
+            </div>
           </div>
         </div>
       </Container>

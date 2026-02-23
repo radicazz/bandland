@@ -17,7 +17,7 @@ export default async function AdminDashboardPage() {
         ].map((card) => (
           <div
             key={card.label}
-            className="rounded-2xl border border-border/70 bg-surface/70 p-6"
+            className="rounded-2xl border border-border/70 bg-surface/70 p-4 sm:p-6"
           >
             <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
               {card.label}
@@ -28,7 +28,7 @@ export default async function AdminDashboardPage() {
         ))}
       </section>
 
-      <section className="rounded-2xl border border-border/70 bg-surface/70 p-6">
+      <section className="rounded-2xl border border-border/70 bg-surface/70 p-4 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-text">Recent activity</h2>
           <p className="text-xs uppercase tracking-[0.3em] text-text-dim">Audit log</p>
@@ -43,10 +43,10 @@ export default async function AdminDashboardPage() {
                   <p className="text-xs uppercase tracking-[0.3em] text-text-dim">
                     {entry.action} {entry.entity}
                   </p>
-                  <p className="mt-2 text-sm text-text">
+                  <p className="mt-2 break-all text-sm text-text">
                     {entry.entityId}
                   </p>
-                  <p className="mt-2 text-xs tabular-nums text-text-muted">
+                  <p className="mt-2 break-all text-xs tabular-nums text-text-muted">
                     {entry.createdAt}
                   </p>
                 </li>

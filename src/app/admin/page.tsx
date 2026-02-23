@@ -69,8 +69,8 @@ export default async function AdminLoginPage({ searchParams }: AdminPageProps) {
                         ? "Unable to sign in. Please try again."
                         : null;
   return (
-    <Container className="flex min-h-[calc(100dvh-4rem)] items-center justify-center py-16">
-      <div className="w-full max-w-md rounded-2xl border border-border/70 bg-surface/70 p-8">
+    <Container className="flex min-h-[calc(100dvh-4rem)] items-center justify-center py-10 sm:py-16">
+      <div className="w-full max-w-md rounded-2xl border border-border/70 bg-surface/70 p-5 sm:p-8">
         <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">Admin</p>
         <h1 className="mt-3 text-2xl font-semibold text-text">Access panel</h1>
         <p className="mt-2 text-sm text-text-muted">

@@ -12,7 +12,7 @@ export default async function AdminShowsPage() {
   const formatShowDate = (value: string) => formatShowDatePretty(value, locale);
 
   return (
-    <section className="rounded-2xl border border-border/70 bg-surface/70 p-6">
+    <section className="rounded-2xl border border-border/70 bg-surface/70 p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-text">Shows</h2>
@@ -20,7 +20,7 @@ export default async function AdminShowsPage() {
             Manage upcoming and past shows.
           </p>
         </div>
-        <Link href="/admin/shows/new" className="btn-primary">
+        <Link href="/admin/shows/new" className="btn-primary w-full sm:w-auto">
           New show
         </Link>
       </div>
@@ -34,26 +34,26 @@ export default async function AdminShowsPage() {
           {shows.map((show) => (
             <li
               key={show.id}
-              className="rounded-2xl border border-border/70 bg-bg/60 p-5"
+              className="rounded-2xl border border-border/70 bg-bg/60 p-4 sm:p-5"
             >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-text-dim">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="break-words text-xs uppercase tracking-[0.3em] text-text-dim">
                     {formatShowDate(show.date)}
                   </p>
-                  <p className="mt-2 text-base font-semibold text-text">{show.venue}</p>
-                  <p className="text-sm text-text-muted">{show.city}</p>
+                  <p className="mt-2 break-words text-base font-semibold text-text">{show.venue}</p>
+                  <p className="break-words text-sm text-text-muted">{show.city}</p>
                   {show.price ? (
-                    <p className="mt-2 text-sm tabular-nums text-text">
+                    <p className="mt-2 break-words text-sm tabular-nums text-text">
                       {show.price}
                     </p>
                   ) : null}
                 </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <Link href={`/admin/shows/${show.id}`} className="btn-primary">
+                <div className="grid w-full gap-3 sm:w-auto sm:grid-flow-col sm:auto-cols-max sm:items-center">
+                  <Link href={`/admin/shows/${show.id}`} className="btn-primary w-full sm:w-auto">
                     Edit
                   </Link>
-                  <form action={deleteShowAction}>
+                  <form action={deleteShowAction} className="w-full sm:w-auto">
                     <input type="hidden" name="id" value={show.id} />
                     <DeleteButton confirmMessage="Delete this show?" />
                   </form>
@@ -61,7 +61,7 @@ export default async function AdminShowsPage() {
               </div>
               {show.ticketUrl ? (
                 <a
-                  className="mt-4 inline-flex text-xs uppercase tracking-[0.3em] text-highlight"
+                  className="mt-4 inline-flex break-all text-xs uppercase tracking-[0.3em] text-highlight"
                   href={show.ticketUrl}
                   target="_blank"
                   rel="noreferrer"

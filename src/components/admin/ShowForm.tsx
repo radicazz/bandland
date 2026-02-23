@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { ContentImage } from "@/components/ContentImage";
 import type { Show } from "@/content/schema";
 import {
   initialAdminFormState,
@@ -30,7 +31,11 @@ function combineDateTime(date: string, time: string): string {
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className="btn-primary min-w-[10rem]" disabled={pending}>
+    <button
+      type="submit"
+      className="btn-primary min-w-[10rem] w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-70"
+      disabled={pending}
+    >
       {pending ? "Saving..." : label}
     </button>
   );
@@ -58,7 +63,7 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
     : { date: "", time: "" };
 
   const inputBase =
-    "mt-2 w-full rounded-xl border bg-bg/60 px-4 py-3 text-sm text-text placeholder:text-text-dim";
+    "mt-2 min-h-11 w-full rounded-xl border bg-bg/60 px-4 py-3 text-sm text-text placeholder:text-text-dim";
 
   const handleFormAction = (formData: FormData) => {
     const date = formData.get("showDate") as string;
@@ -76,7 +81,7 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
   };
 
   return (
-    <form action={handleFormAction} className="mt-6 grid gap-6">
+    <form action={handleFormAction} className="mt-6 grid gap-5 sm:gap-6">
       {state.message ? (
         <p className="rounded-xl border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight">
           {state.message}
@@ -87,8 +92,8 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
         <input type="hidden" name="id" value={initialValues.id} />
       ) : null}
 
-      <fieldset className="grid gap-4 sm:grid-cols-2">
-        <legend className="text-xs uppercase tracking-[0.3em] text-text-dim mb-2">
+      <fieldset className="grid gap-4 rounded-2xl border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
+        <legend className="mb-2 px-1 text-xs uppercase tracking-[0.3em] text-text-dim">
           Show Date & Time
         </legend>
 
@@ -169,6 +174,9 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
         Ticket URL (optional)
         <input
           name="ticketUrl"
+          type="url"
+          inputMode="url"
+          spellCheck={false}
           defaultValue={initialValues?.ticketUrl ?? ""}
           className={`${inputBase} ${state.fieldErrors?.ticketUrl ? "border-highlight/70" : "border-border/70"}`}
           placeholder="https://tickets.example.com/show"
@@ -181,6 +189,9 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
         Image URL (optional)
         <input
           name="imageUrl"
+          type="url"
+          inputMode="url"
+          spellCheck={false}
           value={imagePreview}
           onChange={(event) => setImagePreview(event.target.value)}
           className={`${inputBase} ${state.fieldErrors?.imageUrl ? "border-highlight/70" : "border-border/70"}`}
@@ -190,10 +201,12 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
         <FieldError message={state.fieldErrors?.imageUrl} />
         {imagePreview ? (
           <div className="mt-3 overflow-hidden rounded-xl border border-border/70 bg-bg/60">
-            <img
+            <ContentImage
               src={imagePreview}
               alt="Show preview"
-              className="h-40 w-full object-cover"
+              className="h-36 w-full object-cover sm:h-40"
+              fallbackClassName="flex h-36 w-full items-center justify-center bg-surface/50 sm:h-40"
+              fallbackLabel="Show image preview"
               loading="lazy"
               decoding="async"
             />

@@ -27,25 +27,25 @@ export function UpcomingShow({ shows, labels, locale }: UpcomingShowProps) {
       className="card-interactive block rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
       aria-label={labels.liveCta}
     >
-      <article>
+      <article className="min-w-0">
         <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
           {labels.liveLabel}
         </p>
-        <h2 className="mt-4 text-2xl font-brand uppercase tracking-[0.16em] text-highlight">
+        <h2 className="mt-4 break-words text-2xl font-brand uppercase tracking-[0.12em] text-highlight sm:tracking-[0.16em]">
           {upcoming?.venue ?? labels.liveTitle}
         </h2>
         {upcoming ? (
           <div className="mt-3 text-sm text-text-muted">
-            <p>{upcoming.city}</p>
-            <p className="mt-2 tabular-nums text-text">
+            <p className="break-words">{upcoming.city}</p>
+            <p className="mt-2 break-words tabular-nums text-text">
               {formatShowDatePretty(upcoming.date, locale)}
             </p>
             {upcoming.price ? (
-              <p className="mt-2 tabular-nums text-text">{upcoming.price}</p>
+              <p className="mt-2 break-words tabular-nums text-text">{upcoming.price}</p>
             ) : null}
           </div>
         ) : (
-          <p className="mt-3 text-sm leading-6 text-text-muted">
+          <p className="mt-3 break-words text-sm leading-6 text-text-muted">
             {labels.liveDescription}
           </p>
         )}

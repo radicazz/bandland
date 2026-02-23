@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 
+import { ContentImage } from "@/components/ContentImage";
 import type { MerchItem } from "@/content/schema";
 import {
   initialAdminFormState,
@@ -18,7 +19,11 @@ type MerchFormProps = {
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className="btn-primary min-w-[10rem]" disabled={pending}>
+    <button
+      type="submit"
+      className="btn-primary min-w-[10rem] w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-70"
+      disabled={pending}
+    >
       {pending ? "Saving..." : label}
     </button>
   );
@@ -42,10 +47,10 @@ export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps
   );
 
   const inputBase =
-    "mt-2 w-full rounded-xl border bg-bg/60 px-4 py-3 text-sm text-text placeholder:text-text-dim";
+    "mt-2 min-h-11 w-full rounded-xl border bg-bg/60 px-4 py-3 text-sm text-text placeholder:text-text-dim";
 
   return (
-    <form action={formAction} className="mt-6 grid gap-6">
+    <form action={formAction} className="mt-6 grid gap-5 sm:gap-6">
       {state.message ? (
         <p className="rounded-xl border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight">
           {state.message}
@@ -75,7 +80,7 @@ export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps
           name="description"
           rows={3}
           defaultValue={initialValues?.description ?? ""}
-          className={`${inputBase} ${state.fieldErrors?.description ? "border-highlight/70" : "border-border/70"} resize-none`}
+          className={`${inputBase} ${state.fieldErrors?.description ? "border-highlight/70" : "border-border/70"} min-h-28 resize-y`}
           placeholder="Short copy for the merch detail."
           aria-invalid={Boolean(state.fieldErrors?.description)}
         />
@@ -99,6 +104,9 @@ export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps
         Link URL
         <input
           name="href"
+          type="url"
+          inputMode="url"
+          spellCheck={false}
           required
           defaultValue={initialValues?.href ?? ""}
           className={`${inputBase} ${state.fieldErrors?.href ? "border-highlight/70" : "border-border/70"}`}
@@ -112,6 +120,9 @@ export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps
         Image URL (optional)
         <input
           name="imageUrl"
+          type="url"
+          inputMode="url"
+          spellCheck={false}
           value={imagePreview}
           onChange={(event) => setImagePreview(event.target.value)}
           className={`${inputBase} ${state.fieldErrors?.imageUrl ? "border-highlight/70" : "border-border/70"}`}
@@ -121,10 +132,12 @@ export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps
         <FieldError message={state.fieldErrors?.imageUrl} />
         {imagePreview ? (
           <div className="mt-3 overflow-hidden rounded-xl border border-border/70 bg-bg/60">
-            <img
+            <ContentImage
               src={imagePreview}
               alt="Merch preview"
-              className="h-40 w-full object-cover"
+              className="h-36 w-full object-cover sm:h-40"
+              fallbackClassName="flex h-36 w-full items-center justify-center bg-surface/50 sm:h-40"
+              fallbackLabel="Merch image preview"
               loading="lazy"
               decoding="async"
             />

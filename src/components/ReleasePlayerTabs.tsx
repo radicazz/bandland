@@ -36,7 +36,7 @@ export function ReleasePlayerTabs({
       key: "spotify" as const,
       label: labels.playerSpotifyLabel,
       src: spotifyUrl,
-      heightClass: "h-20 sm:h-[152px]",
+      heightClass: "h-[152px]",
       allow: "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
     },
     {
@@ -55,7 +55,7 @@ export function ReleasePlayerTabs({
       <div
         role="tablist"
         aria-label={labels.playerTabsLabel}
-        className="flex w-full flex-wrap gap-2 rounded-full border border-border/70 bg-surface/60 p-1"
+        className="flex w-full flex-wrap gap-2 rounded-2xl border border-border/70 bg-surface/60 p-1 sm:rounded-full"
       >
         {tabs.map((tab) => {
           const isActive = active === tab.key;
@@ -73,13 +73,13 @@ export function ReleasePlayerTabs({
               onClick={() => setActive(tab.key)}
               onMouseEnter={() => setPrefetchInactive(true)}
               onFocus={() => setPrefetchInactive(true)}
-              className={`flex-1 rounded-full px-4 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.35em] transition-colors ${
+              className={`min-h-11 min-w-0 flex-1 rounded-xl px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] transition-colors sm:rounded-full sm:px-4 sm:tracking-[0.35em] ${
                 isActive
                   ? "bg-highlight/15 text-highlight"
                   : "text-text-muted hover:text-text"
               }`}
             >
-              {tab.label}
+              <span className="block truncate sm:whitespace-nowrap">{tab.label}</span>
             </button>
           );
         })}
@@ -108,10 +108,13 @@ export function ReleasePlayerTabs({
                   width="100%"
                   allow={tab.allow}
                   sandbox={tab.sandbox}
-                  loading="eager"
+                  loading={isActive ? "eager" : "lazy"}
+                  referrerPolicy="strict-origin-when-cross-origin"
                   className={`block w-full ${tab.heightClass}`}
                 />
-              ) : null}
+              ) : (
+                <div className={`${tab.heightClass} w-full animate-pulse bg-surface/40`} />
+              )}
             </div>
           </div>
         );
