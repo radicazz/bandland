@@ -1,17 +1,31 @@
 import { z } from "zod";
 
-export const showSchema = z.object({
-  id: z.string().uuid(),
-  date: z.string().datetime({ offset: true }),
-  hasHappened: z.boolean(),
-  venue: z.string().min(1),
-  city: z.string().min(1),
-  price: z.string().min(1).optional(),
-  ticketUrl: z.string().url().optional(),
-  imageUrl: z.string().url().optional(),
-  createdAt: z.string().datetime({ offset: true }),
-  updatedAt: z.string().datetime({ offset: true }),
-});
+function deriveHasHappenedFromDate(date: string) {
+  const parsed = Date.parse(date);
+  if (Number.isNaN(parsed)) {
+    return false;
+  }
+  return parsed < Date.now();
+}
+
+export const showSchema = z
+  .object({
+    id: z.string().uuid(),
+    date: z.string().datetime({ offset: true }),
+    // Backward-compatible for older prod content files; missing values are auto-derived.
+    hasHappened: z.boolean().optional(),
+    venue: z.string().min(1),
+    city: z.string().min(1),
+    price: z.string().min(1).optional(),
+    ticketUrl: z.string().url().optional(),
+    imageUrl: z.string().url().optional(),
+    createdAt: z.string().datetime({ offset: true }),
+    updatedAt: z.string().datetime({ offset: true }),
+  })
+  .transform((show) => ({
+    ...show,
+    hasHappened: show.hasHappened ?? deriveHasHappenedFromDate(show.date),
+  }));
 
 export type Show = z.infer<typeof showSchema>;
 
