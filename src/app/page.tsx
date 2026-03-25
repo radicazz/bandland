@@ -81,7 +81,7 @@ export default async function Home() {
 
       <Container className="relative flex items-center justify-center py-10 sm:items-start sm:py-14 lg:py-16">
         <h1 className="sr-only">{site.name}</h1>
-        <HomeCarousel labels={labels.home} locale={locale} />
+        <HomeCarousel labels={labels} locale={locale} />
       </Container>
     </section>
   );

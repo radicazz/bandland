@@ -23,9 +23,16 @@ export type Translations = {
   };
   home: {
     pinned: string;
+    releaseLabel: string;
     latestReleaseTitle: string;
     latestReleaseDescription: string;
     latestReleaseCta: string;
+    nextShowLabel: string;
+    nextShowFallbackTitle: string;
+    nextShowFallbackDescription: string;
+    ticketsCta: string;
+    allShowsCta: string;
+    upcomingListTitle: string;
     playerTabsLabel: string;
     playerSpotifyLabel: string;
     playerAppleLabel: string;
@@ -98,9 +105,16 @@ export const translations: Record<Locale, Translations> = {
     },
     home: {
       pinned: "Pinned",
+      releaseLabel: "Release",
       latestReleaseTitle: "Newest release",
       latestReleaseDescription: "Listen to the newest drop.",
       latestReleaseCta: "Listen",
+      nextShowLabel: "Next show",
+      nextShowFallbackTitle: "No upcoming shows",
+      nextShowFallbackDescription: "Nothing is locked in yet. Check the full schedule for past dates and new announcements.",
+      ticketsCta: "Tickets",
+      allShowsCta: "All shows",
+      upcomingListTitle: "More dates",
       playerTabsLabel: "Player selection",
       playerSpotifyLabel: "Spotify",
       playerAppleLabel: "Apple Music",
@@ -172,9 +186,16 @@ export const translations: Record<Locale, Translations> = {
     },
     home: {
       pinned: "Vasgepen",
+      releaseLabel: "Vrystelling",
       latestReleaseTitle: "Nuutste vrystelling",
       latestReleaseDescription: "Luister na die nuutste vrystelling.",
       latestReleaseCta: "Luister",
+      nextShowLabel: "Volgende vertoning",
+      nextShowFallbackTitle: "Geen komende vertonings",
+      nextShowFallbackDescription: "Niks is nog vas nie. Kyk na die volle rooster vir vorige datums en nuwe aankondigings.",
+      ticketsCta: "Kaartjies",
+      allShowsCta: "Alle vertonings",
+      upcomingListTitle: "Meer datums",
       playerTabsLabel: "Spelerkeuse",
       playerSpotifyLabel: "Spotify",
       playerAppleLabel: "Apple Music",
