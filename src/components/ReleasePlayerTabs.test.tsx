@@ -1,5 +1,5 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReleasePlayerTabs } from "./ReleasePlayerTabs";
 import { translations } from "@/i18n/translations";
@@ -8,16 +8,24 @@ afterEach(() => {
   cleanup();
 });
 
+beforeEach(() => {
+  vi.useFakeTimers();
+});
+
 describe("ReleasePlayerTabs", () => {
   const labels = {
     playerTabsLabel: translations.en.home.playerTabsLabel,
     playerSpotifyLabel: translations.en.home.playerSpotifyLabel,
     playerAppleLabel: translations.en.home.playerAppleLabel,
-    playerLoadLabel: translations.en.home.playerLoadLabel,
     playerFallbackHint: translations.en.home.playerFallbackHint,
   };
 
-  it("switches tabs and keeps hidden panel semantics", () => {
+  afterEach(() => {
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
+  });
+
+  it("loads the active player immediately and keeps hidden panel semantics", () => {
     render(
       <ReleasePlayerTabs
         title="Test Release"
@@ -32,14 +40,13 @@ describe("ReleasePlayerTabs", () => {
 
     expect(spotifyTab).toHaveAttribute("aria-selected", "true");
     expect(appleTab).toHaveAttribute("aria-selected", "false");
-    expect(screen.getByRole("button", { name: /load player spotify/i })).toBeInTheDocument();
+    expect(screen.getByTitle(/spotify player/i)).toBeInTheDocument();
     expect(screen.queryByTitle(/apple music player/i)).not.toBeInTheDocument();
 
     fireEvent.click(appleTab);
 
     expect(spotifyTab).toHaveAttribute("aria-selected", "false");
     expect(appleTab).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("button", { name: /load player apple music/i })).toBeInTheDocument();
   });
 
   it("supports arrow-key navigation between tabs", () => {
@@ -64,7 +71,7 @@ describe("ReleasePlayerTabs", () => {
     expect(appleTab).toHaveAttribute("tabindex", "0");
   });
 
-  it("loads the selected iframe on demand", () => {
+  it("preloads the inactive player shortly after mount", () => {
     render(
       <ReleasePlayerTabs
         title="Test Release"
@@ -74,8 +81,12 @@ describe("ReleasePlayerTabs", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /load player spotify/i }));
+    expect(screen.queryByTitle(/apple music player/i)).not.toBeInTheDocument();
 
-    expect(screen.getByTitle(/spotify player/i)).toBeInTheDocument();
+    act(() => {
+      vi.advanceTimersByTime(950);
+    });
+
+    expect(screen.getByTitle(/apple music player/i)).toBeInTheDocument();
   });
 });
