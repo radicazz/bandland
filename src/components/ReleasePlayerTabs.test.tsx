@@ -47,6 +47,32 @@ describe("ReleasePlayerTabs", () => {
     expect(screen.getByTitle(/apple music player/i)).toBeInTheDocument();
   });
 
+  it("supports arrow-key navigation between tabs", () => {
+    render(
+      <ReleasePlayerTabs
+        title="Test Release"
+        spotifyUrl="https://open.spotify.com/embed/track/example"
+        appleUrl="https://embed.music.apple.com/za/album/example"
+        labels={{
+          playerTabsLabel: translations.en.home.playerTabsLabel,
+          playerSpotifyLabel: translations.en.home.playerSpotifyLabel,
+          playerAppleLabel: translations.en.home.playerAppleLabel,
+        }}
+      />,
+    );
+
+    const spotifyTab = screen.getByRole("tab", { name: /spotify/i });
+    const appleTab = screen.getByRole("tab", { name: /apple music/i });
+
+    spotifyTab.focus();
+    fireEvent.keyDown(spotifyTab, { key: "ArrowRight" });
+
+    expect(appleTab).toHaveAttribute("aria-selected", "true");
+    expect(appleTab).toHaveFocus();
+    expect(spotifyTab).toHaveAttribute("tabindex", "-1");
+    expect(appleTab).toHaveAttribute("tabindex", "0");
+  });
+
   it("prefetches the inactive iframe after the delay", () => {
     render(
       <ReleasePlayerTabs

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 
 import type { Translations } from "@/i18n/translations";
 
@@ -25,6 +25,7 @@ export function ReleasePlayerTabs({
   const [active, setActive] = useState<PlayerKey>("spotify");
   const [prefetchInactive, setPrefetchInactive] = useState(false);
   const baseId = useId();
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => setPrefetchInactive(true), 1200);
@@ -50,6 +51,43 @@ export function ReleasePlayerTabs({
     },
   ];
 
+  const activeIndex = tabs.findIndex((tab) => tab.key === active);
+
+  const focusTabAtIndex = (index: number) => {
+    const target = tabs[index];
+    if (!target) {
+      return;
+    }
+
+    setActive(target.key);
+    tabRefs.current[index]?.focus();
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    switch (event.key) {
+      case "ArrowRight":
+      case "ArrowDown":
+        event.preventDefault();
+        focusTabAtIndex((index + 1) % tabs.length);
+        break;
+      case "ArrowLeft":
+      case "ArrowUp":
+        event.preventDefault();
+        focusTabAtIndex((index - 1 + tabs.length) % tabs.length);
+        break;
+      case "Home":
+        event.preventDefault();
+        focusTabAtIndex(0);
+        break;
+      case "End":
+        event.preventDefault();
+        focusTabAtIndex(tabs.length - 1);
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <div className="mt-6">
       <div
@@ -61,18 +99,24 @@ export function ReleasePlayerTabs({
           const isActive = active === tab.key;
           const tabId = `${baseId}-${tab.key}-tab`;
           const panelId = `${baseId}-${tab.key}-panel`;
+          const tabIndex = tabs.findIndex((item) => item.key === tab.key);
 
           return (
             <button
               key={tab.key}
               type="button"
               role="tab"
+              ref={(element) => {
+                tabRefs.current[tabIndex] = element;
+              }}
               id={tabId}
               aria-selected={isActive}
               aria-controls={panelId}
+              tabIndex={activeIndex === tabIndex ? 0 : -1}
               onClick={() => setActive(tab.key)}
               onMouseEnter={() => setPrefetchInactive(true)}
               onFocus={() => setPrefetchInactive(true)}
+              onKeyDown={(event) => handleKeyDown(event, tabIndex)}
               className={`min-h-11 min-w-0 flex-1 rounded-xl px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] transition-colors sm:rounded-full sm:px-4 sm:tracking-[0.35em] ${
                 isActive
                   ? "bg-highlight/15 text-highlight"

@@ -43,9 +43,11 @@ describe("SiteHeader", () => {
     expect(homeLink).toHaveAttribute("tabindex", "0");
     expect(document.body.style.overflow).toBe("hidden");
 
+    homeLink.focus();
     fireEvent.keyDown(document, { key: "Escape" });
     expect(menuButton).toHaveAttribute("aria-expanded", "false");
     expect(homeLink).toHaveAttribute("tabindex", "-1");
+    expect(menuButton).toHaveFocus();
 
     fireEvent.click(menuButton);
     fireEvent.pointerDown(document.body);

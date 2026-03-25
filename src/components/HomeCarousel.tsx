@@ -35,6 +35,16 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
           <p className="mt-4 break-words text-sm leading-6 text-text-muted sm:text-base sm:leading-7">
             {latestRelease.description}
           </p>
+          <div className="mt-6">
+            <a
+              href={latestRelease.href}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-primary btn-primary-lg w-full sm:w-auto"
+            >
+              {latestRelease.cta}
+            </a>
+          </div>
           <ReleasePlayerTabs
             title={latestRelease.title}
             spotifyUrl={latestRelease.spotifyEmbedUrl}

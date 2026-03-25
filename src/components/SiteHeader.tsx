@@ -67,10 +67,17 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuId = useId();
-  const menuButtonId = useId();
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const menuTabIndex = isMenuOpen ? 0 : -1;
   const router = useRouter();
+
+  const closeMenu = ({ returnFocus = false }: { returnFocus?: boolean } = {}) => {
+    setIsMenuOpen(false);
+    if (returnFocus) {
+      menuButtonRef.current?.focus();
+    }
+  };
 
   const setLocale = (nextLocale: Locale) => {
     if (nextLocale === locale) {
@@ -87,13 +94,13 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
 
     function handlePointerDown(event: PointerEvent) {
       if (!menuRef.current?.contains(event.target as Node)) {
-        setIsMenuOpen(false);
+        closeMenu();
       }
     }
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setIsMenuOpen(false);
+        closeMenu({ returnFocus: true });
       }
     }
 
@@ -124,11 +131,10 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
         <div className="grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 sm:grid-cols-[auto_1fr_auto] sm:py-0">
           <div className="relative min-w-0" ref={menuRef}>
             <button
+              ref={menuButtonRef}
               type="button"
               aria-expanded={isMenuOpen}
               aria-controls={menuId}
-              aria-haspopup="menu"
-              id={menuButtonId}
               onClick={() => setIsMenuOpen((prev) => !prev)}
               className="flex min-h-11 max-w-full items-center gap-2 rounded-full px-2 text-left text-base font-brand tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight sm:text-lg sm:tracking-[0.18em]"
             >
@@ -172,7 +178,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                       href="/"
                       className="menu-tile"
                       tabIndex={menuTabIndex}
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => closeMenu()}
                     >
                       <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                         {labels.nav.main}
@@ -187,7 +193,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                       href="/merch"
                       className="menu-tile"
                       tabIndex={menuTabIndex}
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => closeMenu()}
                     >
                       <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                         {labels.nav.store}
@@ -202,7 +208,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                       href="/shows"
                       className="menu-tile"
                       tabIndex={menuTabIndex}
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => closeMenu()}
                     >
                       <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
                         {labels.nav.live}
