@@ -156,7 +156,7 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
               Already happened
             </label>
             <p id={hasHappenedHintId} className="mt-1 text-xs text-text-muted">
-              Mark this if the show is completed, even if the date changes later.
+              Past dates are marked automatically. Use this to archive a show early.
             </p>
           </div>
         </div>

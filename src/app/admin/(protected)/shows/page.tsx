@@ -5,9 +5,12 @@ import { getLocaleFromCookies } from "@/i18n/server";
 import { deleteShowAction } from "@/lib/admin-actions";
 import { readShows } from "@/lib/content-store";
 import { formatShowDatePretty } from "@/lib/formatters";
+import { getResolvedHasHappened, splitShowsByStatus } from "@/lib/shows";
 
 export default async function AdminShowsPage() {
   const shows = await readShows();
+  const { upcoming, past } = splitShowsByStatus(shows);
+  const orderedShows = [...upcoming, ...past];
   const locale = await getLocaleFromCookies();
   const formatShowDate = (value: string) => formatShowDatePretty(value, locale);
 
@@ -31,8 +34,9 @@ export default async function AdminShowsPage() {
         </div>
       ) : (
         <ul className="mt-6 grid gap-4">
-          {shows.map((show) => {
+          {orderedShows.map((show) => {
             const hasSplitPrice = Boolean(show.priceOnline || show.priceDoor);
+            const hasHappened = getResolvedHasHappened(show);
 
             return (
               <li
@@ -44,12 +48,12 @@ export default async function AdminShowsPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={`inline-flex min-h-7 items-center rounded-full border px-2.5 text-[10px] font-semibold uppercase tracking-[0.22em] ${
-                          show.hasHappened
+                          hasHappened
                             ? "border-border/70 bg-surface/50 text-text-muted"
                             : "border-highlight/40 bg-highlight/10 text-highlight"
                         }`}
                       >
-                        {show.hasHappened ? "Happened" : "Upcoming"}
+                        {hasHappened ? "Happened" : "Upcoming"}
                       </span>
                       <p className="break-words text-xs uppercase tracking-[0.3em] text-text-dim">
                         {formatShowDate(show.date)}

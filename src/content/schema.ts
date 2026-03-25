@@ -27,7 +27,7 @@ export const showSchema = z
   })
   .transform((show) => ({
     ...show,
-    hasHappened: show.hasHappened ?? deriveHasHappenedFromDate(show.date),
+    hasHappened: show.hasHappened === true || deriveHasHappenedFromDate(show.date),
   }));
 
 export type Show = z.infer<typeof showSchema>;

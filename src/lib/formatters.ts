@@ -1,23 +1,15 @@
 import type { Locale } from "@/i18n/translations";
 
 const SHOW_TIME_ZONE = "Africa/Johannesburg";
+const LOCALE_TAGS: Record<Locale, string> = {
+  en: "en-ZA",
+  af: "af-ZA",
+};
 
-function getOrdinalSuffix(value: number) {
-  const remainder = value % 100;
-  if (remainder >= 11 && remainder <= 13) {
-    return "th";
-  }
-  switch (value % 10) {
-    case 1:
-      return "st";
-    case 2:
-      return "nd";
-    case 3:
-      return "rd";
-    default:
-      return "th";
-  }
-}
+const CONNECTORS: Record<Locale, string> = {
+  en: "at",
+  af: "om",
+};
 
 export function formatShowDatePretty(value: string, locale: Locale) {
   const parsed = new Date(value);
@@ -25,36 +17,19 @@ export function formatShowDatePretty(value: string, locale: Locale) {
     return value;
   }
 
-  const timeParts = new Intl.DateTimeFormat(locale, {
-    timeZone: SHOW_TIME_ZONE,
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }).formatToParts(parsed);
-
-  const dateParts = new Intl.DateTimeFormat(locale, {
+  const localeTag = LOCALE_TAGS[locale];
+  const dateLabel = new Intl.DateTimeFormat(localeTag, {
     timeZone: SHOW_TIME_ZONE,
     weekday: "long",
     day: "numeric",
     month: "long",
-  }).formatToParts(parsed);
+    year: "numeric",
+  }).format(parsed);
+  const timeLabel = new Intl.DateTimeFormat(localeTag, {
+    timeZone: SHOW_TIME_ZONE,
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(parsed);
 
-  const hour = timeParts.find((part) => part.type === "hour")?.value ?? "";
-  const minute = timeParts.find((part) => part.type === "minute")?.value ?? "";
-  const dayPeriod =
-    timeParts.find((part) => part.type === "dayPeriod")?.value.toLowerCase() ??
-    "";
-
-  const weekday = dateParts.find((part) => part.type === "weekday")?.value ?? "";
-  const day = dateParts.find((part) => part.type === "day")?.value ?? "";
-  const month = dateParts.find((part) => part.type === "month")?.value ?? "";
-
-  const numericDay = Number.parseInt(day, 10);
-  const ordinal = Number.isNaN(numericDay)
-    ? day
-    : `${numericDay}${getOrdinalSuffix(numericDay)}`;
-
-  const time = minute === "00" ? `${hour}${dayPeriod}` : `${hour}:${minute}${dayPeriod}`;
-
-  return `${time} - ${weekday} the ${ordinal} of ${month}`;
+  return `${dateLabel} ${CONNECTORS[locale]} ${timeLabel}`;
 }

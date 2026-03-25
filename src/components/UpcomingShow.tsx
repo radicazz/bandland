@@ -3,20 +3,13 @@ import Link from "next/link";
 import type { Show } from "@/content/schema";
 import type { Locale, Translations } from "@/i18n/translations";
 import { formatShowDatePretty } from "@/lib/formatters";
+import { getUpcomingShow } from "@/lib/shows";
 
 type UpcomingShowProps = {
   shows: Show[];
   labels: Translations["home"];
   locale: Locale;
 };
-
-function getUpcomingShow(shows: Show[]) {
-  const now = Date.now();
-  return shows
-    .map((show) => ({ show, time: Date.parse(show.date) }))
-    .filter((entry) => !Number.isNaN(entry.time) && entry.time >= now)
-    .sort((a, b) => a.time - b.time)[0]?.show;
-}
 
 export function UpcomingShow({ shows, labels, locale }: UpcomingShowProps) {
   const upcoming = getUpcomingShow(shows);

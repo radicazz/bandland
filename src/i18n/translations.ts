@@ -42,6 +42,8 @@ export type Translations = {
   shows: {
     label: string;
     title: string;
+    upcomingTitle: string;
+    pastTitle: string;
     introPrefix: string;
     introSuffix: string;
     empty: string;
@@ -115,6 +117,8 @@ export const translations: Record<Locale, Translations> = {
     shows: {
       label: "Live",
       title: "Shows",
+      upcomingTitle: "Upcoming",
+      pastTitle: "Past dates",
       introPrefix: "Live dates and ticket links.",
       introSuffix: "",
       empty: "No dates announced yet.",
@@ -187,6 +191,8 @@ export const translations: Record<Locale, Translations> = {
     shows: {
       label: "Live",
       title: "Vertonings",
+      upcomingTitle: "Komende",
+      pastTitle: "Verlede datums",
       introPrefix: "Live datums en kaartjie-skakels.",
       introSuffix: "",
       empty: "Nog geen datums aangekondig nie.",
