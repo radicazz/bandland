@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { useId, useRef, useState, type KeyboardEvent } from "react";
 
 import type { Translations } from "@/i18n/translations";
 
@@ -12,7 +12,11 @@ type ReleasePlayerTabsProps = {
   appleUrl: string;
   labels: Pick<
     Translations["home"],
-    "playerTabsLabel" | "playerSpotifyLabel" | "playerAppleLabel"
+    | "playerTabsLabel"
+    | "playerSpotifyLabel"
+    | "playerAppleLabel"
+    | "playerLoadLabel"
+    | "playerFallbackHint"
   >;
 };
 
@@ -23,14 +27,12 @@ export function ReleasePlayerTabs({
   labels,
 }: ReleasePlayerTabsProps) {
   const [active, setActive] = useState<PlayerKey>("spotify");
-  const [prefetchInactive, setPrefetchInactive] = useState(false);
+  const [loadedPlayers, setLoadedPlayers] = useState<Record<PlayerKey, boolean>>({
+    spotify: false,
+    apple: false,
+  });
   const baseId = useId();
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-
-  useEffect(() => {
-    const timeoutId = window.setTimeout(() => setPrefetchInactive(true), 1200);
-    return () => window.clearTimeout(timeoutId);
-  }, []);
 
   const tabs = [
     {
@@ -88,6 +90,10 @@ export function ReleasePlayerTabs({
     }
   };
 
+  const loadPlayer = (key: PlayerKey) => {
+    setLoadedPlayers((current) => ({ ...current, [key]: true }));
+  };
+
   return (
     <div className="mt-6">
       <div
@@ -114,8 +120,6 @@ export function ReleasePlayerTabs({
               aria-controls={panelId}
               tabIndex={activeIndex === tabIndex ? 0 : -1}
               onClick={() => setActive(tab.key)}
-              onMouseEnter={() => setPrefetchInactive(true)}
-              onFocus={() => setPrefetchInactive(true)}
               onKeyDown={(event) => handleKeyDown(event, tabIndex)}
               className={`min-h-11 min-w-0 flex-1 rounded-xl px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] transition-colors sm:rounded-full sm:px-4 sm:tracking-[0.35em] ${
                 isActive
@@ -133,7 +137,7 @@ export function ReleasePlayerTabs({
         const isActive = active === tab.key;
         const tabId = `${baseId}-${tab.key}-tab`;
         const panelId = `${baseId}-${tab.key}-panel`;
-        const shouldRenderIframe = isActive || prefetchInactive;
+        const isLoaded = loadedPlayers[tab.key];
 
         return (
           <div
@@ -145,7 +149,7 @@ export function ReleasePlayerTabs({
             className="mt-4"
           >
             <div className="overflow-hidden rounded-2xl border border-border/70 bg-surface/70">
-              {shouldRenderIframe ? (
+              {isLoaded ? (
                 <iframe
                   title={`${title} — ${tab.label} player`}
                   src={tab.src}
@@ -157,7 +161,25 @@ export function ReleasePlayerTabs({
                   className={`block w-full ${tab.heightClass}`}
                 />
               ) : (
-                <div className={`${tab.heightClass} w-full animate-pulse bg-surface/40`} />
+                <div
+                  className={`flex w-full flex-col items-start justify-between gap-4 bg-[radial-gradient(circle_at_top_left,_color-mix(in_srgb,_var(--highlight)_14%,_transparent),_transparent_55%)] px-5 py-5 sm:px-6 ${tab.heightClass}`}
+                >
+                  <div>
+                    <p className="text-[10px] uppercase tracking-[0.35em] text-text-dim">
+                      {tab.label}
+                    </p>
+                    <p className="mt-3 text-sm leading-6 text-text-muted">
+                      {labels.playerFallbackHint}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => loadPlayer(tab.key)}
+                    className="btn-secondary w-full sm:w-auto"
+                  >
+                    {`${labels.playerLoadLabel} ${tab.label}`}
+                  </button>
+                </div>
               )}
             </div>
           </div>

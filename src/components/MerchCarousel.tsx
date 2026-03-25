@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
-import { ContentImage } from "@/components/ContentImage";
+import { ContentImage, isPlaceholderUrl } from "@/components/ContentImage";
 import type { MerchItem } from "@/content/schema";
 import type { Translations } from "@/i18n/translations";
 
@@ -15,7 +15,10 @@ type MerchCarouselProps = {
 };
 
 export function MerchCarousel({ items, labels }: MerchCarouselProps) {
-  const itemsWithImages = useMemo(() => items.filter((item) => Boolean(item.imageUrl)), [items]);
+  const itemsWithImages = useMemo(
+    () => items.filter((item) => item.imageUrl && !isPlaceholderUrl(item.imageUrl)),
+    [items],
+  );
   const featuredItems = items.length > 0 ? items : [];
   const [activeIndex, setActiveIndex] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -73,8 +76,19 @@ export function MerchCarousel({ items, labels }: MerchCarouselProps) {
               decoding="async"
             />
           ) : (
-            <div className="flex h-28 items-center justify-center bg-surface/50 text-xs uppercase tracking-[0.3em] text-text-dim sm:h-32">
-              {labels.storeLabel}
+            <div className="relative flex h-36 w-full flex-col justify-between bg-[radial-gradient(circle_at_top_left,_color-mix(in_srgb,_var(--highlight)_20%,_transparent),_transparent_58%)] p-4 sm:h-40 sm:p-5">
+              <div className="pointer-events-none absolute inset-0 hero-grain opacity-40" />
+              <p className="relative text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                {labels.storeFallbackLabel}
+              </p>
+              <div className="relative">
+                <p className="text-lg font-brand uppercase tracking-[0.12em] text-highlight sm:text-xl">
+                  {featuredItem?.name ?? labels.storeTitle}
+                </p>
+                <p className="mt-2 max-w-xs text-xs leading-5 text-text-muted">
+                  {labels.storeFallbackDescription}
+                </p>
+              </div>
             </div>
           )}
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/30 to-transparent" />

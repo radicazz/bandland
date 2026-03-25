@@ -12,7 +12,7 @@ type ContentImageProps = {
   decoding?: "async" | "auto" | "sync";
 };
 
-function isPlaceholderUrl(value: string | null | undefined) {
+export function isPlaceholderUrl(value: string | null | undefined) {
   if (!value) {
     return true;
   }

@@ -123,12 +123,19 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
   const { upcoming } = splitShowsByStatus(shows);
   const featuredShow = upcoming[0];
   const supportingShows = upcoming.slice(1, 4);
+  const hasUpcomingShows = Boolean(featuredShow);
 
   return (
     <div className="flex w-full flex-col items-center gap-5 px-1 sm:gap-8 sm:px-4 lg:gap-10">
       <section className="w-full max-w-6xl">
         <div className={`grid gap-5 ${supportingShows.length > 0 ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.9fr)]" : ""}`}>
-          <article className="card-interactive rounded-3xl border border-border/70 bg-surface/70 p-5 text-left sm:p-7 lg:p-8">
+          <article
+            className={`card-interactive rounded-3xl border border-border/70 bg-surface/70 text-left ${
+              hasUpcomingShows
+                ? "p-5 sm:p-7 lg:p-8"
+                : "p-4 sm:p-5 lg:flex lg:items-center lg:justify-between lg:gap-8"
+            }`}
+          >
             <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
               {homeLabels.nextShowLabel}
             </p>
@@ -181,14 +188,16 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
               </>
             ) : (
               <>
-                <h2 className="mt-4 break-words text-3xl font-brand uppercase tracking-[0.12em] text-highlight sm:text-4xl sm:tracking-[0.16em]">
-                  {homeLabels.nextShowFallbackTitle}
-                </h2>
-                <p className="mt-4 max-w-2xl break-words text-sm leading-6 text-text-muted sm:text-base sm:leading-7">
-                  {homeLabels.nextShowFallbackDescription}
-                </p>
-                <div className="mt-6">
-                  <Link href="/shows" className="btn-primary btn-primary-lg w-full sm:w-auto">
+                <div className="mt-3 min-w-0 lg:mt-0 lg:flex-1">
+                  <h2 className="break-words text-2xl font-brand uppercase tracking-[0.1em] text-highlight sm:text-3xl">
+                    {homeLabels.nextShowFallbackTitle}
+                  </h2>
+                  <p className="mt-3 max-w-2xl break-words text-sm leading-6 text-text-muted">
+                    {homeLabels.nextShowFallbackDescription}
+                  </p>
+                </div>
+                <div className="mt-5 lg:mt-0 lg:shrink-0">
+                  <Link href="/shows" className="btn-primary w-full sm:w-auto">
                     {homeLabels.allShowsCta}
                   </Link>
                 </div>

@@ -36,6 +36,10 @@ export type Translations = {
     playerTabsLabel: string;
     playerSpotifyLabel: string;
     playerAppleLabel: string;
+    playerLoadLabel: string;
+    playerFallbackHint: string;
+    storeFallbackLabel: string;
+    storeFallbackDescription: string;
     storeLabel: string;
     storeTitle: string;
     storeDescription: string;
@@ -118,6 +122,10 @@ export const translations: Record<Locale, Translations> = {
       playerTabsLabel: "Player selection",
       playerSpotifyLabel: "Spotify",
       playerAppleLabel: "Apple Music",
+      playerLoadLabel: "Load player",
+      playerFallbackHint: "If the player does not load, use the Listen button above.",
+      storeFallbackLabel: "Merch preview",
+      storeFallbackDescription: "Live product imagery lands here when store visuals are available.",
       storeLabel: "Store",
       storeTitle: "Merch",
       storeDescription: "Limited runs and staples. New drops coming soon.",
@@ -199,6 +207,10 @@ export const translations: Record<Locale, Translations> = {
       playerTabsLabel: "Spelerkeuse",
       playerSpotifyLabel: "Spotify",
       playerAppleLabel: "Apple Music",
+      playerLoadLabel: "Laai speler",
+      playerFallbackHint: "As die speler nie laai nie, gebruik die Luister-knoppie hier bo.",
+      storeFallbackLabel: "Merch voorskou",
+      storeFallbackDescription: "Produkbeelde verskyn hier sodra winkelvisuele beskikbaar is.",
       storeLabel: "Winkel",
       storeTitle: "Merch",
       storeDescription: "Klassieke items en beperkte lopies. Nuwe vrystellings kom binnekort.",
