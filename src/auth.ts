@@ -9,7 +9,11 @@ const credentialsSchema = z.object({
   password: z.string().min(1),
 });
 
-const loginLimiter = createRateLimiter({ limit: 5, windowMs: 15 * 60 * 1000 });
+const loginLimiter = createRateLimiter({
+  limit: 5,
+  windowMs: 15 * 60 * 1000,
+  storageDir: process.env.AUTH_RATE_LIMIT_DIR,
+});
 
 class AdminSignInError extends CredentialsSignin {
   constructor(code: string) {
@@ -64,7 +68,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const headers = request?.headers ?? new Headers();
         const ip = getClientIp(headers);
-        const { allowed } = loginLimiter.check(ip);
+        const { allowed } = await loginLimiter.check(ip);
         if (!allowed) {
           console.error("[Auth] Rate limited:", ip);
           throw new AdminSignInError("rate_limited");

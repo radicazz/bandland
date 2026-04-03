@@ -39,14 +39,20 @@ const run = async () => {
 
   let contentDirSection = "";
   let contentDir = "/var/lib/bandland/content";
+  let rateLimitDirSection = "";
   if (isProduction) {
     const contentDirInput = await rl.question(
       "Content directory (default /var/lib/bandland/content): ",
     );
     contentDir = contentDirInput.trim() || "/var/lib/bandland/content";
+    const rateLimitDir = `${contentDir}/.auth-rate-limit`;
     contentDirSection = `
 # Content storage outside repo
 CONTENT_DIR=${contentDir}
+`;
+    rateLimitDirSection = `
+# Persist admin rate limiting outside the app process
+AUTH_RATE_LIMIT_DIR=${rateLimitDir}
 `;
   }
 
@@ -58,7 +64,7 @@ AUTH_URL=${siteUrl}
 
 # Used for generating absolute URLs in metadata/OG.
 # In production, set this to your canonical site URL (e.g. https://bandland.com).
-NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}
+NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}${rateLimitDirSection}
 `;
 
   // Use .env.production for production, .env.local for dev
@@ -75,6 +81,8 @@ NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}
     console.log("  1. Create content directory:");
     console.log(`     sudo mkdir -p ${contentDir}`);
     console.log(`     sudo chown -R www-data:www-data ${contentDir}`);
+    console.log(`     sudo mkdir -p ${contentDir}/.auth-rate-limit`);
+    console.log(`     sudo chown -R www-data:www-data ${contentDir}/.auth-rate-limit`);
     console.log("  2. Rebuild the app: npm run build");
     console.log("  3. Restart the service: sudo systemctl restart bandland");
   } else {

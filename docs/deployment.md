@@ -63,6 +63,8 @@ Key behaviors:
   unit at it via `EnvironmentFile=`.
 - Removes `ADMIN_PASSWORD_HASH` from `.env.systemd` so Next.js reads the hash
   from `.env.production` (allowing dotenv-expand to process the escaped `\$`).
+- Passes through `AUTH_RATE_LIMIT_DIR` so login throttling can survive process
+  restarts when pointed at persistent storage.
 
 Example:
 
@@ -101,6 +103,11 @@ The server does not see `ADMIN_PASSWORD_HASH` in its environment. Fix by:
 1) Ensuring `.env.production` exists.
 2) Re-running `setup-systemd.sh` so the unit points to the env file.
 3) Restarting the service.
+
+### Rate limiting resets after every restart
+Set `AUTH_RATE_LIMIT_DIR` to a persistent directory such as
+`/var/lib/bandland/auth-rate-limit`, make sure the service user can write to it,
+and restart the app.
 
 ### “Password did not match”
 Verify the hash using:

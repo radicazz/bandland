@@ -61,6 +61,7 @@ JSON outside the git repo and point the app to it.
 
    - `CONTENT_DIR=/var/lib/bandland/content`
    - Optional: `CONTENT_HISTORY_DIR=/var/lib/bandland/content/.history`
+   - Optional: `AUTH_RATE_LIMIT_DIR=/var/lib/bandland/auth-rate-limit`
 
 4. Deploy as usual (your existing deploy script still works)
 
@@ -78,6 +79,7 @@ Copy `env.example` to `.env.local` and set:
 - `ADMIN_PASSWORD_HASH`
 - `AUTH_SECRET`
 - `AUTH_URL`
+- Optional: `AUTH_RATE_LIMIT_DIR`
 
 ## Licensing
 
