@@ -64,34 +64,6 @@ body {
   background: color-mix(in srgb, var(--highlight) 30%, transparent);
 }
 
-@keyframes hero-fade-3 {
-  0% { opacity: 0; }
-  3.33% { opacity: 1; }
-  23.33% { opacity: 1; }
-  33.33% { opacity: 0; }
-  100% { opacity: 0; }
-}
-
-@keyframes hero-fade-2 {
-  0% { opacity: 0; }
-  5% { opacity: 1; }
-  35% { opacity: 1; }
-  50% { opacity: 0; }
-  100% { opacity: 0; }
-}
-
-@keyframes hero-fade-1 {
-  0% { opacity: 0; }
-  10% { opacity: 1; }
-  70% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-.hero-slide {
-  opacity: 0;
-  will-change: opacity;
-}
-
 .hero-vignette {
   background: radial-gradient(
     60% 60% at 50% 50%,
@@ -160,14 +132,5 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-  }
-
-  .hero-slide {
-    animation: none;
-    opacity: 0;
-  }
-
-  .hero-slide:first-child {
-    opacity: 1;
   }
 }

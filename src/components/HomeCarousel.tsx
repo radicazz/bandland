@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { ReleasePlayerTabs } from "@/components/ReleasePlayerTabs";
 import { MerchCarousel } from "@/components/MerchCarousel";
+import { site } from "@/config/site";
 import type { Show } from "@/content/schema";
 import { getMerchItems } from "@/content/merch";
 import { getShows } from "@/content/shows";
@@ -111,12 +112,10 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
   const latestRelease = {
     title: homeLabels.latestReleaseTitle,
     description: homeLabels.latestReleaseDescription,
-    href: "https://tr.ee/7KaRvTpbLN",
+    href: site.latestRelease.href,
     cta: homeLabels.latestReleaseCta,
-    spotifyEmbedUrl:
-      "https://open.spotify.com/embed/track/1ZqBftZCkFF0YOmYaQ7v2c?utm_source=generator&theme=0",
-    appleEmbedUrl:
-      "https://embed.music.apple.com/za/album/pappa-soek-n-porsche-single/1866600943?i=1866600944&theme=dark",
+    spotifyEmbedUrl: site.latestRelease.spotifyEmbedUrl,
+    appleEmbedUrl: site.latestRelease.appleEmbedUrl,
   };
 
   const [merchItems, shows] = await Promise.all([getMerchItems(), getShows()]);
