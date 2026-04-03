@@ -4,7 +4,7 @@ import type { SVGProps } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Container } from "@/components/Container";
 import { site } from "@/config/site";
@@ -66,11 +66,15 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
     (social) => social.href && social.label in socialIcons,
   );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const menuId = useId();
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuPanelRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const menuTabIndex = isMenuOpen ? 0 : -1;
   const router = useRouter();
+  const pathname = usePathname();
+  const pathnameRef = useRef(pathname);
+  const menuTabIndex = isMenuOpen ? 0 : -1;
 
   const closeMenu = ({ returnFocus = false }: { returnFocus?: boolean } = {}) => {
     setIsMenuOpen(false);
@@ -88,8 +92,65 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
   };
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const updateViewport = (event: MediaQueryList | MediaQueryListEvent) => {
+      setIsMobileViewport(event.matches);
+    };
+
+    updateViewport(mediaQuery);
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener("change", updateViewport);
+    } else {
+      mediaQuery.addListener(updateViewport);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener("change", updateViewport);
+      } else {
+        mediaQuery.removeListener(updateViewport);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (pathnameRef.current === pathname) {
+      return;
+    }
+
+    pathnameRef.current = pathname;
+    const frameId = window.requestAnimationFrame(() => {
+      setIsMenuOpen(false);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, [pathname]);
+
+  useEffect(() => {
     if (!isMenuOpen) {
       return;
+    }
+
+    const getFocusableElements = () => {
+      const panel = menuPanelRef.current;
+      if (!panel) {
+        return [];
+      }
+
+      return Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+    };
+
+    if (isMobileViewport) {
+      window.requestAnimationFrame(() => {
+        getFocusableElements()[0]?.focus();
+      });
     }
 
     function handlePointerDown(event: PointerEvent) {
@@ -101,6 +162,27 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         closeMenu({ returnFocus: true });
+        return;
+      }
+
+      if (!isMobileViewport || event.key !== "Tab") {
+        return;
+      }
+
+      const focusableElements = getFocusableElements();
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+
+      if (!first || !last) {
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     }
 
@@ -111,7 +193,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isMobileViewport]);
 
   useEffect(() => {
     if (!isMenuOpen) {
@@ -135,6 +217,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               type="button"
               aria-expanded={isMenuOpen}
               aria-controls={menuId}
+              aria-haspopup="dialog"
               onClick={() => setIsMenuOpen((prev) => !prev)}
               className="flex min-h-11 max-w-full items-center gap-2 rounded-full px-2 text-left text-base font-brand tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight sm:text-lg sm:tracking-[0.18em]"
             >
@@ -146,6 +229,9 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                 className="h-7 w-7"
               />
               <span className="truncate">{site.name}</span>
+              <span className="sr-only">
+                {isMenuOpen ? labels.common.closeMenu : labels.common.openMenu}
+              </span>
               <svg
                 viewBox="0 0 24 24"
                 aria-hidden="true"
@@ -164,90 +250,103 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                   : "pointer-events-none translate-y-2 opacity-0"
               }`}
             >
-              <nav
+              <div
+                ref={menuPanelRef}
+                role={isMobileViewport ? "dialog" : undefined}
+                aria-modal={isMobileViewport ? "true" : undefined}
                 aria-label={labels.nav.explore}
-                aria-hidden={!isMenuOpen}
-                className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4 sm:max-h-[60vh]"
               >
-                <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                  {labels.nav.explore}
-                </p>
-                <ul className="mt-3 grid gap-3">
-                  <li>
-                    <Link
-                      href="/"
-                      className="menu-tile"
-                      tabIndex={menuTabIndex}
-                      onClick={() => closeMenu()}
-                    >
-                      <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                        {labels.nav.main}
-                      </span>
-                      <span className="mt-1 block text-sm font-semibold text-text">
-                        {labels.nav.home}
-                      </span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/merch"
-                      className="menu-tile"
-                      tabIndex={menuTabIndex}
-                      onClick={() => closeMenu()}
-                    >
-                      <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                        {labels.nav.store}
-                      </span>
-                      <span className="mt-1 block text-sm font-semibold text-text">
-                        {labels.nav.merch}
-                      </span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/shows"
-                      className="menu-tile"
-                      tabIndex={menuTabIndex}
-                      onClick={() => closeMenu()}
-                    >
-                      <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                        {labels.nav.live}
-                      </span>
-                      <span className="mt-1 block text-sm font-semibold text-text">
-                        {labels.nav.shows}
-                      </span>
-                    </Link>
-                  </li>
-                </ul>
-                {socialLinks.length ? (
-                  <div className="mt-4 border-t border-border/60 pt-4 sm:hidden">
-                    <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                      {labels.nav.socials}
-                    </p>
-                    <ul className="mt-3 grid grid-cols-4 gap-2">
-                      {socialLinks.map((social) => {
-                        const Icon = socialIcons[social.label as keyof typeof socialIcons];
-                        return (
-                          <li key={social.label}>
-                            <a
-                              className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/30 text-text transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
-                              href={social.href ?? undefined}
-                              target="_blank"
-                              rel="noreferrer"
-                              tabIndex={menuTabIndex}
-                              aria-label={social.label}
-                            >
-                              <Icon className="h-4 w-4" aria-hidden="true" />
-                            </a>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                ) : null}
-              </nav>
+                <nav
+                  aria-label={labels.nav.explore}
+                  aria-hidden={!isMenuOpen}
+                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4 sm:max-h-[60vh]"
+                >
+                  <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                    {labels.nav.explore}
+                  </p>
+                  <ul className="mt-3 grid gap-3">
+                    <li>
+                      <Link
+                        href="/"
+                        className="menu-tile"
+                        tabIndex={menuTabIndex}
+                        onClick={() => closeMenu()}
+                      >
+                        <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                          {labels.nav.main}
+                        </span>
+                        <span className="mt-1 block text-sm font-semibold text-text">
+                          {labels.nav.home}
+                        </span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/merch"
+                        className="menu-tile"
+                        tabIndex={menuTabIndex}
+                        onClick={() => closeMenu()}
+                      >
+                        <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                          {labels.nav.store}
+                        </span>
+                        <span className="mt-1 block text-sm font-semibold text-text">
+                          {labels.nav.merch}
+                        </span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/shows"
+                        className="menu-tile"
+                        tabIndex={menuTabIndex}
+                        onClick={() => closeMenu()}
+                      >
+                        <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                          {labels.nav.live}
+                        </span>
+                        <span className="mt-1 block text-sm font-semibold text-text">
+                          {labels.nav.shows}
+                        </span>
+                      </Link>
+                    </li>
+                  </ul>
+                  {socialLinks.length ? (
+                    <div className="mt-4 border-t border-border/60 pt-4 sm:hidden">
+                      <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                        {labels.nav.socials}
+                      </p>
+                      <ul className="mt-3 grid grid-cols-4 gap-2">
+                        {socialLinks.map((social) => {
+                          const Icon = socialIcons[social.label as keyof typeof socialIcons];
+                          return (
+                            <li key={social.label}>
+                              <a
+                                className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/30 text-text transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
+                                href={social.href ?? undefined}
+                                target="_blank"
+                                rel="noreferrer"
+                                tabIndex={menuTabIndex}
+                                aria-label={social.label}
+                              >
+                                <Icon className="h-4 w-4" aria-hidden="true" />
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  ) : null}
+                </nav>
+              </div>
             </div>
           </div>
+          <div
+            aria-hidden="true"
+            className={`fixed inset-0 top-16 z-10 bg-bg/70 transition-opacity duration-200 sm:hidden ${
+              isMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+            }`}
+          />
           <div className="justify-self-end sm:col-start-3 sm:row-start-1">
             <div className="flex items-center gap-2">
               <div

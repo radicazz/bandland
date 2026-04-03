@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SiteHeader } from "./SiteHeader";
@@ -29,7 +29,7 @@ describe("SiteHeader", () => {
   it("opens and closes the menu via button, escape, and outside press", () => {
     render(<SiteHeader locale="en" labels={translations.en} />);
 
-    const menuButton = screen.getByRole("button", { name: /schm/i });
+    const menuButton = screen.getByRole("button", { name: /open menu/i });
     const homeLink = screen
       .getByText(translations.en.nav.home)
       .closest("a") as HTMLAnchorElement;
@@ -40,6 +40,7 @@ describe("SiteHeader", () => {
     fireEvent.click(menuButton);
 
     expect(menuButton).toHaveAttribute("aria-expanded", "true");
+    expect(menuButton).toHaveAccessibleName(/close menu/i);
     expect(homeLink).toHaveAttribute("tabindex", "0");
     expect(document.body.style.overflow).toBe("hidden");
 
@@ -52,6 +53,22 @@ describe("SiteHeader", () => {
     fireEvent.click(menuButton);
     fireEvent.pointerDown(document.body);
     expect(menuButton).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("closes the menu when the route changes", async () => {
+    const { rerender } = render(<SiteHeader locale="en" labels={translations.en} />);
+
+    const menuButton = screen.getByRole("button", { name: /open menu/i });
+
+    fireEvent.click(menuButton);
+    expect(menuButton).toHaveAttribute("aria-expanded", "true");
+
+    nav.pathname = "/shows";
+    rerender(<SiteHeader locale="en" labels={translations.en} />);
+
+    await waitFor(() => {
+      expect(menuButton).toHaveAttribute("aria-expanded", "false");
+    });
   });
 
   it("updates locale cookie and refreshes the route", () => {

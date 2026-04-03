@@ -86,6 +86,8 @@ export type Translations = {
   };
   common: {
     skipToContent: string;
+    openMenu: string;
+    closeMenu: string;
   };
 };
 
@@ -173,6 +175,8 @@ export const translations: Record<Locale, Translations> = {
     },
     common: {
       skipToContent: "Skip to content",
+      openMenu: "Open menu",
+      closeMenu: "Close menu",
     },
   },
   af: {
@@ -258,6 +262,8 @@ export const translations: Record<Locale, Translations> = {
     },
     common: {
       skipToContent: "Spring na inhoud",
+      openMenu: "Maak kieslys oop",
+      closeMenu: "Maak kieslys toe",
     },
   },
 };
