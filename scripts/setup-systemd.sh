@@ -58,6 +58,12 @@ if [ -n "$ENV_SOURCE_FILE" ]; then
   # Filter out ADMIN_PASSWORD_HASH so dotenv-expand can set it from .env.production.
   $SUDO awk '
     /^[[:space:]]*ADMIN_PASSWORD_HASH[[:space:]]*=/ { next }
+    /^[[:space:]]*APP_PORT[[:space:]]*=/ {
+      print
+      sub(/^[^=]*=/, "", $0)
+      print "PORT=" $0
+      next
+    }
     { print }
   ' "$ENV_SOURCE_FILE" | $SUDO tee "$SYSTEMD_ENV_FILE" >/dev/null
   $SUDO chmod 600 "$SYSTEMD_ENV_FILE"

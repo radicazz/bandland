@@ -13,6 +13,8 @@
     "test:watch": "vitest",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
+    "bootstrap:vps": "bash scripts/bootstrap-vps.sh",
+    "deploy:preflight": "node scripts/preflight-deploy.mjs",
     "setup-access": "node scripts/setup-access.mjs",
     "verify-access": "node scripts/verify-access.mjs",
     "docker:build": "docker build -t bandland .",
