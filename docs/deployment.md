@@ -10,14 +10,14 @@ loading (dotenv-expand).
 
 ```bash
 cd /var/www/bandland
-pnpm install
-pnpm build
+npm install
+npm run build
 ```
 
 2) Create or update `.env.production`:
 
 ```bash
-pnpm setup-access
+npm run setup-access
 ```
 
 3) Create/update the systemd unit and start the service:
@@ -44,7 +44,7 @@ The fix is to **escape `$` as `\$`** in `.env.production`, which the updated
 
 ## Scripts overview
 
-### `pnpm setup-access`
+### `npm run setup-access`
 Generates `.env.production` (for prod) or `.env.local` (for dev) with:
 - `ADMIN_PASSWORD_HASH` (bcrypt, `$` escaped as `\$`)
 - `AUTH_SECRET`

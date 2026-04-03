@@ -11,13 +11,6 @@ npm install
 npm run dev
 ```
 
-Or with pnpm:
-
-```bash
-pnpm install
-pnpm dev
-```
-
 Open http://localhost:3000
 
 ## Basic edits
@@ -76,6 +69,7 @@ JSON outside the git repo and point the app to it.
 - `npm run build` / `npm run start`
 - `npm run lint` / `npm run typecheck`
 - `npm test`
+- `npm run setup-access` / `npm run verify-access`
 
 ## Environment
 
