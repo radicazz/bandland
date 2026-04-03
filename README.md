@@ -25,6 +25,9 @@ Open http://localhost:3000
 
 Admin access lives at `/admin` and writes directly to the JSON content files.
 In production, you can keep these files outside the repo by setting `CONTENT_DIR`.
+The protected dashboard now includes a read-only site-operations section so you
+can confirm storage paths, backups, runtime config, and content health from the
+live admin UI.
 
 Setup:
 1. Copy `env.example` to `.env.local`
@@ -38,38 +41,52 @@ Data written by the admin panel:
 - `content/admin-audit.json`
 - Backup snapshots in `content/.history/`
 
-## VPS deployment (recommended data layout)
+## VPS deployment (recommended for an existing live site)
 
 To keep admin edits persistent while still deploying code updates, store content
 JSON outside the git repo and point the app to it.
 
-1. Create a data directory on the VPS
+### First-time bootstrap
+
+1. Generate production env values:
 
    ```bash
-   sudo mkdir -p /var/lib/bandland/content
-   sudo chown -R <service-user>:<service-user> /var/lib/bandland/content
+   npm run setup-access -- --env prod --site-url https://your-site.example
    ```
 
-2. Copy your current content files once
+2. Bootstrap persistent directories and seed content without overwriting existing live data:
 
    ```bash
-   cp content/shows.json /var/lib/bandland/content/
-   cp content/merch.json /var/lib/bandland/content/
+   sudo npm run bootstrap:vps
    ```
 
-3. Set environment variables on the service
+   For a local dry run against user-owned temp directories, use
+   `BOOTSTRAP_USE_SUDO=never RUN_SETUP_SYSTEMD=0 SERVICE_USER=$USER`.
 
-   - `CONTENT_DIR=/var/lib/bandland/content`
-   - Optional: `CONTENT_HISTORY_DIR=/var/lib/bandland/content/.history`
-   - Optional: `AUTH_RATE_LIMIT_DIR=/var/lib/bandland/auth-rate-limit`
+3. Deploy and health-check the app:
 
-4. Deploy as usual (your existing deploy script still works)
+   ```bash
+   ./scripts/deploy.sh
+   ```
+
+### Routine deploys
+
+Once the site is bootstrapped:
+
+```bash
+./scripts/deploy.sh
+```
+
+That flow now runs a production preflight, rebuilds, restarts the `systemd`
+service, and verifies `GET /api/health` before reporting success.
 
 ## Common scripts
 
 - `npm run build` / `npm run start`
 - `npm run lint` / `npm run typecheck`
 - `npm test`
+- `npm run bootstrap:vps`
+- `npm run deploy:preflight`
 - `npm run setup-access` / `npm run verify-access`
 
 ## Environment
@@ -80,6 +97,8 @@ Copy `env.example` to `.env.local` and set:
 - `AUTH_SECRET`
 - `AUTH_URL`
 - Optional: `AUTH_RATE_LIMIT_DIR`
+- Optional: `APP_PORT`
+- Optional: `DEPLOY_HEALTHCHECK_URL`
 
 ## Licensing
 
