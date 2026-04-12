@@ -202,6 +202,36 @@ replace the destination JSON files, rerun with:
 sudo FORCE=1 npm run bootstrap:vps
 ```
 
+### `git pull --ff-only` fails because `package-lock.json` is dirty
+The deploy checkout has local tracked changes, so Git refuses to fast-forward.
+
+This usually happens when someone ran `npm install` manually on the server or
+used a different npm version than the repo's pinned `packageManager`.
+
+Inspect the change first:
+
+```bash
+git diff -- package-lock.json
+```
+
+If the checkout should exactly match Git, discard the drift and rerun deploy:
+
+```bash
+git restore package-lock.json
+./scripts/deploy.sh
+```
+
+If you want to keep the local diff for inspection, stash it instead:
+
+```bash
+git stash push package-lock.json
+./scripts/deploy.sh
+```
+
+To reduce repeat lockfile drift, align the server npm version with the repo's
+`packageManager` and prefer `npm ci` over manual `npm install` in the deploy
+checkout.
+
 ### “Password did not match”
 Verify the hash using:
 

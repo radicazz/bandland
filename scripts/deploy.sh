@@ -73,6 +73,55 @@ show_service_debug() {
   fi
 }
 
+get_expected_npm_version() {
+  node -e '
+    const fs = require("node:fs");
+    const packageJsonPath = process.argv[1];
+    const pkg = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+    const packageManager = typeof pkg.packageManager === "string" ? pkg.packageManager : "";
+    if (packageManager.startsWith("npm@")) {
+      process.stdout.write(packageManager.slice(4));
+    }
+  ' "$REPO_DIR/package.json"
+}
+
+ensure_clean_worktree() {
+  local dirty_files
+  dirty_files="$(git status --short --untracked-files=no)"
+
+  if [ -z "$dirty_files" ]; then
+    return
+  fi
+
+  echo "Error: deploy requires a clean git worktree before pulling new code."
+  echo ""
+  echo "$dirty_files"
+  echo ""
+  echo "Inspect the local changes, then either commit, stash, or restore them before rerunning deploy."
+
+  if [ -n "$(git status --short --untracked-files=no -- package-lock.json)" ]; then
+    local expected_npm_version
+    local current_npm_version
+
+    expected_npm_version="$(get_expected_npm_version || true)"
+    current_npm_version="$(npm --version 2>/dev/null || true)"
+
+    echo ""
+    echo "package-lock.json is dirty."
+    echo "This usually means someone ran npm install manually in the deploy checkout or used a different npm version."
+    if [ -n "$expected_npm_version" ]; then
+      echo "Repo packageManager: npm@$expected_npm_version"
+    fi
+    if [ -n "$current_npm_version" ]; then
+      echo "Current npm: $current_npm_version"
+    fi
+    echo "If the server copy is disposable, git restore package-lock.json is usually the right fix."
+    echo "If you need to keep the change for inspection, stash it first with git stash push package-lock.json."
+  fi
+
+  exit 1
+}
+
 ENV_FILE_PATH="$(resolve_env_file || true)"
 if [ -z "$ENV_FILE_PATH" ]; then
   echo "Error: no env file found (.env.production, .env.local, or .env)."
@@ -82,6 +131,8 @@ fi
 APP_PORT_VALUE="$(get_env_value "$ENV_FILE_PATH" APP_PORT)"
 DEPLOY_HEALTHCHECK_URL_VALUE="$(get_env_value "$ENV_FILE_PATH" DEPLOY_HEALTHCHECK_URL)"
 HEALTHCHECK_URL="${HEALTHCHECK_URL_OVERRIDE:-${DEPLOY_HEALTHCHECK_URL_VALUE:-http://127.0.0.1:${APP_PORT_VALUE:-3000}/api/health}}"
+
+ensure_clean_worktree
 
 git pull --ff-only
 
