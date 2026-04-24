@@ -60,7 +60,7 @@ export function ReleasePlayerTabs({
       heightClass: "h-[175px] sm:h-[175px]",
       allow: "autoplay *; encrypted-media *; fullscreen *; clipboard-write",
       sandbox:
-        "allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation",
+        "allow-forms allow-popups allow-same-origin allow-scripts allow-storage-access-by-user-activation allow-top-navigation-by-user-activation",
     },
   ];
 
@@ -177,7 +177,6 @@ export function ReleasePlayerTabs({
                   allow={tab.allow}
                   sandbox={tab.sandbox}
                   loading="eager"
-                  referrerPolicy="strict-origin-when-cross-origin"
                   onLoad={() =>
                     setReadyPlayers((current) =>
                       current[tab.key] ? current : { ...current, [tab.key]: true },
