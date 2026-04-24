@@ -46,7 +46,7 @@ function FieldError({ message }: { message: string | undefined }) {
     return null;
   }
   return (
-    <p className="mt-2 text-xs text-highlight" role="status">
+    <p className="mt-2 text-xs text-highlight" role="alert">
       {message}
     </p>
   );
@@ -85,7 +85,10 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
   return (
     <form action={handleFormAction} className="mt-6 grid gap-5 sm:gap-6">
       {state.message ? (
-        <p className="rounded-xl border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight">
+        <p
+          role="alert"
+          className="rounded-xl border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight"
+        >
           {state.message}
         </p>
       ) : null}
