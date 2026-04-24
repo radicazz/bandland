@@ -4,6 +4,18 @@ import {
   type PathStatus,
 } from "@/lib/site-operations";
 
+function formatAuditDate(isoString: string): string {
+  const parsed = new Date(isoString);
+  if (Number.isNaN(parsed.getTime())) {
+    return isoString;
+  }
+  return new Intl.DateTimeFormat("en-ZA", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Africa/Johannesburg",
+  }).format(parsed);
+}
+
 function StatusBadge({ ok, label }: { ok: boolean; label: string }) {
   return (
     <span
@@ -210,8 +222,8 @@ export default async function AdminDashboardPage() {
                     {entry.action} {entry.entity}
                   </p>
                   <p className="mt-2 break-all text-sm text-text">{entry.entityId}</p>
-                  <p className="mt-2 break-all text-xs tabular-nums text-text-muted">
-                    {entry.createdAt}
+                  <p className="mt-2 text-xs tabular-nums text-text-muted">
+                    {formatAuditDate(entry.createdAt)}
                   </p>
                 </li>
               ))}
