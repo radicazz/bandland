@@ -34,16 +34,24 @@ function ShowCard({
   show,
   locale,
   labels,
+  isPast = false,
 }: {
   show: Show;
   locale: Locale;
   labels: Translations["shows"];
+  isPast?: boolean;
 }) {
   const hasSplitPrices = Boolean(show.priceOnline || show.priceDoor);
   const formattedDate = formatShowDatePretty(show.date, locale);
 
   return (
-    <li className="rounded-2xl border border-border/70 bg-surface/60 p-4 transition-colors hover:border-highlight/60 sm:p-6">
+    <li
+      className={`rounded-2xl border bg-surface/60 p-4 transition-colors sm:p-6 ${
+        isPast
+          ? "border-border/40 opacity-60 hover:border-border/60 hover:opacity-80"
+          : "border-border/70 hover:border-highlight/60"
+      }`}
+    >
       <div
         className={`grid gap-4 md:items-start ${
           show.imageUrl ? "md:grid-cols-[160px_minmax(0,1fr)]" : ""
@@ -127,12 +135,14 @@ function ShowListSection({
   shows,
   locale,
   labels,
+  isPast = false,
 }: {
   heading: string;
   headingId: string;
   shows: Show[];
   locale: Locale;
   labels: Translations["shows"];
+  isPast?: boolean;
 }) {
   return (
     <section aria-labelledby={headingId}>
@@ -141,7 +151,7 @@ function ShowListSection({
       </h2>
       <ul className="mt-4 grid gap-4 sm:gap-5">
         {shows.map((show) => (
-          <ShowCard key={show.id} show={show} locale={locale} labels={labels} />
+          <ShowCard key={show.id} show={show} locale={locale} labels={labels} isPast={isPast} />
         ))}
       </ul>
     </section>
@@ -223,6 +233,7 @@ export default async function ShowsPage() {
                 shows={past}
                 locale={locale}
                 labels={labels.shows}
+                isPast
               />
             ) : null}
           </div>
