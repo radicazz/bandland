@@ -256,51 +256,36 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                     {labels.nav.explore}
                   </p>
                   <ul className="mt-3 grid gap-3">
-                    <li>
-                      <Link
-                        href="/"
-                        className="menu-tile"
-                        tabIndex={menuTabIndex}
-                        onClick={() => closeMenu()}
-                      >
-                        <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                          {labels.nav.main}
-                        </span>
-                        <span className="mt-1 block text-sm font-semibold text-text">
-                          {labels.nav.home}
-                        </span>
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/merch"
-                        className="menu-tile"
-                        tabIndex={menuTabIndex}
-                        onClick={() => closeMenu()}
-                      >
-                        <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                          {labels.nav.store}
-                        </span>
-                        <span className="mt-1 block text-sm font-semibold text-text">
-                          {labels.nav.merch}
-                        </span>
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        href="/shows"
-                        className="menu-tile"
-                        tabIndex={menuTabIndex}
-                        onClick={() => closeMenu()}
-                      >
-                        <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                          {labels.nav.live}
-                        </span>
-                        <span className="mt-1 block text-sm font-semibold text-text">
-                          {labels.nav.shows}
-                        </span>
-                      </Link>
-                    </li>
+                    {(
+                      [
+                        { href: "/", label: labels.nav.home, sublabel: labels.nav.main },
+                        { href: "/merch", label: labels.nav.merch, sublabel: labels.nav.store },
+                        { href: "/shows", label: labels.nav.shows, sublabel: labels.nav.live },
+                      ] as const
+                    ).map(({ href, label, sublabel }) => {
+                      const isActive =
+                        href === "/" ? pathname === "/" : pathname.startsWith(href);
+                      return (
+                        <li key={href}>
+                          <Link
+                            href={href}
+                            aria-current={isActive ? "page" : undefined}
+                            className={`menu-tile${isActive ? " border-highlight/50 bg-highlight/5" : ""}`}
+                            tabIndex={menuTabIndex}
+                            onClick={() => closeMenu()}
+                          >
+                            <span className="block text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                              {sublabel}
+                            </span>
+                            <span
+                              className={`mt-1 block text-sm font-semibold ${isActive ? "text-highlight" : "text-text"}`}
+                            >
+                              {label}
+                            </span>
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                   {socialLinks.length ? (
                     <div className="mt-4 border-t border-border/60 pt-4 sm:hidden">
