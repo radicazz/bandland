@@ -169,6 +169,9 @@ export default async function ShowsPage() {
   const { labels, locale } = await getTranslationsFromCookies();
   const shows = await getShows();
   const { upcoming, past } = splitShowsByStatus(shows);
+  const hasSplitPricing = shows.some(
+    (show) => Boolean(show.priceOnline) || Boolean(show.priceDoor),
+  );
 
   return (
     <section className="relative overflow-hidden border-b border-border/60">
@@ -188,28 +191,30 @@ export default async function ShowsPage() {
           {labels.shows.introPrefix}
           {labels.shows.introSuffix}
         </p>
-        <div className="mt-5 grid gap-2 rounded-2xl border border-border/70 bg-surface/50 p-4 text-sm text-text-muted sm:max-w-2xl">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-text-dim">
-            {labels.shows.ticketPriceGuideTitle}
-          </p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <span className="inline-flex items-center gap-2">
-              <span className="text-highlight" aria-hidden="true">
-                <OnlinePriceIcon />
+        {hasSplitPricing ? (
+          <div className="mt-5 grid gap-2 rounded-2xl border border-border/70 bg-surface/50 p-4 text-sm text-text-muted sm:max-w-2xl">
+            <p className="text-[10px] uppercase tracking-[0.35em] text-text-dim">
+              {labels.shows.ticketPriceGuideTitle}
+            </p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span className="inline-flex items-center gap-2">
+                <span className="text-highlight" aria-hidden="true">
+                  <OnlinePriceIcon />
+                </span>
+                <span>{labels.shows.ticketPriceGuideOnline}</span>
               </span>
-              <span>{labels.shows.ticketPriceGuideOnline}</span>
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <span className="text-highlight" aria-hidden="true">
-                <DoorPriceIcon />
+              <span className="inline-flex items-center gap-2">
+                <span className="text-highlight" aria-hidden="true">
+                  <DoorPriceIcon />
+                </span>
+                <span>{labels.shows.ticketPriceGuideDoor}</span>
               </span>
-              <span>{labels.shows.ticketPriceGuideDoor}</span>
-            </span>
+            </div>
+            <p className="text-xs text-text-dim">
+              {labels.shows.ticketPriceGuideFallbackNote}
+            </p>
           </div>
-          <p className="text-xs text-text-dim">
-            {labels.shows.ticketPriceGuideFallbackNote}
-          </p>
-        </div>
+        ) : null}
 
         {upcoming.length === 0 && past.length === 0 ? (
           <div className="mt-10 rounded-2xl border border-border/70 bg-surface/60 p-6 text-sm text-text-muted">
