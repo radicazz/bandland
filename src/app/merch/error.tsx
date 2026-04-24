@@ -38,7 +38,7 @@ export default function Error({
           >
             Try again
           </button>
-          <Link href="/" className="btn-primary btn-primary-lg">
+          <Link href="/" className="btn-secondary btn-primary-lg">
             Go home
           </Link>
         </div>
