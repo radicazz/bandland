@@ -98,19 +98,10 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
     };
 
     updateViewport(mediaQuery);
-
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", updateViewport);
-    } else {
-      mediaQuery.addListener(updateViewport);
-    }
+    mediaQuery.addEventListener("change", updateViewport);
 
     return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener("change", updateViewport);
-      } else {
-        mediaQuery.removeListener(updateViewport);
-      }
+      mediaQuery.removeEventListener("change", updateViewport);
     };
   }, []);
 

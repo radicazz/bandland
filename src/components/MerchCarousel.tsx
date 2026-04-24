@@ -29,17 +29,9 @@ export function MerchCarousel({ items, labels }: MerchCarouselProps) {
       setReduceMotion(event.matches);
     };
     update(mediaQuery);
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", update);
-    } else {
-      mediaQuery.addListener(update);
-    }
+    mediaQuery.addEventListener("change", update);
     return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener("change", update);
-      } else {
-        mediaQuery.removeListener(update);
-      }
+      mediaQuery.removeEventListener("change", update);
     };
   }, []);
 

@@ -25,19 +25,10 @@ export function HeroSlideshow({
     };
 
     updateMotionPreference(mediaQuery);
-
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener("change", updateMotionPreference);
-    } else {
-      mediaQuery.addListener(updateMotionPreference);
-    }
+    mediaQuery.addEventListener("change", updateMotionPreference);
 
     return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener("change", updateMotionPreference);
-      } else {
-        mediaQuery.removeListener(updateMotionPreference);
-      }
+      mediaQuery.removeEventListener("change", updateMotionPreference);
     };
   }, []);
 
