@@ -39,7 +39,7 @@ beforeEach(() => {
 function createShow(overrides: Partial<Show>): Show {
   return {
     id: "70164137-f515-40b9-be69-d059f433bf21",
-    date: "2026-04-05T20:00:00+02:00",
+    date: "2099-06-01T20:00:00+02:00",
     hasHappened: false,
     venue: "Mercury Live",
     city: "Cape Town, WC",
@@ -54,7 +54,7 @@ describe("HomeCarousel", () => {
     getShowsMock.mockResolvedValue([
       createShow({
         id: "70164137-f515-40b9-be69-d059f433bf21",
-        date: "2026-04-05T20:00:00+02:00",
+        date: "2099-06-01T20:00:00+02:00",
         venue: "Mercury Live",
         ticketUrl: "https://tickets.example.com/mercury",
         priceOnline: "R180",
@@ -62,7 +62,7 @@ describe("HomeCarousel", () => {
       }),
       createShow({
         id: "03122c83-28e1-4382-b738-c4cbc442ea3a",
-        date: "2026-04-12T20:00:00+02:00",
+        date: "2099-06-08T20:00:00+02:00",
         venue: "Armchair Theatre",
         city: "Cape Town, WC",
         ticketUrl: "https://tickets.example.com/armchair",
