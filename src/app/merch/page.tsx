@@ -39,24 +39,24 @@ export default async function MerchPage() {
             {labels.merch.empty}
           </div>
         ) : (
-          <ul className="mt-10 grid gap-4 md:grid-cols-2">
+          <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {merchItems.map((item) => (
               <li
                 key={item.id}
                 className="rounded-2xl border border-border/70 bg-surface/60 p-4 transition-colors hover:border-highlight/60 sm:p-6"
               >
                 <div
-                  className={`grid gap-4 md:items-start ${
+                  className={`grid gap-4 md:items-start lg:block ${
                     item.imageUrl ? "md:grid-cols-[140px_minmax(0,1fr)]" : ""
                   }`}
                 >
                   {item.imageUrl ? (
-                    <div className="overflow-hidden rounded-xl border border-border/70 bg-bg/50">
+                    <div className="overflow-hidden rounded-xl border border-border/70 bg-bg/50 lg:mb-4">
                       <ContentImage
                         src={item.imageUrl}
                         alt={item.name}
-                        className="h-28 w-full object-cover"
-                        fallbackClassName="flex h-28 w-full items-center justify-center bg-surface/50"
+                        className="h-28 w-full object-cover lg:h-36"
+                        fallbackClassName="flex h-28 w-full items-center justify-center bg-surface/50 lg:h-36"
                         fallbackLabel={item.name}
                         loading="lazy"
                         decoding="async"
