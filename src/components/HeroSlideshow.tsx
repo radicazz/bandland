@@ -8,10 +8,7 @@ type HeroSlideshowProps = {
   intervalSeconds?: number;
 };
 
-export function HeroSlideshow({
-  slides,
-  intervalSeconds = 6,
-}: HeroSlideshowProps) {
+export function HeroSlideshow({ slides, intervalSeconds = 6 }: HeroSlideshowProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
   const hasSlides = slides.length > 0;
@@ -65,8 +62,9 @@ export function HeroSlideshow({
           />
         </div>
       ))}
-      <div className="absolute inset-0 bg-bg/50" />
-      <div className="absolute inset-0 bg-highlight/20 mix-blend-screen" />
+      <div className="absolute inset-0 bg-bg/60" />
+      <div className="absolute inset-0 bg-highlight/10 mix-blend-screen" />
+      <div className="absolute inset-0 bg-gradient-to-b from-bg/20 via-transparent to-bg" />
       <div className="absolute inset-0 hero-vignette" />
       <div className="absolute inset-0 hero-grain" />
     </div>

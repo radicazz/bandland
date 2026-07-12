@@ -52,11 +52,11 @@ export function MerchCarousel({ items, labels }: MerchCarouselProps) {
   return (
     <Link
       href="/merch"
-      className="card-interactive relative block rounded-3xl border border-border/70 bg-surface/50 p-4 sm:p-7"
+      className="card-interactive punk-panel relative block p-4 sm:p-7"
       aria-label={labels.storeCta}
     >
       <article className="min-w-0">
-        <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-bg/50">
+        <div className="relative overflow-hidden border border-border bg-bg/50">
           {activeItem?.imageUrl ? (
             <ContentImage
               src={activeItem.imageUrl}
@@ -91,18 +91,14 @@ export function MerchCarousel({ items, labels }: MerchCarouselProps) {
               <span
                 key={item.id}
                 className={`h-1.5 rounded-full transition-all ${
-                  index === normalizedActiveIndex
-                    ? "w-6 bg-highlight/80"
-                    : "w-2 bg-border/80"
+                  index === normalizedActiveIndex ? "w-6 bg-highlight/80" : "w-2 bg-border/80"
                 }`}
               />
             ))}
           </div>
         ) : null}
-        <p className="mt-4 text-xs uppercase tracking-[0.4em] text-text-dim">{labels.storeLabel}</p>
-        <h2 className="mt-4 break-words text-2xl font-brand uppercase tracking-[0.12em] text-highlight sm:tracking-[0.16em]">
-          {featuredItem?.name ?? labels.storeTitle}
-        </h2>
+        <p className="section-kicker mt-5">{labels.storeLabel}</p>
+        <h2 className="display-title mt-6 text-3xl">{featuredItem?.name ?? labels.storeTitle}</h2>
         {featuredItem?.price ? (
           <p className="mt-3 break-words text-sm tabular-nums text-text">{featuredItem.price}</p>
         ) : null}

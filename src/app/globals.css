@@ -30,6 +30,10 @@ body {
   height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--bg);
   color: var(--text);
@@ -41,6 +45,11 @@ body {
     "Segoe UI",
     Arial,
     sans-serif;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--text) 2%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 2%, transparent) 1px, transparent 1px);
+  background-size: 48px 48px;
+  text-rendering: optimizeLegibility;
 }
 
 .font-brand {
@@ -81,9 +90,25 @@ body {
   opacity: 0.12;
 }
 
+.page-glow {
+  background: radial-gradient(
+    circle at 50% 0%,
+    color-mix(in srgb, var(--highlight) 17%, transparent),
+    transparent 42rem
+  );
+}
+
 @layer components {
   .btn-primary {
-    @apply inline-flex min-h-10 items-center justify-center rounded-full border border-highlight/60 bg-highlight/10 px-5 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-highlight transition-colors hover:bg-highlight/20 whitespace-normal;
+    @apply inline-flex min-h-11 items-center justify-center border border-highlight bg-highlight px-5 py-2 text-center text-xs font-bold uppercase tracking-[0.22em] text-bg transition-colors hover:bg-transparent hover:text-highlight whitespace-normal;
+    clip-path: polygon(
+      0 0,
+      calc(100% - 0.55rem) 0,
+      100% 0.55rem,
+      100% 100%,
+      0.55rem 100%,
+      0 calc(100% - 0.55rem)
+    );
   }
 
   .btn-primary-lg {
@@ -91,11 +116,19 @@ body {
   }
 
   .btn-secondary {
-    @apply inline-flex min-h-10 items-center justify-center rounded-full border border-border/70 bg-surface/70 px-5 py-2 text-center text-xs font-semibold uppercase tracking-[0.3em] text-text transition-colors hover:border-highlight/40 hover:text-highlight whitespace-normal;
+    @apply inline-flex min-h-11 items-center justify-center border border-border bg-surface/80 px-5 py-2 text-center text-xs font-bold uppercase tracking-[0.22em] text-text transition-colors hover:border-highlight hover:text-highlight whitespace-normal;
+    clip-path: polygon(
+      0 0,
+      calc(100% - 0.55rem) 0,
+      100% 0.55rem,
+      100% 100%,
+      0.55rem 100%,
+      0 calc(100% - 0.55rem)
+    );
   }
 
   .menu-tile {
-    @apply block rounded-xl border border-border/70 bg-surface/60 px-4 py-3 transition-colors hover:border-highlight/60;
+    @apply block border-l-2 border-border bg-bg/30 px-4 py-3 transition-colors hover:border-highlight hover:bg-highlight/5;
   }
 
   .menu-scroll {
@@ -119,7 +152,25 @@ body {
   }
 
   .card-interactive {
-    @apply relative transition-transform duration-500 ease-out motion-reduce:transition-none md:hover:-translate-y-0.5 md:hover:border-highlight/40 focus-within:-translate-y-0.5 focus-within:ring-2 focus-within:ring-highlight/30 focus-within:ring-offset-4 focus-within:ring-offset-bg;
+    @apply relative transition-transform duration-300 ease-out motion-reduce:transition-none md:hover:-translate-y-1 md:hover:border-highlight/60 focus-within:-translate-y-1 focus-within:ring-2 focus-within:ring-highlight/40 focus-within:ring-offset-4 focus-within:ring-offset-bg;
+  }
+
+  .punk-panel {
+    @apply border border-border/80 bg-surface/80;
+    box-shadow: 6px 6px 0 color-mix(in srgb, var(--bg) 70%, transparent);
+  }
+
+  .section-kicker {
+    @apply flex items-center gap-3 text-[0.65rem] font-bold uppercase tracking-[0.35em] text-text-dim;
+  }
+
+  .section-kicker::before {
+    content: "";
+    @apply h-px w-6 bg-highlight;
+  }
+
+  .display-title {
+    @apply break-words font-brand uppercase leading-[0.82] tracking-[0.08em] text-highlight;
   }
 }
 

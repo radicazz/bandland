@@ -11,7 +11,13 @@ import type { Show } from "@/content/schema";
 
 function OnlinePriceIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+    >
       <circle cx="12" cy="12" r="8" />
       <path d="M4 12h16" />
       <path d="M12 4a12 12 0 0 1 0 16" />
@@ -22,7 +28,13 @@ function OnlinePriceIcon() {
 
 function DoorPriceIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+    >
       <path d="M7 4.5h8a1 1 0 0 1 1 1v13H8a1 1 0 0 1-1-1z" />
       <path d="M10.5 12.5h.01" strokeLinecap="round" />
       <path d="M16 18.5h1.5" strokeLinecap="round" />
@@ -46,10 +58,10 @@ function ShowCard({
 
   return (
     <li
-      className={`rounded-2xl border bg-surface/60 p-4 transition-colors sm:p-6 ${
+      className={`border-l-2 bg-surface/70 p-4 transition-colors sm:p-6 ${
         isPast
-          ? "border-border/40 opacity-60 hover:border-border/60 hover:opacity-80"
-          : "border-border/70 hover:border-highlight/60"
+          ? "border-border/50 opacity-60 hover:border-border hover:opacity-80"
+          : "border-border hover:border-highlight"
       }`}
     >
       <div
@@ -58,7 +70,7 @@ function ShowCard({
         }`}
       >
         {show.imageUrl ? (
-          <div className="overflow-hidden rounded-xl border border-border/70 bg-bg/50">
+          <div className="overflow-hidden border border-border bg-bg/50">
             <ContentImage
               src={show.imageUrl}
               alt={`${show.venue} show poster`}
@@ -146,7 +158,7 @@ function ShowListSection({
 }) {
   return (
     <section aria-labelledby={headingId}>
-      <h2 id={headingId} className="text-xs uppercase tracking-[0.35em] text-text-dim">
+      <h2 id={headingId} className="section-kicker">
         {heading}
       </h2>
       <ul className="mt-4 grid gap-4 sm:gap-5">
@@ -174,7 +186,7 @@ export default async function ShowsPage() {
   );
 
   return (
-    <section className="relative overflow-hidden border-b border-border/60">
+    <section className="page-glow relative overflow-hidden border-b border-border/60">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute -top-40 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-highlight/20 blur-3xl" />
         <div className="absolute inset-0 bg-surface/40" />
@@ -183,8 +195,8 @@ export default async function ShowsPage() {
       </div>
 
       <Container className="relative py-16 sm:py-20">
-        <p className="text-xs uppercase tracking-[0.4em] text-text-dim">{labels.shows.label}</p>
-        <h1 className="mt-4 break-words text-4xl font-brand uppercase tracking-[0.14em] text-highlight sm:text-5xl sm:tracking-[0.22em]">
+        <p className="section-kicker">{labels.shows.label}</p>
+        <h1 className="display-title mt-7 text-6xl sm:text-7xl lg:text-8xl">
           {labels.shows.title}
         </h1>
         <p className="mt-4 max-w-2xl break-words text-sm leading-6 text-text-muted">
@@ -192,7 +204,7 @@ export default async function ShowsPage() {
           {labels.shows.introSuffix}
         </p>
         {hasSplitPricing ? (
-          <div className="mt-5 grid gap-2 rounded-2xl border border-border/70 bg-surface/50 p-4 text-sm text-text-muted sm:max-w-2xl">
+          <div className="mt-7 grid gap-2 border-l-2 border-highlight bg-surface/70 p-4 text-sm text-text-muted sm:max-w-2xl">
             <p className="text-[10px] uppercase tracking-[0.35em] text-text-dim">
               {labels.shows.ticketPriceGuideTitle}
             </p>
@@ -210,16 +222,12 @@ export default async function ShowsPage() {
                 <span>{labels.shows.ticketPriceGuideDoor}</span>
               </span>
             </div>
-            <p className="text-xs text-text-dim">
-              {labels.shows.ticketPriceGuideFallbackNote}
-            </p>
+            <p className="text-xs text-text-dim">{labels.shows.ticketPriceGuideFallbackNote}</p>
           </div>
         ) : null}
 
         {upcoming.length === 0 && past.length === 0 ? (
-          <div className="mt-10 rounded-2xl border border-border/70 bg-surface/60 p-6 text-sm text-text-muted">
-            {labels.shows.empty}
-          </div>
+          <div className="punk-panel mt-10 p-6 text-sm text-text-muted">{labels.shows.empty}</div>
         ) : (
           <div className="mt-10 grid gap-8">
             {upcoming.length > 0 ? (

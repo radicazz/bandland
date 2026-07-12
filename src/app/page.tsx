@@ -15,10 +15,7 @@ const getSlides = unstable_cache(
     try {
       const entries = await readdir(slideshowDir, { withFileTypes: true });
       return entries
-        .filter(
-          (entry) =>
-            entry.isFile() && /\.(avif|gif|jpe?g|png|webp)$/i.test(entry.name),
-        )
+        .filter((entry) => entry.isFile() && /\.(avif|gif|jpe?g|png|webp)$/i.test(entry.name))
         .map((entry) => `/slideshow/${entry.name}`)
         .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
     } catch {
@@ -37,11 +34,19 @@ export default async function Home() {
   const slides = await getSlides();
 
   return (
-    <section className="relative min-h-svh -mt-16 overflow-hidden pt-16 sm:min-h-[calc(100svh-4rem)]">
+    <section className="relative -mt-16 overflow-hidden border-b border-border/60 pt-16">
       <HeroSlideshow slides={slides} />
 
-      <Container className="relative flex items-center justify-center py-10 sm:items-start sm:py-14 lg:py-16">
-        <h1 className="sr-only">{site.name}</h1>
+      <Container className="relative py-12 sm:py-16 lg:py-20">
+        <div className="mb-12 max-w-4xl sm:mb-16 lg:mb-20">
+          <p className="section-kicker">{labels.home.pinned}</p>
+          <h1 className="display-title mt-6 text-[clamp(4.5rem,18vw,10rem)]">{site.name}</h1>
+          <div className="mt-6 flex max-w-xl items-start gap-4 border-l-2 border-highlight pl-4 sm:mt-8">
+            <p className="text-sm font-medium leading-6 text-text-muted sm:text-base">
+              {labels.meta.description}
+            </p>
+          </div>
+        </div>
         <HomeCarousel labels={labels} locale={locale} />
       </Container>
     </section>

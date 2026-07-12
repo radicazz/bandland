@@ -12,19 +12,11 @@ type ReleasePlayerTabsProps = {
   appleUrl: string;
   labels: Pick<
     Translations["home"],
-    | "playerTabsLabel"
-    | "playerSpotifyLabel"
-    | "playerAppleLabel"
-    | "playerFallbackHint"
+    "playerTabsLabel" | "playerSpotifyLabel" | "playerAppleLabel" | "playerFallbackHint"
   >;
 };
 
-export function ReleasePlayerTabs({
-  title,
-  spotifyUrl,
-  appleUrl,
-  labels,
-}: ReleasePlayerTabsProps) {
+export function ReleasePlayerTabs({ title, spotifyUrl, appleUrl, labels }: ReleasePlayerTabsProps) {
   const [active, setActive] = useState<PlayerKey>("spotify");
   const [renderedPlayers, setRenderedPlayers] = useState<Record<PlayerKey, boolean>>({
     spotify: true,
@@ -67,9 +59,7 @@ export function ReleasePlayerTabs({
   const activeIndex = tabs.findIndex((tab) => tab.key === active);
 
   const ensurePlayerRendered = (key: PlayerKey) => {
-    setRenderedPlayers((current) =>
-      current[key] ? current : { ...current, [key]: true },
-    );
+    setRenderedPlayers((current) => (current[key] ? current : { ...current, [key]: true }));
   };
 
   const focusTabAtIndex = (index: number) => {
@@ -113,7 +103,7 @@ export function ReleasePlayerTabs({
       <div
         role="tablist"
         aria-label={labels.playerTabsLabel}
-        className="flex w-full flex-wrap gap-2 rounded-2xl border border-border/70 bg-surface/60 p-1 sm:rounded-full"
+        className="flex w-full flex-wrap gap-1 border border-border bg-bg/50 p-1"
       >
         {tabs.map((tab) => {
           const isActive = active === tab.key;
@@ -140,10 +130,10 @@ export function ReleasePlayerTabs({
               onMouseEnter={() => ensurePlayerRendered(tab.key)}
               onFocus={() => ensurePlayerRendered(tab.key)}
               onKeyDown={(event) => handleKeyDown(event, tabIndex)}
-              className={`min-h-11 min-w-0 flex-1 rounded-xl px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] transition-colors sm:rounded-full sm:px-4 sm:tracking-[0.35em] ${
+              className={`min-h-11 min-w-0 flex-1 border-l-2 px-3 py-2 text-[0.65rem] font-semibold uppercase tracking-[0.22em] transition-colors sm:px-4 sm:tracking-[0.35em] ${
                 isActive
-                  ? "bg-highlight/15 text-highlight"
-                  : "text-text-muted hover:text-text"
+                  ? "border-highlight bg-highlight/10 text-highlight"
+                  : "border-transparent text-text-muted hover:text-text"
               }`}
             >
               <span className="block truncate sm:whitespace-nowrap">{tab.label}</span>
@@ -168,7 +158,7 @@ export function ReleasePlayerTabs({
             hidden={!isActive}
             className="mt-4"
           >
-            <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-surface/70">
+            <div className="relative overflow-hidden border border-border bg-surface/70">
               {isRendered ? (
                 <iframe
                   title={`${title} — ${tab.label} player`}

@@ -15,13 +15,7 @@ type HomeCarouselProps = {
   locale: Locale;
 };
 
-function HomeShowPricing({
-  show,
-  labels,
-}: {
-  show: Show;
-  labels: Translations["shows"];
-}) {
+function HomeShowPricing({ show, labels }: { show: Show; labels: Translations["shows"] }) {
   if (show.priceOnline || show.priceDoor) {
     return (
       <div className="grid gap-2 text-sm">
@@ -88,12 +82,7 @@ function UpcomingShowListItem({
 
   if (show.ticketUrl) {
     return (
-      <a
-        href={show.ticketUrl}
-        target="_blank"
-        rel="noreferrer"
-        className="menu-tile h-full"
-      >
+      <a href={show.ticketUrl} target="_blank" rel="noreferrer" className="menu-tile h-full">
         {content}
       </a>
     );
@@ -125,35 +114,35 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
   const hasUpcomingShows = Boolean(featuredShow);
 
   return (
-    <div className="flex w-full flex-col items-center gap-5 px-1 sm:gap-8 sm:px-4 lg:gap-10">
+    <div className="flex w-full flex-col items-center gap-6 lg:gap-8">
       <section className="w-full max-w-6xl">
-        <div className={`grid gap-5 ${supportingShows.length > 0 ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.9fr)]" : ""}`}>
+        <div
+          className={`grid gap-5 ${supportingShows.length > 0 ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.9fr)]" : ""}`}
+        >
           <article
-            className={`card-interactive rounded-3xl border border-border/70 bg-surface/70 text-left ${
+            className={`card-interactive punk-panel text-left ${
               hasUpcomingShows
                 ? "p-5 sm:p-7 lg:p-8"
                 : "p-4 sm:p-5 lg:flex lg:items-center lg:justify-between lg:gap-8"
             }`}
           >
-            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
-              {homeLabels.nextShowLabel}
-            </p>
+            <p className="section-kicker">{homeLabels.nextShowLabel}</p>
             {featuredShow ? (
               <>
-                <h2 className="mt-4 break-words text-3xl font-brand uppercase tracking-[0.12em] text-highlight sm:text-4xl sm:tracking-[0.16em] lg:text-5xl">
+                <h2 className="display-title mt-6 text-4xl sm:text-5xl lg:text-6xl">
                   {featuredShow.venue}
                 </h2>
                 <p className="mt-3 break-words text-base text-text sm:text-lg">
                   {featuredShow.city}
                 </p>
                 <div className="mt-6 grid gap-3">
-                  <div className="rounded-2xl border border-border/70 bg-bg/30 px-4 py-3">
+                  <div className="border-l border-border bg-bg/40 px-4 py-3">
                     <p className="break-words text-sm tabular-nums text-text">
                       {formatShowDatePretty(featuredShow.date, locale)}
                     </p>
                   </div>
                   {featuredShow.timeFrame ? (
-                    <div className="rounded-2xl border border-border/70 bg-bg/30 px-4 py-3">
+                    <div className="border-l border-border bg-bg/40 px-4 py-3">
                       <p className="break-words text-sm text-text-muted">
                         {homeLabels.timeFrameLabel}:{" "}
                         <span className="text-text">{featuredShow.timeFrame}</span>
@@ -161,7 +150,7 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
                     </div>
                   ) : null}
                   {hasShowPricing(featuredShow) ? (
-                    <div className="rounded-2xl border border-border/70 bg-bg/30 px-4 py-3">
+                    <div className="border-l border-border bg-bg/40 px-4 py-3">
                       <HomeShowPricing show={featuredShow} labels={showLabels} />
                     </div>
                   ) : null}
@@ -205,10 +194,8 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
           </article>
 
           {supportingShows.length > 0 ? (
-            <aside className="card-interactive rounded-3xl border border-border/70 bg-surface/60 p-4 sm:p-6">
-              <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
-                {homeLabels.upcomingListTitle}
-              </p>
+            <aside className="card-interactive punk-panel p-4 sm:p-6">
+              <p className="section-kicker">{homeLabels.upcomingListTitle}</p>
               <div className="mt-4 grid gap-3">
                 {supportingShows.map((show) => (
                   <UpcomingShowListItem
@@ -227,13 +214,9 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
 
       <section className="w-full max-w-6xl">
         <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-          <article className="card-interactive rounded-3xl border border-border/70 bg-surface/60 p-4 text-left sm:p-7 lg:p-8">
-            <p className="text-xs uppercase tracking-[0.4em] text-text-dim">
-              {homeLabels.releaseLabel}
-            </p>
-            <h2 className="mt-4 break-words text-2xl font-brand uppercase tracking-[0.12em] text-highlight sm:text-3xl sm:tracking-[0.16em]">
-              {latestRelease.title}
-            </h2>
+          <article className="card-interactive punk-panel p-4 text-left sm:p-7 lg:p-8">
+            <p className="section-kicker">{homeLabels.releaseLabel}</p>
+            <h2 className="display-title mt-6 text-3xl sm:text-4xl">{latestRelease.title}</h2>
             <p className="mt-4 break-words text-sm leading-6 text-text-muted sm:text-base sm:leading-7">
               {latestRelease.description}
             </p>

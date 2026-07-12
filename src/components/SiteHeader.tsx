@@ -62,9 +62,7 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ locale, labels }: SiteHeaderProps) {
-  const socialLinks = site.socials.filter(
-    (social) => social.href && social.label in socialIcons,
-  );
+  const socialLinks = site.socials.filter((social) => social.href && social.label in socialIcons);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const menuId = useId();
@@ -199,7 +197,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
   }, [isMenuOpen]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/40 bg-bg/50 backdrop-blur-md">
+    <header className="sticky top-0 z-30 border-b border-border/80 bg-bg/80 backdrop-blur-xl">
       <Container className="relative">
         <div className="grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 sm:grid-cols-[auto_1fr_auto] sm:py-0">
           <div className="relative min-w-0" ref={menuRef}>
@@ -210,14 +208,14 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               aria-controls={menuId}
               aria-haspopup="dialog"
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="flex min-h-11 max-w-full items-center gap-2 rounded-full px-2 text-left text-base font-brand tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight sm:text-lg sm:tracking-[0.18em]"
+              className="group flex min-h-11 max-w-full items-center gap-3 px-1 text-left text-base font-brand uppercase tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight sm:text-lg sm:tracking-[0.18em]"
             >
               <Image
                 src="/logos/schmat-rat.png"
                 alt="Schmat logo"
                 width={28}
                 height={28}
-                className="h-7 w-7"
+                className="h-8 w-8 border border-border bg-surface p-0.5 transition-transform group-hover:-rotate-6"
               />
               <span className="truncate">{site.name}</span>
               <span className="sr-only">
@@ -250,7 +248,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                 <nav
                   aria-label={labels.nav.explore}
                   aria-hidden={!isMenuOpen}
-                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto rounded-2xl border border-border/70 bg-surface/90 p-4 sm:max-h-[60vh]"
+                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto border border-border bg-surface/95 p-4 shadow-2xl sm:max-h-[60vh]"
                 >
                   <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
                     {labels.nav.explore}
@@ -263,14 +261,13 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                         { href: "/shows", label: labels.nav.shows, sublabel: labels.nav.live },
                       ] as const
                     ).map(({ href, label, sublabel }) => {
-                      const isActive =
-                        href === "/" ? pathname === "/" : pathname.startsWith(href);
+                      const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
                       return (
                         <li key={href}>
                           <Link
                             href={href}
                             aria-current={isActive ? "page" : undefined}
-                            className={`menu-tile${isActive ? " border-highlight/50 bg-highlight/5" : ""}`}
+                            className={`menu-tile${isActive ? " border-highlight bg-highlight/5" : ""}`}
                             tabIndex={menuTabIndex}
                             onClick={() => closeMenu()}
                           >
@@ -298,7 +295,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                           return (
                             <li key={social.label}>
                               <a
-                                className="flex h-11 w-11 items-center justify-center rounded-full border border-border/70 bg-surface/30 text-text transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
+                                className="flex h-11 w-11 items-center justify-center border border-border bg-surface/30 text-text transition-colors hover:border-highlight hover:text-highlight focus-visible:text-highlight"
                                 href={social.href ?? undefined}
                                 target="_blank"
                                 rel="noreferrer"
@@ -328,13 +325,13 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               <div
                 role="group"
                 aria-label={labels.nav.language}
-                className="flex shrink-0 items-center gap-1 rounded-full border border-border/70 bg-surface/60 p-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-text-dim"
+                className="flex shrink-0 items-center gap-1 border border-border bg-surface/60 p-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-text-dim"
               >
                 <button
                   type="button"
                   aria-pressed={locale === "en"}
                   onClick={() => setLocale("en")}
-                  className={`min-h-8 rounded-full px-2.5 py-1 transition-colors ${
+                  className={`min-h-8 px-2.5 py-1 transition-colors ${
                     locale === "en"
                       ? "bg-highlight/20 text-highlight"
                       : "text-text-dim hover:text-highlight focus-visible:text-highlight"
@@ -346,7 +343,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                   type="button"
                   aria-pressed={locale === "af"}
                   onClick={() => setLocale("af")}
-                  className={`min-h-8 rounded-full px-2.5 py-1 transition-colors ${
+                  className={`min-h-8 px-2.5 py-1 transition-colors ${
                     locale === "af"
                       ? "bg-highlight/20 text-highlight"
                       : "text-text-dim hover:text-highlight focus-visible:text-highlight"
@@ -363,7 +360,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                       <li key={social.label}>
                         <a
                           href={social.href ?? undefined}
-                          className="flex h-10 w-10 items-center justify-center rounded-full border border-border/70 bg-surface/30 transition-colors hover:border-highlight/60 hover:text-highlight focus-visible:text-highlight"
+                          className="flex h-10 w-10 items-center justify-center border border-border bg-surface/30 transition-colors hover:border-highlight hover:text-highlight focus-visible:text-highlight"
                           target="_blank"
                           rel="noreferrer"
                           aria-label={social.label}
