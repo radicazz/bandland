@@ -1,14 +1,11 @@
 "use client";
 
-import { useActionState, useId, useState } from "react";
+import { useActionState, useEffect, useId, useRef } from "react";
 import { useFormStatus } from "react-dom";
 
-import { ContentImage } from "@/components/ContentImage";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import type { Show } from "@/content/schema";
-import {
-  initialAdminFormState,
-  type AdminFormState,
-} from "@/lib/admin-form-state";
+import { initialAdminFormState, type AdminFormState } from "@/lib/admin-form-state";
 
 type ShowFormProps = {
   action: (prevState: AdminFormState, formData: FormData) => Promise<AdminFormState>;
@@ -56,9 +53,7 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
   const [state, formAction] = useActionState(action, initialAdminFormState);
   const hasHappenedId = useId();
   const hasHappenedHintId = useId();
-  const [imagePreview, setImagePreview] = useState(
-    initialValues?.imageUrl ?? "",
-  );
+  const formRef = useRef<HTMLFormElement>(null);
 
   const parsedDateTime = initialValues?.date
     ? parseISODateTime(initialValues.date)
@@ -66,6 +61,12 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
 
   const inputBase =
     "mt-2 min-h-11 w-full rounded-xl border bg-bg/60 px-4 py-3 text-sm text-text placeholder:text-text-dim";
+
+  useEffect(() => {
+    if (state.status === "error") {
+      formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+    }
+  }, [state]);
 
   const handleFormAction = (formData: FormData) => {
     const date = formData.get("showDate") as string;
@@ -83,7 +84,7 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
   };
 
   return (
-    <form action={handleFormAction} className="mt-6 grid gap-5 sm:gap-6">
+    <form ref={formRef} action={handleFormAction} className="mt-6 grid gap-5 sm:gap-6">
       {state.message ? (
         <p
           role="alert"
@@ -93,9 +94,7 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
         </p>
       ) : null}
 
-      {initialValues?.id ? (
-        <input type="hidden" name="id" value={initialValues.id} />
-      ) : null}
+      {initialValues?.id ? <input type="hidden" name="id" value={initialValues.id} /> : null}
 
       <fieldset className="grid gap-4 rounded-2xl border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
         <legend className="mb-2 px-1 text-xs uppercase tracking-[0.3em] text-text-dim">
@@ -132,9 +131,7 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
           </div>
         ) : null}
 
-        <p className="text-xs text-text-dim sm:col-span-2">
-          Timezone: SAST (UTC+02:00)
-        </p>
+        <p className="text-xs text-text-dim sm:col-span-2">Timezone: SAST (UTC+02:00)</p>
       </fieldset>
 
       <fieldset className="rounded-2xl border border-border/60 bg-bg/30 p-4 sm:p-5">
@@ -152,10 +149,7 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
             className="mt-0.5 h-4 w-4 rounded border border-border/70 bg-bg/60 accent-[var(--highlight)]"
           />
           <div className="min-w-0">
-            <label
-              htmlFor={hasHappenedId}
-              className="block text-sm font-medium text-text"
-            >
+            <label htmlFor={hasHappenedId} className="block text-sm font-medium text-text">
               Already happened
             </label>
             <p id={hasHappenedHintId} className="mt-1 text-xs text-text-muted">
@@ -236,8 +230,8 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
         </label>
 
         <p className="text-xs text-text-dim sm:col-span-2">
-          Split prices will display with icons on the public shows page. If these are empty,
-          the general price below is used as a fallback.
+          Split prices will display with icons on the public shows page. If these are empty, the
+          general price below is used as a fallback.
         </p>
       </fieldset>
 
@@ -268,36 +262,14 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
         <FieldError message={state.fieldErrors?.ticketUrl} />
       </label>
 
-      <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
-        Image URL (optional)
-        <input
-          name="imageUrl"
-          type="url"
-          inputMode="url"
-          spellCheck={false}
-          value={imagePreview}
-          onChange={(event) => setImagePreview(event.target.value)}
-          className={`${inputBase} ${state.fieldErrors?.imageUrl ? "border-highlight/70" : "border-border/70"}`}
-          placeholder="https://images.example.com/show.jpg"
-          aria-invalid={Boolean(state.fieldErrors?.imageUrl)}
-        />
-        <FieldError message={state.fieldErrors?.imageUrl} />
-        {imagePreview ? (
-          <div className="mt-3 overflow-hidden rounded-xl border border-border/70 bg-bg/60">
-            <ContentImage
-              src={imagePreview}
-              alt="Show preview"
-              className="h-36 w-full object-cover sm:h-40"
-              fallbackClassName="flex h-36 w-full items-center justify-center bg-surface/50 sm:h-40"
-              fallbackLabel="Show image preview"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        ) : null}
-      </label>
+      <ImageUploadField
+        label="Show photo (optional)"
+        currentImageId={initialValues?.imageId}
+        currentImageUrl={initialValues?.imageUrl}
+        error={state.fieldErrors?.image}
+      />
 
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 border border-border bg-surface/95 p-3 shadow-2xl sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
         <SubmitButton label={submitLabel} />
       </div>
     </form>

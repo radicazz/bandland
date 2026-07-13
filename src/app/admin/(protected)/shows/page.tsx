@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { ContentImage } from "@/components/ContentImage";
+import { AdminNotice } from "@/components/admin/AdminNotice";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { getLocaleFromCookies } from "@/i18n/server";
 import { deleteShowAction } from "@/lib/admin-actions";
@@ -7,7 +9,12 @@ import { readShows } from "@/lib/content-store";
 import { formatShowDatePretty } from "@/lib/formatters";
 import { getResolvedHasHappened, splitShowsByStatus } from "@/lib/shows";
 
-export default async function AdminShowsPage() {
+export default async function AdminShowsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ saved?: string }>;
+}) {
+  const { saved } = await searchParams;
   const shows = await readShows();
   const { upcoming, past } = splitShowsByStatus(shows);
   const orderedShows = [...upcoming, ...past];
@@ -15,18 +22,17 @@ export default async function AdminShowsPage() {
   const formatShowDate = (value: string) => formatShowDatePretty(value, locale);
 
   return (
-    <section className="rounded-2xl border border-border/70 bg-surface/70 p-4 sm:p-6">
+    <section className="punk-panel p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-text">Shows</h2>
-          <p className="mt-2 text-sm text-text-muted">
-            Manage upcoming and past shows.
-          </p>
+          <p className="mt-2 text-sm text-text-muted">Manage upcoming and past shows.</p>
         </div>
         <Link href="/admin/shows/new" className="btn-primary w-full sm:w-auto">
           New show
         </Link>
       </div>
+      <AdminNotice value={saved} entity="Show" />
 
       {shows.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-border/70 bg-bg/60 p-6 text-sm text-text-muted">
@@ -39,11 +45,18 @@ export default async function AdminShowsPage() {
             const hasHappened = getResolvedHasHappened(show);
 
             return (
-              <li
-                key={show.id}
-                className="rounded-2xl border border-border/70 bg-bg/60 p-4 sm:p-5"
-              >
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <li key={show.id} className="border border-border bg-bg/60 p-4 sm:p-5">
+                <div className="grid gap-4 sm:grid-cols-[7rem_minmax(0,1fr)_auto] sm:items-start">
+                  <div className="overflow-hidden border border-border bg-surface/50">
+                    <ContentImage
+                      imageId={show.imageId}
+                      src={show.imageUrl}
+                      alt=""
+                      className="h-28 w-full object-cover sm:h-24"
+                      fallbackClassName="flex h-28 w-full items-center justify-center bg-surface/50 sm:h-24"
+                      fallbackLabel="No photo"
+                    />
+                  </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span
@@ -89,11 +102,8 @@ export default async function AdminShowsPage() {
                       </p>
                     ) : null}
                   </div>
-                  <div className="grid w-full gap-3 sm:w-auto sm:grid-flow-col sm:auto-cols-max sm:items-center">
-                    <Link
-                      href={`/admin/shows/${show.id}`}
-                      className="btn-primary w-full sm:w-auto"
-                    >
+                  <div className="grid w-full gap-2 sm:w-auto sm:items-center">
+                    <Link href={`/admin/shows/${show.id}`} className="btn-primary w-full sm:w-auto">
                       Edit
                     </Link>
                     <form action={deleteShowAction} className="w-full sm:w-auto">

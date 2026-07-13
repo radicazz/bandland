@@ -12,10 +12,16 @@ import {
   appendAuditEntry,
   readMerch,
   readShows,
+  serializeContentMutation,
   writeMerch,
   writeShows,
 } from "@/lib/content-store";
-
+import {
+  archiveManagedMedia,
+  discardManagedMedia,
+  MediaValidationError,
+  processMediaUpload,
+} from "@/lib/media-store";
 
 const showInputSchema = z.object({
   date: z.string().datetime({ offset: true }),
@@ -27,7 +33,6 @@ const showInputSchema = z.object({
   priceOnline: z.string().min(1).optional(),
   priceDoor: z.string().min(1).optional(),
   ticketUrl: z.string().url().optional(),
-  imageUrl: z.string().url().optional(),
 });
 
 const merchInputSchema = z.object({
@@ -35,7 +40,6 @@ const merchInputSchema = z.object({
   description: z.string().min(1).optional(),
   price: z.string().min(1),
   href: z.string().url(),
-  imageUrl: z.string().url().optional(),
 });
 
 function normalizeInput(value: FormDataEntryValue | null) {
@@ -81,15 +85,34 @@ async function logAudit({
   entityId: string;
   details?: string;
 }) {
-  await appendAuditEntry({
-    id: randomUUID(),
-    actor: "admin",
-    action,
-    entity,
-    entityId,
-    createdAt: new Date().toISOString(),
-    ...(details ? { details } : {}),
-  });
+  try {
+    await appendAuditEntry({
+      id: randomUUID(),
+      actor: "admin",
+      action,
+      entity,
+      entityId,
+      createdAt: new Date().toISOString(),
+      ...(details ? { details } : {}),
+    });
+  } catch (error) {
+    console.error("[Admin] Content saved but audit logging failed", error);
+  }
+}
+
+function mediaErrorState(error: unknown): AdminFormState {
+  if (error instanceof MediaValidationError) {
+    return {
+      status: "error",
+      message: "Please choose a different image.",
+      fieldErrors: { image: error.message },
+    };
+  }
+  console.error("[Admin] Unable to save content", error);
+  return {
+    status: "error",
+    message: "The change could not be saved. Check storage permissions or try again.",
+  };
 }
 
 export async function createShowAction(
@@ -109,7 +132,6 @@ export async function createShowAction(
     priceOnline: optionalInput(formData.get("priceOnline")),
     priceDoor: optionalInput(formData.get("priceDoor")),
     ticketUrl: optionalInput(formData.get("ticketUrl")),
-    imageUrl: optionalInput(formData.get("imageUrl")),
   };
 
   const parsed = showInputSchema.safeParse(input);
@@ -121,26 +143,42 @@ export async function createShowAction(
     };
   }
 
+  let imageId: string | null = null;
+  try {
+    imageId = await processMediaUpload(formData.get("image"));
+  } catch (error) {
+    return mediaErrorState(error);
+  }
+
   const now = new Date().toISOString();
   const nextShow: Show = {
     id: randomUUID(),
     ...parsed.data,
     createdAt: now,
     updatedAt: now,
+    ...(imageId ? { imageId } : {}),
   };
 
-  const shows = await readShows();
-  const nextShows = [...shows, nextShow];
-  await writeShows(nextShows);
-  await logAudit({
-    action: "create",
-    entity: "shows",
-    entityId: nextShow.id,
-    details: JSON.stringify({ after: nextShow }),
-  });
+  try {
+    await serializeContentMutation(async () => {
+      const shows = await readShows();
+      await writeShows([...shows, nextShow]);
+      await logAudit({
+        action: "create",
+        entity: "shows",
+        entityId: nextShow.id,
+        details: JSON.stringify({ after: nextShow }),
+      });
+    });
+  } catch (error) {
+    if (imageId) {
+      await discardManagedMedia(imageId);
+    }
+    return mediaErrorState(error);
+  }
 
   updateTag("shows");
-  redirect("/admin/shows");
+  redirect("/admin/shows?saved=created");
 }
 
 export async function updateShowAction(
@@ -168,7 +206,6 @@ export async function updateShowAction(
     priceOnline: optionalInput(formData.get("priceOnline")),
     priceDoor: optionalInput(formData.get("priceDoor")),
     ticketUrl: optionalInput(formData.get("ticketUrl")),
-    imageUrl: optionalInput(formData.get("imageUrl")),
   };
 
   const parsed = showInputSchema.safeParse(input);
@@ -180,41 +217,64 @@ export async function updateShowAction(
     };
   }
 
-  const shows = await readShows();
-  const index = shows.findIndex((show) => show.id === id);
-  if (index === -1) {
-    return {
-      status: "error",
-      message: "Show not found.",
-    };
+  let uploadedImageId: string | null = null;
+  try {
+    uploadedImageId = await processMediaUpload(formData.get("image"));
+  } catch (error) {
+    return mediaErrorState(error);
   }
+  const shouldRemoveImage = booleanInput(formData.get("removeImage"));
 
-  const now = new Date().toISOString();
-  const before = shows[index];
-  if (!before) {
-    return {
-      status: "error",
-      message: "Show not found.",
-    };
+  let replacedImageId: string | undefined;
+  try {
+    const result = await serializeContentMutation(async () => {
+      const shows = await readShows();
+      const index = shows.findIndex((show) => show.id === id);
+      const before = shows[index];
+      if (index === -1 || !before) {
+        return { found: false as const };
+      }
+      const nextShow: Show = {
+        ...before,
+        ...parsed.data,
+        updatedAt: new Date().toISOString(),
+      };
+      if (uploadedImageId) {
+        nextShow.imageId = uploadedImageId;
+        delete nextShow.imageUrl;
+      } else if (shouldRemoveImage) {
+        delete nextShow.imageId;
+        delete nextShow.imageUrl;
+      }
+
+      const nextShows = [...shows];
+      nextShows[index] = nextShow;
+      await writeShows(nextShows);
+      await logAudit({
+        action: "update",
+        entity: "shows",
+        entityId: nextShow.id,
+        details: JSON.stringify({ before, after: nextShow }),
+      });
+      return { found: true as const, replacedImageId: before.imageId };
+    });
+    if (!result.found) {
+      if (uploadedImageId) await discardManagedMedia(uploadedImageId);
+      return { status: "error", message: "Show not found." };
+    }
+    replacedImageId = result.replacedImageId;
+  } catch (error) {
+    if (uploadedImageId) await discardManagedMedia(uploadedImageId);
+    return mediaErrorState(error);
   }
-  const nextShow: Show = {
-    ...before,
-    ...parsed.data,
-    updatedAt: now,
-  };
-
-  const nextShows = [...shows];
-  nextShows[index] = nextShow;
-  await writeShows(nextShows);
-  await logAudit({
-    action: "update",
-    entity: "shows",
-    entityId: nextShow.id,
-    details: JSON.stringify({ before, after: nextShow }),
-  });
+  if (replacedImageId && (uploadedImageId || shouldRemoveImage)) {
+    await archiveManagedMedia(replacedImageId).catch((error) =>
+      console.error("[Admin] Unable to archive replaced image", error),
+    );
+  }
 
   updateTag("shows");
-  redirect("/admin/shows");
+  redirect("/admin/shows?saved=updated");
 }
 
 export async function deleteShowAction(formData: FormData) {
@@ -226,24 +286,27 @@ export async function deleteShowAction(formData: FormData) {
     return;
   }
 
-  const shows = await readShows();
-  const nextShows = shows.filter((show) => show.id !== id);
-  if (nextShows.length === shows.length) {
-    return;
+  const removedImageId = await serializeContentMutation(async () => {
+    const shows = await readShows();
+    const removed = shows.find((show) => show.id === id);
+    if (!removed) return undefined;
+    await writeShows(shows.filter((show) => show.id !== id));
+    await logAudit({
+      action: "delete",
+      entity: "shows",
+      entityId: id,
+      details: JSON.stringify({ before: removed }),
+    });
+    return removed.imageId;
+  });
+  if (removedImageId) {
+    await archiveManagedMedia(removedImageId).catch((error) =>
+      console.error("[Admin] Unable to archive deleted image", error),
+    );
   }
 
-  const removed = shows.find((show) => show.id === id);
-  await writeShows(nextShows);
-  const deleteDetails = removed ? JSON.stringify({ before: removed }) : undefined;
-  await logAudit({
-    action: "delete",
-    entity: "shows",
-    entityId: id,
-    ...(deleteDetails ? { details: deleteDetails } : {}),
-  });
-
   updateTag("shows");
-  redirect("/admin/shows");
+  redirect("/admin/shows?saved=deleted");
 }
 
 export async function createMerchAction(
@@ -258,7 +321,6 @@ export async function createMerchAction(
     description: optionalInput(formData.get("description")),
     price: normalizeInput(formData.get("price")),
     href: normalizeInput(formData.get("href")),
-    imageUrl: optionalInput(formData.get("imageUrl")),
   };
 
   const parsed = merchInputSchema.safeParse(input);
@@ -270,26 +332,40 @@ export async function createMerchAction(
     };
   }
 
+  let imageId: string | null = null;
+  try {
+    imageId = await processMediaUpload(formData.get("image"));
+  } catch (error) {
+    return mediaErrorState(error);
+  }
+
   const now = new Date().toISOString();
   const nextItem: MerchItem = {
     id: randomUUID(),
     ...parsed.data,
     createdAt: now,
     updatedAt: now,
+    ...(imageId ? { imageId } : {}),
   };
 
-  const items = await readMerch();
-  const nextItems = [...items, nextItem];
-  await writeMerch(nextItems);
-  await logAudit({
-    action: "create",
-    entity: "merch",
-    entityId: nextItem.id,
-    details: JSON.stringify({ after: nextItem }),
-  });
+  try {
+    await serializeContentMutation(async () => {
+      const items = await readMerch();
+      await writeMerch([...items, nextItem]);
+      await logAudit({
+        action: "create",
+        entity: "merch",
+        entityId: nextItem.id,
+        details: JSON.stringify({ after: nextItem }),
+      });
+    });
+  } catch (error) {
+    if (imageId) await discardManagedMedia(imageId);
+    return mediaErrorState(error);
+  }
 
   updateTag("merch");
-  redirect("/admin/merch");
+  redirect("/admin/merch?saved=created");
 }
 
 export async function updateMerchAction(
@@ -312,7 +388,6 @@ export async function updateMerchAction(
     description: optionalInput(formData.get("description")),
     price: normalizeInput(formData.get("price")),
     href: normalizeInput(formData.get("href")),
-    imageUrl: optionalInput(formData.get("imageUrl")),
   };
 
   const parsed = merchInputSchema.safeParse(input);
@@ -324,41 +399,62 @@ export async function updateMerchAction(
     };
   }
 
-  const items = await readMerch();
-  const index = items.findIndex((item) => item.id === id);
-  if (index === -1) {
-    return {
-      status: "error",
-      message: "Merch item not found.",
-    };
+  let uploadedImageId: string | null = null;
+  try {
+    uploadedImageId = await processMediaUpload(formData.get("image"));
+  } catch (error) {
+    return mediaErrorState(error);
   }
+  const shouldRemoveImage = booleanInput(formData.get("removeImage"));
 
-  const now = new Date().toISOString();
-  const before = items[index];
-  if (!before) {
-    return {
-      status: "error",
-      message: "Merch item not found.",
-    };
+  let replacedImageId: string | undefined;
+  try {
+    const result = await serializeContentMutation(async () => {
+      const items = await readMerch();
+      const index = items.findIndex((item) => item.id === id);
+      const before = items[index];
+      if (index === -1 || !before) return { found: false as const };
+      const nextItem: MerchItem = {
+        ...before,
+        ...parsed.data,
+        updatedAt: new Date().toISOString(),
+      };
+      if (uploadedImageId) {
+        nextItem.imageId = uploadedImageId;
+        delete nextItem.imageUrl;
+      } else if (shouldRemoveImage) {
+        delete nextItem.imageId;
+        delete nextItem.imageUrl;
+      }
+
+      const nextItems = [...items];
+      nextItems[index] = nextItem;
+      await writeMerch(nextItems);
+      await logAudit({
+        action: "update",
+        entity: "merch",
+        entityId: nextItem.id,
+        details: JSON.stringify({ before, after: nextItem }),
+      });
+      return { found: true as const, replacedImageId: before.imageId };
+    });
+    if (!result.found) {
+      if (uploadedImageId) await discardManagedMedia(uploadedImageId);
+      return { status: "error", message: "Merch item not found." };
+    }
+    replacedImageId = result.replacedImageId;
+  } catch (error) {
+    if (uploadedImageId) await discardManagedMedia(uploadedImageId);
+    return mediaErrorState(error);
   }
-  const nextItem: MerchItem = {
-    ...before,
-    ...parsed.data,
-    updatedAt: now,
-  };
-
-  const nextItems = [...items];
-  nextItems[index] = nextItem;
-  await writeMerch(nextItems);
-  await logAudit({
-    action: "update",
-    entity: "merch",
-    entityId: nextItem.id,
-    details: JSON.stringify({ before, after: nextItem }),
-  });
+  if (replacedImageId && (uploadedImageId || shouldRemoveImage)) {
+    await archiveManagedMedia(replacedImageId).catch((error) =>
+      console.error("[Admin] Unable to archive replaced image", error),
+    );
+  }
 
   updateTag("merch");
-  redirect("/admin/merch");
+  redirect("/admin/merch?saved=updated");
 }
 
 export async function deleteMerchAction(formData: FormData) {
@@ -370,22 +466,25 @@ export async function deleteMerchAction(formData: FormData) {
     return;
   }
 
-  const items = await readMerch();
-  const nextItems = items.filter((item) => item.id !== id);
-  if (nextItems.length === items.length) {
-    return;
+  const removedImageId = await serializeContentMutation(async () => {
+    const items = await readMerch();
+    const removed = items.find((item) => item.id === id);
+    if (!removed) return undefined;
+    await writeMerch(items.filter((item) => item.id !== id));
+    await logAudit({
+      action: "delete",
+      entity: "merch",
+      entityId: id,
+      details: JSON.stringify({ before: removed }),
+    });
+    return removed.imageId;
+  });
+  if (removedImageId) {
+    await archiveManagedMedia(removedImageId).catch((error) =>
+      console.error("[Admin] Unable to archive deleted image", error),
+    );
   }
 
-  const removed = items.find((item) => item.id === id);
-  await writeMerch(nextItems);
-  const deleteDetails = removed ? JSON.stringify({ before: removed }) : undefined;
-  await logAudit({
-    action: "delete",
-    entity: "merch",
-    entityId: id,
-    ...(deleteDetails ? { details: deleteDetails } : {}),
-  });
-
   updateTag("merch");
-  redirect("/admin/merch");
+  redirect("/admin/merch?saved=deleted");
 }

@@ -14,11 +14,10 @@ import {
   type Show,
 } from "@/content/schema";
 
-const CONTENT_ROOT =
-  process.env.CONTENT_DIR?.trim() || path.join(process.cwd(), "content");
-const HISTORY_ROOT =
-  process.env.CONTENT_HISTORY_DIR?.trim() || path.join(CONTENT_ROOT, ".history");
+const CONTENT_ROOT = process.env.CONTENT_DIR?.trim() || path.join(process.cwd(), "content");
+const HISTORY_ROOT = process.env.CONTENT_HISTORY_DIR?.trim() || path.join(CONTENT_ROOT, ".history");
 const MAX_BACKUPS = 50;
+let mutationQueue: Promise<void> = Promise.resolve();
 
 const CONTENT_FILES = {
   shows: "shows.json",
@@ -63,16 +62,12 @@ async function pruneBackups(filePath: string) {
   try {
     const base = path.basename(filePath, ".json");
     const entries = await fs.readdir(HISTORY_ROOT);
-    const matches = entries
-      .filter((entry) => entry.startsWith(`${base}-`))
-      .sort();
+    const matches = entries.filter((entry) => entry.startsWith(`${base}-`)).sort();
     if (matches.length <= MAX_BACKUPS) {
       return;
     }
     const toRemove = matches.slice(0, matches.length - MAX_BACKUPS);
-    await Promise.all(
-      toRemove.map((entry) => fs.unlink(path.join(HISTORY_ROOT, entry))),
-    );
+    await Promise.all(toRemove.map((entry) => fs.unlink(path.join(HISTORY_ROOT, entry))));
   } catch (error) {
     if (error instanceof Error && "code" in error && error.code === "ENOENT") {
       return;
@@ -81,11 +76,7 @@ async function pruneBackups(filePath: string) {
   }
 }
 
-async function readJsonFile<T>(
-  key: ContentKey,
-  schema: z.ZodType<T>,
-  fallback?: T,
-) {
+async function readJsonFile<T>(key: ContentKey, schema: z.ZodType<T>, fallback?: T) {
   const filePath = resolveContentPath(key);
   try {
     const raw = await fs.readFile(filePath, "utf8");
@@ -144,4 +135,19 @@ export async function writeAudit(entries: AdminAuditEntry[]) {
 export async function appendAuditEntry(entry: AdminAuditEntry) {
   const existing = await readAudit();
   return writeAudit([entry, ...existing]);
+}
+
+export async function serializeContentMutation<T>(operation: () => Promise<T>) {
+  const previous = mutationQueue;
+  let release: () => void = () => undefined;
+  mutationQueue = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  await previous.catch(() => undefined);
+  try {
+    return await operation();
+  } finally {
+    release();
+  }
 }

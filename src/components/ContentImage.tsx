@@ -3,7 +3,8 @@
 import { useState } from "react";
 
 type ContentImageProps = {
-  src?: string | null;
+  src?: string | null | undefined;
+  imageId?: string | null | undefined;
   alt: string;
   className: string;
   fallbackClassName: string;
@@ -28,6 +29,7 @@ export function isPlaceholderUrl(value: string | null | undefined) {
 
 export function ContentImage({
   src,
+  imageId,
   alt,
   className,
   fallbackClassName,
@@ -35,10 +37,12 @@ export function ContentImage({
   loading = "lazy",
   decoding = "async",
 }: ContentImageProps) {
-  const [hasError, setHasError] = useState(isPlaceholderUrl(src));
+  const resolvedSrc = imageId ? `/media/${imageId}/1280.webp` : src;
+  const [failedSource, setFailedSource] = useState<string | null>(null);
   const isDecorative = alt.trim().length === 0;
+  const hasError = failedSource === resolvedSrc || (!imageId && isPlaceholderUrl(resolvedSrc));
 
-  if (!src || hasError) {
+  if (!resolvedSrc || hasError) {
     return (
       <div
         className={fallbackClassName}
@@ -51,17 +55,32 @@ export function ContentImage({
     );
   }
 
-  return (
-    // Arbitrary admin/content URLs are supported, so native img is used intentionally here.
+  const image = (
+    // Legacy admin/content URLs require a native image element.
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
+      src={resolvedSrc}
       alt={alt}
       className={className}
       loading={loading}
       decoding={decoding}
-      referrerPolicy="no-referrer"
-      onError={() => setHasError(true)}
+      referrerPolicy={imageId ? undefined : "no-referrer"}
+      onError={() => setFailedSource(resolvedSrc ?? null)}
     />
+  );
+
+  if (!imageId) {
+    return image;
+  }
+
+  return (
+    <picture>
+      <source
+        type="image/webp"
+        srcSet={`/media/${imageId}/640.webp 640w, /media/${imageId}/1280.webp 1280w`}
+        sizes="(max-width: 768px) 100vw, 640px"
+      />
+      {image}
+    </picture>
   );
 }

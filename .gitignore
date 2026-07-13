@@ -30,9 +30,13 @@
 # content backups / audit logs
 /content/.history/
 /content/admin-audit.json
+/content/media/
 
 # debug
 *.log
+
+# local agent workspace mount
+/.codex
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

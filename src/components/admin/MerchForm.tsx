@@ -1,14 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 
-import { ContentImage } from "@/components/ContentImage";
+import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import type { MerchItem } from "@/content/schema";
-import {
-  initialAdminFormState,
-  type AdminFormState,
-} from "@/lib/admin-form-state";
+import { initialAdminFormState, type AdminFormState } from "@/lib/admin-form-state";
 
 type MerchFormProps = {
   action: (prevState: AdminFormState, formData: FormData) => Promise<AdminFormState>;
@@ -42,15 +39,19 @@ function FieldError({ message }: { message: string | undefined }) {
 
 export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps) {
   const [state, formAction] = useActionState(action, initialAdminFormState);
-  const [imagePreview, setImagePreview] = useState(
-    initialValues?.imageUrl ?? "",
-  );
+  const formRef = useRef<HTMLFormElement>(null);
 
   const inputBase =
     "mt-2 min-h-11 w-full rounded-xl border bg-bg/60 px-4 py-3 text-sm text-text placeholder:text-text-dim";
 
+  useEffect(() => {
+    if (state.status === "error") {
+      formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+    }
+  }, [state]);
+
   return (
-    <form action={formAction} className="mt-6 grid gap-5 sm:gap-6">
+    <form ref={formRef} action={formAction} className="mt-6 grid gap-5 sm:gap-6">
       {state.message ? (
         <p
           role="alert"
@@ -60,9 +61,7 @@ export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps
         </p>
       ) : null}
 
-      {initialValues?.id ? (
-        <input type="hidden" name="id" value={initialValues.id} />
-      ) : null}
+      {initialValues?.id ? <input type="hidden" name="id" value={initialValues.id} /> : null}
 
       <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
         Name
@@ -119,36 +118,14 @@ export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps
         <FieldError message={state.fieldErrors?.href} />
       </label>
 
-      <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
-        Image URL (optional)
-        <input
-          name="imageUrl"
-          type="url"
-          inputMode="url"
-          spellCheck={false}
-          value={imagePreview}
-          onChange={(event) => setImagePreview(event.target.value)}
-          className={`${inputBase} ${state.fieldErrors?.imageUrl ? "border-highlight/70" : "border-border/70"}`}
-          placeholder="https://images.example.com/merch.jpg"
-          aria-invalid={Boolean(state.fieldErrors?.imageUrl)}
-        />
-        <FieldError message={state.fieldErrors?.imageUrl} />
-        {imagePreview ? (
-          <div className="mt-3 overflow-hidden rounded-xl border border-border/70 bg-bg/60">
-            <ContentImage
-              src={imagePreview}
-              alt="Merch preview"
-              className="h-36 w-full object-cover sm:h-40"
-              fallbackClassName="flex h-36 w-full items-center justify-center bg-surface/50 sm:h-40"
-              fallbackLabel="Merch image preview"
-              loading="lazy"
-              decoding="async"
-            />
-          </div>
-        ) : null}
-      </label>
+      <ImageUploadField
+        label="Merch photo (optional)"
+        currentImageId={initialValues?.imageId}
+        currentImageUrl={initialValues?.imageUrl}
+        error={state.fieldErrors?.image}
+      />
 
-      <div className="flex flex-wrap items-center gap-4">
+      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 border border-border bg-surface/95 p-3 shadow-2xl sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
         <SubmitButton label={submitLabel} />
       </div>
     </form>
