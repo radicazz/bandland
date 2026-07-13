@@ -5,8 +5,6 @@ export const site = {
     href: "https://tr.ee/7KaRvTpbLN",
     spotifyEmbedUrl:
       "https://open.spotify.com/embed/track/1ZqBftZCkFF0YOmYaQ7v2c?utm_source=generator&theme=0",
-    appleEmbedUrl:
-      "https://embed.music.apple.com/za/album/pappa-soek-n-porsche-single/1866600943?i=1866600944&theme=dark",
   },
 
   // Add your booking/press contact email here

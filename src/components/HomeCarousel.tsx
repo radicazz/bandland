@@ -1,10 +1,6 @@
 import Link from "next/link";
 
-import { ReleasePlayerTabs } from "@/components/ReleasePlayerTabs";
-import { MerchCarousel } from "@/components/MerchCarousel";
 import { site } from "@/config/site";
-import type { Show } from "@/content/schema";
-import { getMerchItems } from "@/content/merch";
 import { getShows } from "@/content/shows";
 import type { Locale, Translations } from "@/i18n/translations";
 import { formatShowDatePretty } from "@/lib/formatters";
@@ -15,231 +11,108 @@ type HomeCarouselProps = {
   locale: Locale;
 };
 
-function HomeShowPricing({ show, labels }: { show: Show; labels: Translations["shows"] }) {
-  if (show.priceOnline || show.priceDoor) {
-    return (
-      <div className="grid gap-2 text-sm">
-        {show.priceOnline ? (
-          <p className="break-words text-text">
-            <span className="text-text-dim">{labels.onlinePriceLabel}:</span>{" "}
-            <span className="tabular-nums">{show.priceOnline}</span>
-          </p>
-        ) : null}
-        {show.priceDoor ? (
-          <p className="break-words text-text">
-            <span className="text-text-dim">{labels.doorPriceLabel}:</span>{" "}
-            <span className="tabular-nums">{show.priceDoor}</span>
-          </p>
-        ) : null}
-      </div>
-    );
-  }
-
-  if (show.price) {
-    return <p className="break-words text-sm tabular-nums text-text">{show.price}</p>;
-  }
-
-  return null;
-}
-
-function hasShowPricing(show: Show) {
-  return Boolean(show.price || show.priceOnline || show.priceDoor);
-}
-
-function UpcomingShowListItem({
-  show,
-  homeLabels,
-  showLabels,
-  locale,
-}: {
-  show: Show;
-  homeLabels: Translations["home"];
-  showLabels: Translations["shows"];
-  locale: Locale;
-}) {
-  const content = (
-    <>
-      <p className="text-xs uppercase tracking-[0.3em] text-text-dim">
-        {formatShowDatePretty(show.date, locale)}
-      </p>
-      <p className="mt-3 break-words text-base font-semibold text-text">{show.venue}</p>
-      <p className="mt-1 break-words text-sm text-text-muted">{show.city}</p>
-      {show.timeFrame ? (
-        <p className="mt-3 break-words text-sm text-text-muted">
-          {homeLabels.timeFrameLabel}: <span className="text-text">{show.timeFrame}</span>
-        </p>
-      ) : null}
-      {hasShowPricing(show) ? (
-        <div className="mt-3">
-          <HomeShowPricing show={show} labels={showLabels} />
-        </div>
-      ) : null}
-      <p className="mt-4 text-xs uppercase tracking-[0.3em] text-highlight">
-        {show.ticketUrl ? homeLabels.ticketsCta : homeLabels.allShowsCta}
-      </p>
-    </>
-  );
-
-  if (show.ticketUrl) {
-    return (
-      <a href={show.ticketUrl} target="_blank" rel="noreferrer" className="menu-tile h-full">
-        {content}
-      </a>
-    );
-  }
-
-  return (
-    <Link href="/shows" className="menu-tile h-full">
-      {content}
-    </Link>
-  );
-}
-
 export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
-  const homeLabels = labels.home;
-  const showLabels = labels.shows;
-  const latestRelease = {
-    title: homeLabels.latestReleaseTitle,
-    description: homeLabels.latestReleaseDescription,
-    href: site.latestRelease.href,
-    cta: homeLabels.latestReleaseCta,
-    spotifyEmbedUrl: site.latestRelease.spotifyEmbedUrl,
-    appleEmbedUrl: site.latestRelease.appleEmbedUrl,
-  };
-
-  const [merchItems, shows] = await Promise.all([getMerchItems(), getShows()]);
-  const { upcoming } = splitShowsByStatus(shows);
-  const featuredShow = upcoming[0];
-  const supportingShows = upcoming.slice(1, 4);
-  const hasUpcomingShows = Boolean(featuredShow);
+  const { upcoming } = splitShowsByStatus(await getShows());
+  const nextShow = upcoming[0];
 
   return (
-    <div className="flex w-full flex-col items-center gap-6 lg:gap-8">
-      <section className="w-full max-w-6xl">
-        <div
-          className={`grid gap-5 ${supportingShows.length > 0 ? "lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.9fr)]" : ""}`}
-        >
-          <article
-            className={`card-interactive punk-panel text-left ${
-              hasUpcomingShows
-                ? "p-5 sm:p-7 lg:p-8"
-                : "p-4 sm:p-5 lg:flex lg:items-center lg:justify-between lg:gap-8"
-            }`}
+    <div className="grid w-full gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
+      <section className="punk-panel p-4 sm:p-6 lg:p-7" aria-labelledby="latest-release">
+        <p className="section-kicker">{labels.home.releaseLabel}</p>
+        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 id="latest-release" className="display-title text-4xl sm:text-5xl">
+              {labels.home.latestReleaseTitle}
+            </h2>
+            <p className="mt-3 text-sm text-text-muted">{labels.home.latestReleaseDescription}</p>
+          </div>
+          <a
+            href={site.latestRelease.href}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-primary shrink-0"
           >
-            <p className="section-kicker">{homeLabels.nextShowLabel}</p>
-            {featuredShow ? (
-              <>
-                <h2 className="display-title mt-6 text-4xl sm:text-5xl lg:text-6xl">
-                  {featuredShow.venue}
-                </h2>
-                <p className="mt-3 break-words text-base text-text sm:text-lg">
-                  {featuredShow.city}
-                </p>
-                <div className="mt-6 grid gap-3">
-                  <div className="border-l border-border bg-bg/40 px-4 py-3">
-                    <p className="break-words text-sm tabular-nums text-text">
-                      {formatShowDatePretty(featuredShow.date, locale)}
-                    </p>
-                  </div>
-                  {featuredShow.timeFrame ? (
-                    <div className="border-l border-border bg-bg/40 px-4 py-3">
-                      <p className="break-words text-sm text-text-muted">
-                        {homeLabels.timeFrameLabel}:{" "}
-                        <span className="text-text">{featuredShow.timeFrame}</span>
-                      </p>
-                    </div>
-                  ) : null}
-                  {hasShowPricing(featuredShow) ? (
-                    <div className="border-l border-border bg-bg/40 px-4 py-3">
-                      <HomeShowPricing show={featuredShow} labels={showLabels} />
-                    </div>
-                  ) : null}
-                </div>
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                  {featuredShow.ticketUrl ? (
-                    <a
-                      href={featuredShow.ticketUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="btn-primary btn-primary-lg w-full sm:w-auto"
-                    >
-                      {homeLabels.ticketsCta}
-                    </a>
-                  ) : null}
-                  <Link
-                    href="/shows"
-                    className={`${featuredShow.ticketUrl ? "btn-secondary" : "btn-primary btn-primary-lg"} w-full sm:w-auto`}
-                  >
-                    {homeLabels.allShowsCta}
-                  </Link>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="mt-3 min-w-0 lg:mt-0 lg:flex-1">
-                  <h2 className="break-words text-2xl font-brand uppercase tracking-[0.1em] text-highlight sm:text-3xl">
-                    {homeLabels.nextShowFallbackTitle}
-                  </h2>
-                  <p className="mt-3 max-w-2xl break-words text-sm leading-6 text-text-muted">
-                    {homeLabels.nextShowFallbackDescription}
-                  </p>
-                </div>
-                <div className="mt-5 lg:mt-0 lg:shrink-0">
-                  <Link href="/shows" className="btn-primary w-full sm:w-auto">
-                    {homeLabels.allShowsCta}
-                  </Link>
-                </div>
-              </>
-            )}
-          </article>
-
-          {supportingShows.length > 0 ? (
-            <aside className="card-interactive punk-panel p-4 sm:p-6">
-              <p className="section-kicker">{homeLabels.upcomingListTitle}</p>
-              <div className="mt-4 grid gap-3">
-                {supportingShows.map((show) => (
-                  <UpcomingShowListItem
-                    key={show.id}
-                    show={show}
-                    homeLabels={homeLabels}
-                    showLabels={showLabels}
-                    locale={locale}
-                  />
-                ))}
-              </div>
-            </aside>
-          ) : null}
+            {labels.home.latestReleaseCta}
+          </a>
+        </div>
+        <div className="mt-6 overflow-hidden border border-border bg-bg/70">
+          <iframe
+            title={`${labels.home.latestReleaseTitle} — Spotify player`}
+            src={site.latestRelease.spotifyEmbedUrl}
+            width="100%"
+            height="152"
+            loading="lazy"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            className="block w-full"
+          />
         </div>
       </section>
 
-      <section className="w-full max-w-6xl">
-        <div className="grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-          <article className="card-interactive punk-panel p-4 text-left sm:p-7 lg:p-8">
-            <p className="section-kicker">{homeLabels.releaseLabel}</p>
-            <h2 className="display-title mt-6 text-3xl sm:text-4xl">{latestRelease.title}</h2>
-            <p className="mt-4 break-words text-sm leading-6 text-text-muted sm:text-base sm:leading-7">
-              {latestRelease.description}
+      <section className="punk-panel flex flex-col p-4 sm:p-6" aria-labelledby="next-show">
+        <p className="section-kicker">{labels.home.nextShowLabel}</p>
+        {nextShow ? (
+          <>
+            <h2 id="next-show" className="display-title mt-6 text-4xl">
+              {nextShow.venue}
+            </h2>
+            <p className="mt-3 text-sm text-text-muted">{nextShow.city}</p>
+            <p className="mt-5 border-l border-highlight pl-3 font-mono text-sm tabular-nums text-text">
+              {formatShowDatePretty(nextShow.date, locale)}
             </p>
-            <div className="mt-6">
-              <a
-                href={latestRelease.href}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-primary btn-primary-lg w-full sm:w-auto"
-              >
-                {latestRelease.cta}
-              </a>
+            {nextShow.timeFrame ? (
+              <p className="mt-2 text-sm text-text-muted">{nextShow.timeFrame}</p>
+            ) : null}
+            <div className="mt-auto grid gap-2 pt-6 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+              {nextShow.ticketUrl ? (
+                <a
+                  href={nextShow.ticketUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-primary"
+                >
+                  {labels.home.ticketsCta}
+                </a>
+              ) : null}
+              <Link href="/shows" className="btn-secondary">
+                {labels.home.allShowsCta}
+              </Link>
             </div>
-            <ReleasePlayerTabs
-              title={latestRelease.title}
-              spotifyUrl={latestRelease.spotifyEmbedUrl}
-              appleUrl={latestRelease.appleEmbedUrl}
-              labels={homeLabels}
-            />
-          </article>
-          <MerchCarousel items={merchItems} labels={homeLabels} />
-        </div>
+          </>
+        ) : (
+          <>
+            <h2 id="next-show" className="display-title mt-6 text-4xl">
+              {labels.home.nextShowFallbackTitle}
+            </h2>
+            <p className="mt-4 text-sm leading-6 text-text-muted">
+              {labels.home.nextShowFallbackDescription}
+            </p>
+            <Link href="/shows" className="btn-primary mt-6">
+              {labels.home.allShowsCta}
+            </Link>
+          </>
+        )}
       </section>
+
+      <nav className="grid gap-2 sm:grid-cols-2 lg:col-span-2" aria-label={labels.nav.explore}>
+        <Link
+          href="/shows"
+          className="menu-tile py-4 font-bold uppercase tracking-[0.18em] text-text"
+        >
+          {labels.nav.shows}{" "}
+          <span aria-hidden className="float-right text-highlight">
+            →
+          </span>
+        </Link>
+        <Link
+          href="/merch"
+          className="menu-tile py-4 font-bold uppercase tracking-[0.18em] text-text"
+        >
+          {labels.nav.merch}{" "}
+          <span aria-hidden className="float-right text-highlight">
+            →
+          </span>
+        </Link>
+      </nav>
     </div>
   );
 }

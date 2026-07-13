@@ -201,6 +201,19 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
       <Container className="relative">
         <div className="grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 sm:grid-cols-[auto_1fr_auto] sm:py-0">
           <div className="relative min-w-0" ref={menuRef}>
+            <Link
+              href="/"
+              className="group hidden min-h-11 items-center gap-3 text-lg font-brand uppercase tracking-[0.18em] text-text transition-colors hover:text-highlight sm:flex"
+            >
+              <Image
+                src="/logos/schmat-rat.png"
+                alt=""
+                width={32}
+                height={32}
+                className="h-8 w-8 border border-border bg-surface p-0.5 transition-transform group-hover:-rotate-6"
+              />
+              {site.name}
+            </Link>
             <button
               ref={menuButtonRef}
               type="button"
@@ -208,7 +221,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               aria-controls={menuId}
               aria-haspopup="dialog"
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="group flex min-h-11 max-w-full items-center gap-3 px-1 text-left text-base font-brand uppercase tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight sm:text-lg sm:tracking-[0.18em]"
+              className="group flex min-h-11 max-w-full items-center gap-3 px-1 text-left text-base font-brand uppercase tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight sm:hidden"
             >
               <Image
                 src="/logos/schmat-rat.png"
@@ -320,6 +333,35 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               isMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
             }`}
           />
+          <nav
+            aria-label={labels.nav.explore}
+            className="hidden items-center justify-center gap-1 sm:col-start-2 sm:row-start-1 sm:flex"
+          >
+            {(
+              [
+                { href: "/", label: labels.nav.home },
+                { href: "/shows", label: labels.nav.shows },
+                { href: "/merch", label: labels.nav.merch },
+              ] as const
+            ).map((item) => {
+              const isActive =
+                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`min-h-10 border-b-2 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] transition-colors ${
+                    isActive
+                      ? "border-highlight text-highlight"
+                      : "border-transparent text-text-muted hover:border-border hover:text-text"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
           <div className="justify-self-end sm:col-start-3 sm:row-start-1">
             <div className="flex items-center gap-2">
               <div

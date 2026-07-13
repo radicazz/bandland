@@ -31,8 +31,9 @@ describe("SiteHeader", () => {
 
     const menuButton = screen.getByRole("button", { name: /open menu/i });
     const homeLink = screen
-      .getByText(translations.en.nav.home)
-      .closest("a") as HTMLAnchorElement;
+      .getAllByText(translations.en.nav.home)
+      .map((element) => element.closest("a"))
+      .find((link) => link?.getAttribute("tabindex") === "-1") as HTMLAnchorElement;
 
     expect(menuButton).toHaveAttribute("aria-expanded", "false");
     expect(homeLink).toHaveAttribute("tabindex", "-1");

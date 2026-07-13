@@ -32,18 +32,6 @@ export type Translations = {
     nextShowFallbackDescription: string;
     ticketsCta: string;
     allShowsCta: string;
-    upcomingListTitle: string;
-    playerTabsLabel: string;
-    playerSpotifyLabel: string;
-    playerAppleLabel: string;
-    playerLoadLabel: string;
-    playerFallbackHint: string;
-    storeFallbackLabel: string;
-    storeFallbackDescription: string;
-    storeLabel: string;
-    storeTitle: string;
-    storeDescription: string;
-    storeCta: string;
     liveLabel: string;
     liveTitle: string;
     liveDescription: string;
@@ -120,18 +108,6 @@ export const translations: Record<Locale, Translations> = {
       nextShowFallbackDescription: "Nothing is locked in yet. Check the full schedule for past dates and new announcements.",
       ticketsCta: "Tickets",
       allShowsCta: "All shows",
-      upcomingListTitle: "More dates",
-      playerTabsLabel: "Player selection",
-      playerSpotifyLabel: "Spotify",
-      playerAppleLabel: "Apple Music",
-      playerLoadLabel: "Load player",
-      playerFallbackHint: "If the player does not load, use the Listen button above.",
-      storeFallbackLabel: "Merch preview",
-      storeFallbackDescription: "Live product imagery lands here when store visuals are available.",
-      storeLabel: "Store",
-      storeTitle: "Merch",
-      storeDescription: "Limited runs and staples. New drops coming soon.",
-      storeCta: "Shop merch",
       liveLabel: "Live",
       liveTitle: "Shows",
       liveDescription: "Upcoming dates, tickets, and venue details.",
@@ -207,18 +183,6 @@ export const translations: Record<Locale, Translations> = {
       nextShowFallbackDescription: "Niks is nog vas nie. Kyk na die volle rooster vir vorige datums en nuwe aankondigings.",
       ticketsCta: "Kaartjies",
       allShowsCta: "Alle vertonings",
-      upcomingListTitle: "Meer datums",
-      playerTabsLabel: "Spelerkeuse",
-      playerSpotifyLabel: "Spotify",
-      playerAppleLabel: "Apple Music",
-      playerLoadLabel: "Laai speler",
-      playerFallbackHint: "As die speler nie laai nie, gebruik die Luister-knoppie hier bo.",
-      storeFallbackLabel: "Merch voorskou",
-      storeFallbackDescription: "Produkbeelde verskyn hier sodra winkelvisuele beskikbaar is.",
-      storeLabel: "Winkel",
-      storeTitle: "Merch",
-      storeDescription: "Klassieke items en beperkte lopies. Nuwe vrystellings kom binnekort.",
-      storeCta: "Koop merch",
       liveLabel: "Live",
       liveTitle: "Vertonings",
       liveDescription: "Komende datums, kaartjies en lokaalbesonderhede.",
