@@ -12,10 +12,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <section className="border-b border-border/60 bg-surface/30">
-      <Container className="py-6 sm:py-10">
+    <section className="min-h-[calc(100dvh-4rem)] border-b border-border/60 bg-surface/30">
+      <Container className="py-4 sm:py-8">
         <AdminNav />
-        <div className="mt-6 sm:mt-10">{children}</div>
+        <div className="mt-5 sm:mt-8">{children}</div>
       </Container>
     </section>
   );
