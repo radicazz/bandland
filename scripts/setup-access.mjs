@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { randomBytes } from "node:crypto";
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path, { resolve } from "node:path";
 import readline from "node:readline/promises";
 import bcrypt from "bcryptjs";
@@ -10,6 +10,7 @@ function parseArgs(argv) {
     environment: undefined,
     siteUrl: undefined,
     contentDir: undefined,
+    mediaDir: undefined,
     rateLimitDir: undefined,
     password: undefined,
     output: undefined,
@@ -28,6 +29,7 @@ Options:
   --env <dev|prod>             Target environment
   --site-url <url>             Site URL for AUTH_URL and NEXT_PUBLIC_SITE_URL
   --content-dir <path>         Persistent content directory for production
+  --media-dir <path>           Persistent uploaded media directory
   --rate-limit-dir <path>      Persistent admin rate-limit directory for production
   --password <value>           Admin password to hash
   --output <path>              Output env file path
@@ -55,6 +57,9 @@ Options:
         break;
       case "--content-dir":
         args.contentDir = next;
+        break;
+      case "--media-dir":
+        args.mediaDir = next;
         break;
       case "--rate-limit-dir":
         args.rateLimitDir = next;
@@ -98,8 +103,7 @@ async function promptIfMissing(currentValue, prompt) {
 
 const run = async () => {
   const envInput =
-    (await promptIfMissing(options.environment, "Environment (dev/prod, default dev): ")) ||
-    "dev";
+    (await promptIfMissing(options.environment, "Environment (dev/prod, default dev): ")) || "dev";
   const environment = envInput.toLowerCase();
   const isProduction = environment === "prod" || environment === "production";
 
@@ -125,10 +129,12 @@ const run = async () => {
 
   let contentDirSection = "";
   let rateLimitDirSection = "";
+  let mediaDirSection = "";
   let appPortSection = "";
   let healthcheckSection = "";
   let resolvedContentDir = "/var/lib/bandland/content";
   let resolvedRateLimitDir = path.join(path.dirname(resolvedContentDir), "auth-rate-limit");
+  let resolvedMediaDir = path.join(process.cwd(), "content", "media");
 
   const appPort = options.appPort?.trim();
   if (appPort) {
@@ -153,6 +159,8 @@ DEPLOY_HEALTHCHECK_URL=${healthcheckUrl}
     resolvedRateLimitDir =
       options.rateLimitDir?.trim() ||
       path.join(path.dirname(resolvedContentDir), "auth-rate-limit");
+    resolvedMediaDir =
+      options.mediaDir?.trim() || path.join(path.dirname(resolvedContentDir), "media");
 
     contentDirSection = `
 # Content storage outside repo
@@ -162,7 +170,15 @@ CONTENT_DIR=${resolvedContentDir}
 # Persist admin rate limiting outside the app process
 AUTH_RATE_LIMIT_DIR=${resolvedRateLimitDir}
 `;
+  } else if (options.mediaDir?.trim()) {
+    resolvedMediaDir = options.mediaDir.trim();
   }
+
+  mediaDirSection = `
+# Uploaded photo storage
+MEDIA_DIR=${resolvedMediaDir}
+MEDIA_HISTORY_DIR=${path.join(resolvedMediaDir, ".history")}
+`;
 
   const envContents = `# Admin Panel
 # Generate hash: npx bcrypt-cli hash "your-password" 12
@@ -172,15 +188,22 @@ AUTH_URL=${siteUrl}
 
 # Used for generating absolute URLs in metadata/OG.
 # In production, set this to your canonical site URL (e.g. https://bandland.com).
-NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}${rateLimitDirSection}${appPortSection}${healthcheckSection}
+NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}${mediaDirSection}${rateLimitDirSection}${appPortSection}${healthcheckSection}
 `;
 
   const envFilePath =
     options.output?.trim() ||
-    (isProduction ? resolve(process.cwd(), ".env.production") : resolve(process.cwd(), ".env.local"));
+    (isProduction
+      ? resolve(process.cwd(), ".env.production")
+      : resolve(process.cwd(), ".env.local"));
 
   await writeFile(envFilePath, envContents, "utf8");
   console.log(`✓ Wrote ${envFilePath}`);
+
+  if (!isProduction) {
+    await mkdir(path.join(resolvedMediaDir, ".history"), { recursive: true });
+    console.log(`✓ Prepared local media storage at ${resolvedMediaDir}`);
+  }
 
   if (isProduction) {
     console.log("\nProduction environment configured.");
@@ -189,8 +212,9 @@ NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}${rateLimitDirSection}${appPo
     console.log(`     sudo mkdir -p ${resolvedContentDir}`);
     console.log(`     sudo mkdir -p ${resolvedContentDir}/.history`);
     console.log(`     sudo mkdir -p ${resolvedRateLimitDir}`);
+    console.log(`     sudo mkdir -p ${resolvedMediaDir}/.history`);
     console.log(
-      `     sudo chown -R www-data:www-data ${resolvedContentDir} ${resolvedRateLimitDir}`,
+      `     sudo chown -R www-data:www-data ${resolvedContentDir} ${resolvedMediaDir} ${resolvedRateLimitDir}`,
     );
     console.log("  2. Run bootstrap if this is a live VPS setup:");
     console.log("     sudo npm run bootstrap:vps");

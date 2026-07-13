@@ -4,6 +4,7 @@ import { constants as fsConstants, promises as fs } from "node:fs";
 import path from "node:path";
 
 import { readAudit, readMerch, readShows } from "@/lib/content-store";
+import { getMediaHistoryRoot, getMediaRoot } from "@/lib/media-store";
 
 type ContentKey = "shows" | "merch" | "audit";
 type WarningSeverity = "warning" | "error";
@@ -47,12 +48,16 @@ export type SiteOperationsSummary = {
     contentRoot: string;
     historyRoot: string;
     rateLimitRoot: string | null;
+    mediaRoot: string;
+    mediaHistoryRoot: string;
     usingPersistentRateLimit: boolean;
   };
   paths: {
     contentRoot: PathStatus;
     historyRoot: PathStatus;
     rateLimitRoot: PathStatus | null;
+    mediaRoot: PathStatus;
+    mediaHistoryRoot: PathStatus;
   };
   content: {
     shows: ContentStatus;
@@ -78,6 +83,9 @@ type SiteOperationsWarningInput = {
   historyRootReady: boolean;
   rateLimitRootConfigured: boolean;
   rateLimitRootReady: boolean;
+  mediaRootConfigured: boolean;
+  mediaRootReady: boolean;
+  mediaHistoryRootReady: boolean;
   contentStatuses: Array<Pick<ContentStatus, "key" | "valid" | "error">>;
 };
 
@@ -102,10 +110,7 @@ function getAppPort() {
 }
 
 function getDeployHealthcheckUrl(appPort: string) {
-  return (
-    process.env.DEPLOY_HEALTHCHECK_URL?.trim() ||
-    `http://127.0.0.1:${appPort}/api/health`
-  );
+  return process.env.DEPLOY_HEALTHCHECK_URL?.trim() || `http://127.0.0.1:${appPort}/api/health`;
 }
 
 async function inspectPath(targetPath: string): Promise<PathStatus> {
@@ -197,6 +202,9 @@ export function deriveSiteOperationsWarnings({
   historyRootReady,
   rateLimitRootConfigured,
   rateLimitRootReady,
+  mediaRootConfigured,
+  mediaRootReady,
+  mediaHistoryRootReady,
   contentStatuses,
 }: SiteOperationsWarningInput): SiteOperationsWarning[] {
   const warnings: SiteOperationsWarning[] = [];
@@ -234,6 +242,30 @@ export function deriveSiteOperationsWarnings({
       severity: "error",
       message:
         "AUTH_RATE_LIMIT_DIR is configured but is missing or not writable. Admin login throttling cannot persist safely.",
+    });
+  }
+
+  if (isProduction && mediaRootConfigured === false) {
+    warnings.push({
+      id: "media-dir-not-configured",
+      severity: "error",
+      message: "MEDIA_DIR is missing in production. Uploaded photos would not persist safely.",
+    });
+  }
+
+  if (mediaRootConfigured && !mediaRootReady) {
+    warnings.push({
+      id: "media-dir-unavailable",
+      severity: "error",
+      message: "MEDIA_DIR is missing or not writable. Photo uploads are unavailable.",
+    });
+  }
+
+  if (mediaRootConfigured && !mediaHistoryRootReady) {
+    warnings.push({
+      id: "media-history-unavailable",
+      severity: "error",
+      message: "MEDIA_HISTORY_DIR is missing or not writable. Replaced photos cannot be archived.",
     });
   }
 
@@ -290,14 +322,24 @@ export async function getSiteOperationsSummary(): Promise<SiteOperationsSummary>
   const contentRoot = getContentRoot();
   const historyRoot = getHistoryRoot(contentRoot);
   const rateLimitRoot = getRateLimitRoot();
+  const mediaRoot = getMediaRoot();
+  const mediaHistoryRoot = getMediaHistoryRoot();
   const appPort = getAppPort();
   const deployHealthcheckUrl = getDeployHealthcheckUrl(appPort);
   const isProduction = process.env.NODE_ENV === "production";
 
-  const [contentRootStatus, historyRootStatus, rateLimitRootStatus] = await Promise.all([
+  const [
+    contentRootStatus,
+    historyRootStatus,
+    rateLimitRootStatus,
+    mediaRootStatus,
+    mediaHistoryRootStatus,
+  ] = await Promise.all([
     inspectPath(contentRoot),
     inspectPath(historyRoot),
     rateLimitRoot ? inspectPath(rateLimitRoot) : Promise.resolve(null),
+    inspectPath(mediaRoot),
+    inspectPath(mediaHistoryRoot),
   ]);
 
   const filePaths = {
@@ -361,6 +403,9 @@ export async function getSiteOperationsSummary(): Promise<SiteOperationsSummary>
     historyRootReady: historyRootStatus.exists && historyRootStatus.writable,
     rateLimitRootConfigured: Boolean(rateLimitRoot),
     rateLimitRootReady: Boolean(rateLimitRootStatus?.exists && rateLimitRootStatus.writable),
+    mediaRootConfigured: Boolean(process.env.MEDIA_DIR?.trim()),
+    mediaRootReady: mediaRootStatus.exists && mediaRootStatus.writable,
+    mediaHistoryRootReady: mediaHistoryRootStatus.exists && mediaHistoryRootStatus.writable,
     contentStatuses: [shows, merch, audit],
   });
 
@@ -382,12 +427,16 @@ export async function getSiteOperationsSummary(): Promise<SiteOperationsSummary>
       contentRoot,
       historyRoot,
       rateLimitRoot,
+      mediaRoot,
+      mediaHistoryRoot,
       usingPersistentRateLimit: Boolean(rateLimitRoot),
     },
     paths: {
       contentRoot: contentRootStatus,
       historyRoot: historyRootStatus,
       rateLimitRoot: rateLimitRootStatus,
+      mediaRoot: mediaRootStatus,
+      mediaHistoryRoot: mediaHistoryRootStatus,
     },
     content: {
       shows,
@@ -396,9 +445,7 @@ export async function getSiteOperationsSummary(): Promise<SiteOperationsSummary>
       allValid: [shows, merch, audit].every((status) => status.valid),
     },
     activity: {
-      latestAuditAt: getLatestAuditAt(
-        auditResult.data?.map((entry) => entry.createdAt) ?? [],
-      ),
+      latestAuditAt: getLatestAuditAt(auditResult.data?.map((entry) => entry.createdAt) ?? []),
       latestBackupAt,
     },
     warnings,

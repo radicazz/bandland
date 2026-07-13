@@ -45,7 +45,7 @@ function parseArgs(argv) {
 function normalizeEnvValue(value) {
   let normalized = value.trim();
   if (
-    (normalized.startsWith("\"") && normalized.endsWith("\"")) ||
+    (normalized.startsWith('"') && normalized.endsWith('"')) ||
     (normalized.startsWith("'") && normalized.endsWith("'"))
   ) {
     normalized = normalized.slice(1, -1);
@@ -171,6 +171,7 @@ try {
     "AUTH_SECRET",
     "AUTH_URL",
     "NEXT_PUBLIC_SITE_URL",
+    "MEDIA_DIR",
   ];
 
   for (const key of requiredEnvKeys) {
@@ -182,12 +183,31 @@ try {
   const contentDir = env.CONTENT_DIR || path.join(repoDir, "content");
   const historyDir = env.CONTENT_HISTORY_DIR || path.join(contentDir, ".history");
   const rateLimitDir = env.AUTH_RATE_LIMIT_DIR || null;
+  const mediaDir = env.MEDIA_DIR || path.join(repoDir, "content", "media");
+  const mediaHistoryDir = env.MEDIA_HISTORY_DIR || path.join(mediaDir, ".history");
 
-  const [contentDirStatus, historyDirStatus, rateLimitDirStatus] = await Promise.all([
+  const [
+    contentDirStatus,
+    historyDirStatus,
+    rateLimitDirStatus,
+    mediaDirStatus,
+    mediaHistoryDirStatus,
+  ] = await Promise.all([
     inspectDirectory(contentDir),
     inspectDirectory(historyDir),
     rateLimitDir ? inspectDirectory(rateLimitDir) : Promise.resolve(null),
+    inspectDirectory(mediaDir),
+    inspectDirectory(mediaHistoryDir),
   ]);
+
+  for (const [label, directory, status] of [
+    ["Media directory", mediaDir, mediaDirStatus],
+    ["Media history directory", mediaHistoryDir, mediaHistoryDirStatus],
+  ]) {
+    if (!status.exists || !status.isDirectory || !status.readable || !status.writable) {
+      pushError(results, `${label} is missing or not readable and writable: ${directory}`);
+    }
+  }
 
   if (!contentDirStatus.exists || !contentDirStatus.isDirectory) {
     pushError(results, `Content directory is missing or invalid: ${contentDir}`);
@@ -199,10 +219,16 @@ try {
     if (!historyDirStatus.exists || !historyDirStatus.isDirectory) {
       pushError(results, `Configured history directory is missing or invalid: ${historyDir}`);
     } else if (!historyDirStatus.readable || !historyDirStatus.writable) {
-      pushError(results, `Configured history directory is not readable and writable: ${historyDir}`);
+      pushError(
+        results,
+        `Configured history directory is not readable and writable: ${historyDir}`,
+      );
     }
   } else if (!contentDirStatus.writable) {
-    pushError(results, "Content directory is not writable, so automatic backup creation will fail.");
+    pushError(
+      results,
+      "Content directory is not writable, so automatic backup creation will fail.",
+    );
   }
 
   if (rateLimitDir) {
@@ -295,6 +321,7 @@ try {
   console.log(`Content directory: ${contentDir}`);
   console.log(`History directory: ${historyDir}`);
   console.log(`Rate-limit directory: ${rateLimitDir ?? "not configured"}`);
+  console.log(`Media directory: ${mediaDir}`);
 
   for (const warning of results.warnings) {
     console.warn(`Warning: ${warning}`);

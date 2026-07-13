@@ -76,6 +76,17 @@ copy_if_needed() {
   echo "Seeded file: $dest_path"
 }
 
+seed_empty_array_if_needed() {
+  local dest_path="$1"
+  if [ -f "$dest_path" ] && [ "$FORCE" != "1" ]; then
+    echo "Preserving existing file: $dest_path"
+    return
+  fi
+  printf '[]\n' | $SUDO tee "$dest_path" >/dev/null
+  set_owner "$dest_path"
+  echo "Seeded file: $dest_path"
+}
+
 resolve_existing_parent() {
   local target_path="$1"
   while [ ! -e "$target_path" ]; do
@@ -138,10 +149,14 @@ ENV_FILE_PATH="$(resolve_env_file || true)"
 CONTENT_DIR="${CONTENT_DIR:-$(get_env_value "$ENV_FILE_PATH" CONTENT_DIR)}"
 CONTENT_HISTORY_DIR="${CONTENT_HISTORY_DIR:-$(get_env_value "$ENV_FILE_PATH" CONTENT_HISTORY_DIR)}"
 AUTH_RATE_LIMIT_DIR="${AUTH_RATE_LIMIT_DIR:-$(get_env_value "$ENV_FILE_PATH" AUTH_RATE_LIMIT_DIR)}"
+MEDIA_DIR="${MEDIA_DIR:-$(get_env_value "$ENV_FILE_PATH" MEDIA_DIR)}"
+MEDIA_HISTORY_DIR="${MEDIA_HISTORY_DIR:-$(get_env_value "$ENV_FILE_PATH" MEDIA_HISTORY_DIR)}"
 
 CONTENT_DIR="${CONTENT_DIR:-$DATA_ROOT/content}"
 CONTENT_HISTORY_DIR="${CONTENT_HISTORY_DIR:-$CONTENT_DIR/.history}"
 AUTH_RATE_LIMIT_DIR="${AUTH_RATE_LIMIT_DIR:-$DATA_ROOT/auth-rate-limit}"
+MEDIA_DIR="${MEDIA_DIR:-$DATA_ROOT/media}"
+MEDIA_HISTORY_DIR="${MEDIA_HISTORY_DIR:-$MEDIA_DIR/.history}"
 
 if [ "${EUID:-$(id -u)}" -ne 0 ]; then
   case "$BOOTSTRAP_USE_SUDO" in
@@ -152,7 +167,7 @@ if [ "${EUID:-$(id -u)}" -ne 0 ]; then
       SUDO=""
       ;;
     auto|"")
-      if [ "$RUN_SETUP_SYSTEMD" != "0" ] || [ "$SERVICE_USER" != "$CURRENT_USER" ] || path_requires_sudo "$CONTENT_DIR" || path_requires_sudo "$CONTENT_HISTORY_DIR" || path_requires_sudo "$AUTH_RATE_LIMIT_DIR"; then
+      if [ "$RUN_SETUP_SYSTEMD" != "0" ] || [ "$SERVICE_USER" != "$CURRENT_USER" ] || path_requires_sudo "$CONTENT_DIR" || path_requires_sudo "$CONTENT_HISTORY_DIR" || path_requires_sudo "$AUTH_RATE_LIMIT_DIR" || path_requires_sudo "$MEDIA_DIR"; then
         require_sudo
       fi
       ;;
@@ -170,19 +185,25 @@ echo "  Service user: $SERVICE_USER"
 echo "  Content dir: $CONTENT_DIR"
 echo "  History dir: $CONTENT_HISTORY_DIR"
 echo "  Rate-limit dir: $AUTH_RATE_LIMIT_DIR"
+echo "  Media dir: $MEDIA_DIR"
 if [ -n "$ENV_FILE_PATH" ]; then
   echo "  Env file: $ENV_FILE_PATH"
 else
   echo "  Env file: (not found)"
 fi
 
-$SUDO mkdir -p "$CONTENT_DIR" "$CONTENT_HISTORY_DIR" "$AUTH_RATE_LIMIT_DIR"
+$SUDO mkdir -p "$CONTENT_DIR" "$CONTENT_HISTORY_DIR" "$AUTH_RATE_LIMIT_DIR" "$MEDIA_DIR" "$MEDIA_HISTORY_DIR"
 set_owner_recursive "$CONTENT_DIR"
 set_owner_recursive "$AUTH_RATE_LIMIT_DIR"
+set_owner_recursive "$MEDIA_DIR"
 
 copy_if_needed "$REPO_DIR/content/shows.json" "$CONTENT_DIR/shows.json"
 copy_if_needed "$REPO_DIR/content/merch.json" "$CONTENT_DIR/merch.json"
-copy_if_needed "$REPO_DIR/content/admin-audit.json" "$CONTENT_DIR/admin-audit.json"
+if [ -f "$REPO_DIR/content/admin-audit.json" ]; then
+  copy_if_needed "$REPO_DIR/content/admin-audit.json" "$CONTENT_DIR/admin-audit.json"
+else
+  seed_empty_array_if_needed "$CONTENT_DIR/admin-audit.json"
+fi
 
 if [ -n "$ENV_FILE_PATH" ] && [ "$RUN_SETUP_SYSTEMD" != "0" ]; then
   echo "Updating systemd service..."

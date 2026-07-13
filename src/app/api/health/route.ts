@@ -5,11 +5,13 @@ import { getSiteOperationsSummary } from "@/lib/site-operations";
 export async function GET() {
   try {
     const summary = await getSiteOperationsSummary();
-    const statusCode = summary.content.allValid ? 200 : 503;
+    const mediaReady = summary.paths.mediaRoot.writable && summary.paths.mediaHistoryRoot.writable;
+    const isHealthy = summary.content.allValid && (!summary.environment.isProduction || mediaReady);
+    const statusCode = isHealthy ? 200 : 503;
 
     return NextResponse.json(
       {
-        status: summary.content.allValid ? "ok" : "error",
+        status: isHealthy ? "ok" : "error",
         timestamp: summary.timestamp,
         environment: {
           nodeEnv: summary.environment.nodeEnv,
@@ -18,6 +20,8 @@ export async function GET() {
         storage: {
           mode: summary.storage.mode,
           usingPersistentRateLimit: summary.storage.usingPersistentRateLimit,
+          mediaWritable:
+            summary.paths.mediaRoot.writable && summary.paths.mediaHistoryRoot.writable,
         },
         content: {
           shows: {

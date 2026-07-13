@@ -11,6 +11,10 @@ npm install
 npm run dev
 ```
 
+The development setup command also configures ignored media storage under
+`content/media`. Sign in at `/admin`, add a show, and choose a JPEG, PNG, or
+WebP photo to test the same upload path used on the VPS.
+
 Open http://localhost:3000
 
 ## Basic edits
@@ -30,12 +34,14 @@ can confirm storage paths, backups, runtime config, and content health from the
 live admin UI.
 
 Setup:
+
 1. Copy `env.example` to `.env.local`
 2. Run `npm run setup-access` to generate `ADMIN_PASSWORD_HASH` + `AUTH_SECRET`
 3. Set `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` (e.g. `http://localhost:3000`)
 4. Restart the dev server
 
 Data written by the admin panel:
+
 - `content/shows.json`
 - `content/merch.json`
 - `content/admin-audit.json`
@@ -92,11 +98,13 @@ service, and verifies `GET /api/health` before reporting success.
 ## Environment
 
 Copy `env.example` to `.env.local` and set:
+
 - `NEXT_PUBLIC_SITE_URL`
 - `ADMIN_PASSWORD_HASH`
 - `AUTH_SECRET`
 - `AUTH_URL`
 - Optional: `AUTH_RATE_LIMIT_DIR`
+- `MEDIA_DIR` and optional `MEDIA_HISTORY_DIR` for uploaded photos
 - Optional: `APP_PORT`
 - Optional: `DEPLOY_HEALTHCHECK_URL`
 
@@ -105,7 +113,9 @@ Copy `env.example` to `.env.local` and set:
 This project uses a **dual licensing model**:
 
 ### Code License
+
 All source code is licensed under the [MIT License](./LICENSE). This includes:
+
 - The Next.js application code
 - Components and utilities in `src/`
 - Configuration files
@@ -114,7 +124,9 @@ All source code is licensed under the [MIT License](./LICENSE). This includes:
 You're free to use, modify, and distribute the code according to the MIT terms.
 
 ### Brand Assets License
+
 Visual assets in this repository are **NOT** included in the open-source license. This includes:
+
 - Files in `public/logos/`
 - Files in `public/slideshow/`
 - Album artwork, promotional images, and band photography

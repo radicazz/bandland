@@ -15,6 +15,9 @@ describe("deriveSiteOperationsWarnings", () => {
       historyRootReady: true,
       rateLimitRootConfigured: false,
       rateLimitRootReady: false,
+      mediaRootConfigured: true,
+      mediaRootReady: true,
+      mediaHistoryRootReady: true,
       contentStatuses: [
         { key: "shows", valid: true, error: null },
         { key: "merch", valid: true, error: null },
@@ -38,6 +41,9 @@ describe("deriveSiteOperationsWarnings", () => {
       historyRootReady: false,
       rateLimitRootConfigured: true,
       rateLimitRootReady: false,
+      mediaRootConfigured: true,
+      mediaRootReady: true,
+      mediaHistoryRootReady: true,
       contentStatuses: [
         { key: "shows", valid: false, error: "File does not exist" },
         { key: "merch", valid: true, error: null },
@@ -66,6 +72,9 @@ describe("deriveSiteOperationsWarnings", () => {
       historyRootReady: true,
       rateLimitRootConfigured: true,
       rateLimitRootReady: true,
+      mediaRootConfigured: true,
+      mediaRootReady: true,
+      mediaHistoryRootReady: true,
       contentStatuses: [
         { key: "shows", valid: true, error: null },
         { key: "merch", valid: true, error: null },
@@ -74,5 +83,57 @@ describe("deriveSiteOperationsWarnings", () => {
     });
 
     expect(warnings).toHaveLength(0);
+  });
+
+  it("reports missing persistent media configuration in production", () => {
+    const warnings = deriveSiteOperationsWarnings({
+      isProduction: true,
+      storageMode: "external",
+      authUrlConfigured: true,
+      publicSiteUrlConfigured: true,
+      adminPasswordHashConfigured: true,
+      authSecretConfigured: true,
+      historyRootConfigured: true,
+      historyRootReady: true,
+      rateLimitRootConfigured: true,
+      rateLimitRootReady: true,
+      mediaRootConfigured: false,
+      mediaRootReady: false,
+      mediaHistoryRootReady: false,
+      contentStatuses: [
+        { key: "shows", valid: true, error: null },
+        { key: "merch", valid: true, error: null },
+        { key: "audit", valid: true, error: null },
+      ],
+    });
+
+    expect(warnings.map((warning) => warning.id)).toContain("media-dir-not-configured");
+  });
+
+  it("reports unavailable configured media directories", () => {
+    const warnings = deriveSiteOperationsWarnings({
+      isProduction: true,
+      storageMode: "external",
+      authUrlConfigured: true,
+      publicSiteUrlConfigured: true,
+      adminPasswordHashConfigured: true,
+      authSecretConfigured: true,
+      historyRootConfigured: true,
+      historyRootReady: true,
+      rateLimitRootConfigured: true,
+      rateLimitRootReady: true,
+      mediaRootConfigured: true,
+      mediaRootReady: false,
+      mediaHistoryRootReady: false,
+      contentStatuses: [
+        { key: "shows", valid: true, error: null },
+        { key: "merch", valid: true, error: null },
+        { key: "audit", valid: true, error: null },
+      ],
+    });
+
+    expect(warnings.map((warning) => warning.id)).toEqual(
+      expect.arrayContaining(["media-dir-unavailable", "media-history-unavailable"]),
+    );
   });
 });
