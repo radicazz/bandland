@@ -25,13 +25,16 @@ describe("ContentImage", () => {
     );
   });
 
-  it("renders managed responsive sources", () => {
+  it("renders a Vercel Blob image through Next Image", () => {
     const { container } = render(
-      <ContentImage imageId="70164137-f515-40b9-be69-d059f433bf21" {...commonProps} />,
+      <ContentImage
+        src="https://store.public.blob.vercel-storage.com/media/poster.webp"
+        {...commonProps}
+      />,
     );
-    expect(container.querySelector("source")).toHaveAttribute(
-      "srcset",
-      expect.stringContaining("/media/70164137-f515-40b9-be69-d059f433bf21/640.webp"),
+    expect(container.querySelector("img")).toHaveAttribute(
+      "src",
+      expect.stringContaining("store.public.blob.vercel-storage.com"),
     );
   });
 });

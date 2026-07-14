@@ -22,7 +22,10 @@ export function getSiteBaseUrl(): string {
     return configuredUrl;
   }
 
-  const vercelUrl = process.env.VERCEL_URL?.trim();
+  const vercelUrl =
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
+    process.env.VERCEL_BRANCH_URL?.trim() ||
+    process.env.VERCEL_URL?.trim();
   if (vercelUrl) {
     return `https://${vercelUrl}`;
   }

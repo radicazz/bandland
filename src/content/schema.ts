@@ -21,8 +21,6 @@ export const showSchema = z
     priceOnline: z.string().min(1).optional(),
     priceDoor: z.string().min(1).optional(),
     ticketUrl: z.string().url().optional(),
-    imageId: z.string().uuid().optional(),
-    // Kept for content created before managed media uploads were introduced.
     imageUrl: z.string().url().optional(),
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
@@ -40,8 +38,6 @@ export const merchItemSchema = z.object({
   description: z.string().min(1).optional(),
   price: z.string().min(1),
   href: z.string().url(),
-  imageId: z.string().uuid().optional(),
-  // Kept for backward compatibility with existing deployed content.
   imageUrl: z.string().url().optional(),
   createdAt: z.string().datetime({ offset: true }),
   updatedAt: z.string().datetime({ offset: true }),

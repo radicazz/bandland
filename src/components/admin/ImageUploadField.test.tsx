@@ -17,7 +17,10 @@ describe("ImageUploadField", () => {
 
   it("marks an existing image for removal and allows undoing it", () => {
     const { container } = render(
-      <ImageUploadField label="Show photo" currentImageId="70164137-f515-40b9-be69-d059f433bf21" />,
+      <ImageUploadField
+        label="Show photo"
+        currentImageUrl="https://store.public.blob.vercel-storage.com/media/poster.webp"
+      />,
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Remove" }));

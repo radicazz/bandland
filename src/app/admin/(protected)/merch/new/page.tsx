@@ -1,9 +1,13 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { MerchForm } from "@/components/admin/MerchForm";
 import { createMerchAction } from "@/lib/admin-actions";
+import { getMediaUploadPrefix } from "@/lib/media-store";
+import { isReadOnlyDeployment } from "@/lib/runtime-environment";
 
 export default function AdminMerchNewPage() {
+  if (isReadOnlyDeployment()) redirect("/admin/merch");
   return (
     <section className="rounded-2xl border border-border/70 bg-surface/70 p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -15,7 +19,11 @@ export default function AdminMerchNewPage() {
           Back to merch
         </Link>
       </div>
-      <MerchForm action={createMerchAction} submitLabel="Create merch" />
+      <MerchForm
+        action={createMerchAction}
+        submitLabel="Create merch"
+        uploadPrefix={getMediaUploadPrefix("merch")}
+      />
     </section>
   );
 }

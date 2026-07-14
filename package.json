@@ -13,29 +13,15 @@
     "test:watch": "vitest",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "bootstrap:vps": "bash scripts/bootstrap-vps.sh",
-    "deploy:preflight": "node scripts/preflight-deploy.mjs",
-    "setup-access": "node scripts/setup-access.mjs",
-    "verify-access": "node scripts/verify-access.mjs",
-    "docker:build": "docker build -t bandland .",
-    "docker:run": "docker run --rm -p 3000:3000 -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
-    "docker:dev": "node scripts/compose-runner.mjs docker dev --profile dev up --build dev",
-    "docker:up": "node scripts/compose-runner.mjs docker prod up --build app",
-    "docker:down": "node scripts/compose-runner.mjs docker prod down",
-    "podman:build": "podman build -t bandland .",
-    "podman:run": "podman run --rm -p 127.0.0.1:3000:3000 -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
-    "podman:run:host": "podman run --rm --network=host -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
-    "podman:dev": "node scripts/compose-runner.mjs podman dev --profile dev up --build dev",
-    "podman:up": "node scripts/compose-runner.mjs podman prod up --build app",
-    "podman:down": "node scripts/compose-runner.mjs podman prod down"
+    "auth:generate": "node scripts/generate-auth.mjs"
   },
   "dependencies": {
+    "@vercel/blob": "^2.6.1",
     "bcryptjs": "^2.4.3",
     "next": "^16.2.2",
     "next-auth": "5.0.0-beta.30",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "sharp": "^0.35.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -6,11 +6,13 @@ import { useFormStatus } from "react-dom";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import type { MerchItem } from "@/content/schema";
 import { initialAdminFormState, type AdminFormState } from "@/lib/admin-form-state";
+import { submitAdminFormWithImage } from "@/lib/admin-image-upload";
 
 type MerchFormProps = {
   action: (prevState: AdminFormState, formData: FormData) => Promise<AdminFormState>;
   initialValues?: MerchItem;
   submitLabel: string;
+  uploadPrefix?: string;
 };
 
 function SubmitButton({ label }: { label: string }) {
@@ -37,8 +39,17 @@ function FieldError({ message }: { message: string | undefined }) {
   );
 }
 
-export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps) {
-  const [state, formAction] = useActionState(action, initialAdminFormState);
+export function MerchForm({
+  action,
+  initialValues,
+  submitLabel,
+  uploadPrefix = "media/development/merch/",
+}: MerchFormProps) {
+  const [state, formAction] = useActionState(
+    (previousState: AdminFormState, formData: FormData) =>
+      submitAdminFormWithImage({ action, previousState, formData, uploadPrefix }),
+    initialAdminFormState,
+  );
   const formRef = useRef<HTMLFormElement>(null);
 
   const inputBase =
@@ -120,7 +131,6 @@ export function MerchForm({ action, initialValues, submitLabel }: MerchFormProps
 
       <ImageUploadField
         label="Merch photo (optional)"
-        currentImageId={initialValues?.imageId}
         currentImageUrl={initialValues?.imageUrl}
         error={state.fieldErrors?.image}
       />

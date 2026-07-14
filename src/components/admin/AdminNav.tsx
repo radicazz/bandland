@@ -13,7 +13,6 @@ export function AdminNav() {
     { href: "/admin/dashboard", label: "Dashboard" },
     { href: "/admin/shows", label: "Shows" },
     { href: "/admin/merch", label: "Merch" },
-    { href: "/admin/system", label: "System" },
   ] as const;
 
   return (

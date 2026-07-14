@@ -50,24 +50,22 @@ export default async function AdminLoginPage({ searchParams }: AdminPageProps) {
     error === "missing"
       ? "Password is required."
       : error === "credentials" && code === "missing_hash"
-        ? "Admin access is not configured. Run npm run setup-access and restart the dev server."
-        : error === "credentials" && code === "rate_limited"
-          ? "Too many attempts. Try again in about 15 minutes."
-          : error === "credentials" && code === "invalid_password"
-            ? "Password did not match. Please try again."
-            : error === "credentials" && code === "missing_password"
-              ? "Password is required."
-              : error === "credentials"
-                ? "Invalid credentials. Please try again."
-                : error === "auth" && code === "MissingSecret"
-                  ? "AUTH_SECRET is missing. Run npm run setup-access and restart the dev server."
-                  : error === "auth" && code === "InvalidCallbackUrl"
-                    ? "Invalid callback URL. Check AUTH_URL and NEXT_PUBLIC_SITE_URL."
-                    : error === "auth"
-                      ? "Sign-in failed due to a configuration issue. Check server logs."
-                      : error
-                        ? "Unable to sign in. Please try again."
-                        : null;
+        ? "Admin access is not configured. Add ADMIN_PASSWORD_HASH to the Vercel environment."
+        : error === "credentials" && code === "invalid_password"
+          ? "Password did not match. Please try again."
+          : error === "credentials" && code === "missing_password"
+            ? "Password is required."
+            : error === "credentials"
+              ? "Invalid credentials. Please try again."
+              : error === "auth" && code === "MissingSecret"
+                ? "AUTH_SECRET is missing from the Vercel environment."
+                : error === "auth" && code === "InvalidCallbackUrl"
+                  ? "Invalid callback URL. Check AUTH_URL and NEXT_PUBLIC_SITE_URL."
+                  : error === "auth"
+                    ? "Sign-in failed due to a configuration issue. Check server logs."
+                    : error
+                      ? "Unable to sign in. Please try again."
+                      : null;
   return (
     <Container className="flex min-h-[calc(100dvh-4rem)] items-center justify-center py-10 sm:py-16">
       <div className="punk-panel w-full max-w-md p-5 sm:p-8">

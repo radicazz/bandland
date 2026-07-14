@@ -6,11 +6,13 @@ import { useFormStatus } from "react-dom";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import type { Show } from "@/content/schema";
 import { initialAdminFormState, type AdminFormState } from "@/lib/admin-form-state";
+import { submitAdminFormWithImage } from "@/lib/admin-image-upload";
 
 type ShowFormProps = {
   action: (prevState: AdminFormState, formData: FormData) => Promise<AdminFormState>;
   initialValues?: Show;
   submitLabel: string;
+  uploadPrefix?: string;
 };
 
 const SAST_TIMEZONE_OFFSET = "+02:00";
@@ -49,8 +51,17 @@ function FieldError({ message }: { message: string | undefined }) {
   );
 }
 
-export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) {
-  const [state, formAction] = useActionState(action, initialAdminFormState);
+export function ShowForm({
+  action,
+  initialValues,
+  submitLabel,
+  uploadPrefix = "media/development/shows/",
+}: ShowFormProps) {
+  const [state, formAction] = useActionState(
+    (previousState: AdminFormState, formData: FormData) =>
+      submitAdminFormWithImage({ action, previousState, formData, uploadPrefix }),
+    initialAdminFormState,
+  );
   const hasHappenedId = useId();
   const hasHappenedHintId = useId();
   const formRef = useRef<HTMLFormElement>(null);
@@ -264,7 +275,6 @@ export function ShowForm({ action, initialValues, submitLabel }: ShowFormProps) 
 
       <ImageUploadField
         label="Show photo (optional)"
-        currentImageId={initialValues?.imageId}
         currentImageUrl={initialValues?.imageUrl}
         error={state.fieldErrors?.image}
       />

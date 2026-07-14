@@ -1,15 +1,18 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { ShowForm } from "@/components/admin/ShowForm";
 import { updateShowAction } from "@/lib/admin-actions";
 import { readShows } from "@/lib/content-store";
+import { getMediaUploadPrefix } from "@/lib/media-store";
+import { isReadOnlyDeployment } from "@/lib/runtime-environment";
 
 type AdminShowEditPageProps = {
   params: Promise<{ id: string }>;
 };
 
 export default async function AdminShowEditPage({ params }: AdminShowEditPageProps) {
+  if (isReadOnlyDeployment()) redirect("/admin/shows");
   const { id } = await params;
   const shows = await readShows();
   const show = shows.find((item) => item.id === id);
@@ -29,7 +32,12 @@ export default async function AdminShowEditPage({ params }: AdminShowEditPagePro
           Back to shows
         </Link>
       </div>
-      <ShowForm action={updateShowAction} submitLabel="Save changes" initialValues={show} />
+      <ShowForm
+        action={updateShowAction}
+        submitLabel="Save changes"
+        initialValues={show}
+        uploadPrefix={getMediaUploadPrefix("shows")}
+      />
     </section>
   );
 }

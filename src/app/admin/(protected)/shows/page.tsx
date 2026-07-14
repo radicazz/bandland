@@ -8,6 +8,7 @@ import { deleteShowAction } from "@/lib/admin-actions";
 import { readShows } from "@/lib/content-store";
 import { formatShowDatePretty } from "@/lib/formatters";
 import { getResolvedHasHappened, splitShowsByStatus } from "@/lib/shows";
+import { isReadOnlyDeployment } from "@/lib/runtime-environment";
 
 export default async function AdminShowsPage({
   searchParams,
@@ -19,6 +20,7 @@ export default async function AdminShowsPage({
   const { upcoming, past } = splitShowsByStatus(shows);
   const orderedShows = [...upcoming, ...past];
   const locale = await getLocaleFromCookies();
+  const readOnly = isReadOnlyDeployment();
   const formatShowDate = (value: string) => formatShowDatePretty(value, locale);
 
   return (
@@ -28,9 +30,11 @@ export default async function AdminShowsPage({
           <h2 className="text-lg font-semibold text-text">Shows</h2>
           <p className="mt-2 text-sm text-text-muted">Manage upcoming and past shows.</p>
         </div>
-        <Link href="/admin/shows/new" className="btn-primary w-full sm:w-auto">
-          New show
-        </Link>
+        {!readOnly ? (
+          <Link href="/admin/shows/new" className="btn-primary w-full sm:w-auto">
+            New show
+          </Link>
+        ) : null}
       </div>
       <AdminNotice value={saved} entity="Show" />
 
@@ -49,7 +53,6 @@ export default async function AdminShowsPage({
                 <div className="grid gap-4 sm:grid-cols-[7rem_minmax(0,1fr)_auto] sm:items-start">
                   <div className="overflow-hidden border border-border bg-surface/50">
                     <ContentImage
-                      imageId={show.imageId}
                       src={show.imageUrl}
                       alt=""
                       className="h-28 w-full object-cover sm:h-24"
@@ -102,15 +105,20 @@ export default async function AdminShowsPage({
                       </p>
                     ) : null}
                   </div>
-                  <div className="grid w-full gap-2 sm:w-auto sm:items-center">
-                    <Link href={`/admin/shows/${show.id}`} className="btn-primary w-full sm:w-auto">
-                      Edit
-                    </Link>
-                    <form action={deleteShowAction} className="w-full sm:w-auto">
-                      <input type="hidden" name="id" value={show.id} />
-                      <DeleteButton confirmMessage="Delete this show?" />
-                    </form>
-                  </div>
+                  {!readOnly ? (
+                    <div className="grid w-full gap-2 sm:w-auto sm:items-center">
+                      <Link
+                        href={`/admin/shows/${show.id}`}
+                        className="btn-primary w-full sm:w-auto"
+                      >
+                        Edit
+                      </Link>
+                      <form action={deleteShowAction} className="w-full sm:w-auto">
+                        <input type="hidden" name="id" value={show.id} />
+                        <DeleteButton confirmMessage="Delete this show?" />
+                      </form>
+                    </div>
+                  ) : null}
                 </div>
                 {show.ticketUrl ? (
                   <a

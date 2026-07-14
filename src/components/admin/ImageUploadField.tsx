@@ -5,23 +5,17 @@ import { useEffect, useId, useState } from "react";
 import { ContentImage } from "@/components/ContentImage";
 
 type ImageUploadFieldProps = {
-  currentImageId?: string | undefined;
   currentImageUrl?: string | undefined;
   error?: string | undefined;
   label: string;
 };
 
-export function ImageUploadField({
-  currentImageId,
-  currentImageUrl,
-  error,
-  label,
-}: ImageUploadFieldProps) {
+export function ImageUploadField({ currentImageUrl, error, label }: ImageUploadFieldProps) {
   const inputId = useId();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [removeCurrent, setRemoveCurrent] = useState(false);
-  const hasCurrent = Boolean(currentImageId || currentImageUrl);
+  const hasCurrent = Boolean(currentImageUrl);
 
   useEffect(
     () => () => {
@@ -43,7 +37,7 @@ export function ImageUploadField({
           {fileName ?? (hasCurrent ? "Replace photo" : "Choose a photo")}
         </span>
         <span className="mt-2 text-xs leading-5 text-text-muted">
-          JPEG, PNG, or WebP · maximum 10 MB · automatically cropped
+          JPEG, PNG, or WebP · maximum 10 MB · optimized by Vercel
         </span>
         <input
           id={inputId}
@@ -82,7 +76,6 @@ export function ImageUploadField({
       ) : hasCurrent && !removeCurrent ? (
         <div className="mt-4 overflow-hidden border border-border bg-bg/60">
           <ContentImage
-            imageId={currentImageId}
             src={currentImageUrl}
             alt="Current image"
             className="h-48 w-full object-cover"

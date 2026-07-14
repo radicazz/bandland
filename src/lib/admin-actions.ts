@@ -1,27 +1,16 @@
 "use server";
 
-import { randomUUID } from "crypto";
-import { z } from "zod";
-import { redirect } from "next/navigation";
+import { randomUUID } from "node:crypto";
 import { updateTag } from "next/cache";
+import { redirect } from "next/navigation";
+import { z } from "zod";
 
 import { auth } from "@/auth";
 import type { MerchItem, Show } from "@/content/schema";
 import type { AdminFormState } from "@/lib/admin-form-state";
-import {
-  appendAuditEntry,
-  readMerch,
-  readShows,
-  serializeContentMutation,
-  writeMerch,
-  writeShows,
-} from "@/lib/content-store";
-import {
-  archiveManagedMedia,
-  discardManagedMedia,
-  MediaValidationError,
-  processMediaUpload,
-} from "@/lib/media-store";
+import { appendAuditEntry, mutateMerch, mutateShows } from "@/lib/content-store";
+import { discardManagedMedia, MediaValidationError, validateManagedMedia } from "@/lib/media-store";
+import { isReadOnlyDeployment } from "@/lib/runtime-environment";
 
 const showInputSchema = z.object({
   date: z.string().datetime({ offset: true }),
@@ -55,6 +44,10 @@ function booleanInput(value: FormDataEntryValue | null) {
   return value !== null;
 }
 
+function getUploadedImageUrl(formData: FormData) {
+  return optionalInput(formData.get("uploadedImageUrl"));
+}
+
 function formatZodErrors(error: z.ZodError) {
   const fieldErrors: Record<string, string> = {};
   for (const issue of error.issues) {
@@ -68,10 +61,14 @@ function formatZodErrors(error: z.ZodError) {
 
 async function requireAdmin() {
   const session = await auth();
-  if (!session) {
-    redirect("/admin");
-  }
+  if (!session) redirect("/admin");
   return session;
+}
+
+function readOnlyState(): AdminFormState | null {
+  return isReadOnlyDeployment()
+    ? { status: "error", message: "Preview deployments are read-only." }
+    : null;
 }
 
 async function logAudit({
@@ -100,7 +97,7 @@ async function logAudit({
   }
 }
 
-function mediaErrorState(error: unknown): AdminFormState {
+function storageErrorState(error: unknown): AdminFormState {
   if (error instanceof MediaValidationError) {
     return {
       status: "error",
@@ -111,18 +108,24 @@ function mediaErrorState(error: unknown): AdminFormState {
   console.error("[Admin] Unable to save content", error);
   return {
     status: "error",
-    message: "The change could not be saved. Check storage permissions or try again.",
+    message: "The change could not be saved. Check the Vercel storage connection or try again.",
   };
+}
+
+async function cleanupFailedUpload(url: string | undefined) {
+  if (url) await discardManagedMedia(url);
 }
 
 export async function createShowAction(
   _prevState: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
-  "use server";
   await requireAdmin();
+  const blocked = readOnlyState();
+  if (blocked) return blocked;
 
-  const input = {
+  const uploadedImageUrl = getUploadedImageUrl(formData);
+  const parsed = showInputSchema.safeParse({
     date: normalizeInput(formData.get("date")),
     hasHappened: booleanInput(formData.get("hasHappened")),
     timeFrame: optionalInput(formData.get("timeFrame")),
@@ -132,10 +135,9 @@ export async function createShowAction(
     priceOnline: optionalInput(formData.get("priceOnline")),
     priceDoor: optionalInput(formData.get("priceDoor")),
     ticketUrl: optionalInput(formData.get("ticketUrl")),
-  };
-
-  const parsed = showInputSchema.safeParse(input);
+  });
   if (!parsed.success) {
+    await cleanupFailedUpload(uploadedImageUrl);
     return {
       status: "error",
       message: "Please correct the highlighted fields.",
@@ -143,11 +145,12 @@ export async function createShowAction(
     };
   }
 
-  let imageId: string | null = null;
+  let imageUrl: string | undefined;
   try {
-    imageId = await processMediaUpload(formData.get("image"));
+    imageUrl = uploadedImageUrl ? await validateManagedMedia(uploadedImageUrl, "shows") : undefined;
   } catch (error) {
-    return mediaErrorState(error);
+    await cleanupFailedUpload(uploadedImageUrl);
+    return storageErrorState(error);
   }
 
   const now = new Date().toISOString();
@@ -156,27 +159,22 @@ export async function createShowAction(
     ...parsed.data,
     createdAt: now,
     updatedAt: now,
-    ...(imageId ? { imageId } : {}),
+    ...(imageUrl ? { imageUrl } : {}),
   };
 
   try {
-    await serializeContentMutation(async () => {
-      const shows = await readShows();
-      await writeShows([...shows, nextShow]);
-      await logAudit({
-        action: "create",
-        entity: "shows",
-        entityId: nextShow.id,
-        details: JSON.stringify({ after: nextShow }),
-      });
-    });
+    await mutateShows((shows) => ({ data: [...shows, nextShow], result: undefined }));
   } catch (error) {
-    if (imageId) {
-      await discardManagedMedia(imageId);
-    }
-    return mediaErrorState(error);
+    await cleanupFailedUpload(imageUrl);
+    return storageErrorState(error);
   }
 
+  await logAudit({
+    action: "create",
+    entity: "shows",
+    entityId: nextShow.id,
+    details: JSON.stringify({ after: nextShow }),
+  });
   updateTag("shows");
   redirect("/admin/shows?saved=created");
 }
@@ -185,18 +183,18 @@ export async function updateShowAction(
   _prevState: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
-  "use server";
   await requireAdmin();
+  const blocked = readOnlyState();
+  if (blocked) return blocked;
 
   const id = normalizeInput(formData.get("id"));
+  const uploadedImageUrl = getUploadedImageUrl(formData);
   if (!id) {
-    return {
-      status: "error",
-      message: "Show ID is missing.",
-    };
+    await cleanupFailedUpload(uploadedImageUrl);
+    return { status: "error", message: "Show ID is missing." };
   }
 
-  const input = {
+  const parsed = showInputSchema.safeParse({
     date: normalizeInput(formData.get("date")),
     hasHappened: booleanInput(formData.get("hasHappened")),
     timeFrame: optionalInput(formData.get("timeFrame")),
@@ -206,10 +204,9 @@ export async function updateShowAction(
     priceOnline: optionalInput(formData.get("priceOnline")),
     priceDoor: optionalInput(formData.get("priceDoor")),
     ticketUrl: optionalInput(formData.get("ticketUrl")),
-  };
-
-  const parsed = showInputSchema.safeParse(input);
+  });
   if (!parsed.success) {
+    await cleanupFailedUpload(uploadedImageUrl);
     return {
       status: "error",
       message: "Please correct the highlighted fields.",
@@ -217,60 +214,47 @@ export async function updateShowAction(
     };
   }
 
-  let uploadedImageId: string | null = null;
+  let imageUrl: string | undefined;
   try {
-    uploadedImageId = await processMediaUpload(formData.get("image"));
+    imageUrl = uploadedImageUrl ? await validateManagedMedia(uploadedImageUrl, "shows") : undefined;
   } catch (error) {
-    return mediaErrorState(error);
+    await cleanupFailedUpload(uploadedImageUrl);
+    return storageErrorState(error);
   }
-  const shouldRemoveImage = booleanInput(formData.get("removeImage"));
 
-  let replacedImageId: string | undefined;
+  const shouldRemoveImage = booleanInput(formData.get("removeImage"));
   try {
-    const result = await serializeContentMutation(async () => {
-      const shows = await readShows();
+    const result = await mutateShows((shows) => {
       const index = shows.findIndex((show) => show.id === id);
       const before = shows[index];
-      if (index === -1 || !before) {
-        return { found: false as const };
-      }
-      const nextShow: Show = {
-        ...before,
-        ...parsed.data,
-        updatedAt: new Date().toISOString(),
-      };
-      if (uploadedImageId) {
-        nextShow.imageId = uploadedImageId;
-        delete nextShow.imageUrl;
-      } else if (shouldRemoveImage) {
-        delete nextShow.imageId;
-        delete nextShow.imageUrl;
-      }
+      if (!before) return { data: shows, result: null };
 
-      const nextShows = [...shows];
-      nextShows[index] = nextShow;
-      await writeShows(nextShows);
-      await logAudit({
-        action: "update",
-        entity: "shows",
-        entityId: nextShow.id,
-        details: JSON.stringify({ before, after: nextShow }),
-      });
-      return { found: true as const, replacedImageId: before.imageId };
+      const after: Show = { ...before, ...parsed.data, updatedAt: new Date().toISOString() };
+      if (imageUrl) after.imageUrl = imageUrl;
+      else if (shouldRemoveImage) delete after.imageUrl;
+
+      const next = [...shows];
+      next[index] = after;
+      return { data: next, result: { before, after } };
     });
-    if (!result.found) {
-      if (uploadedImageId) await discardManagedMedia(uploadedImageId);
+
+    if (!result) {
+      await cleanupFailedUpload(imageUrl);
       return { status: "error", message: "Show not found." };
     }
-    replacedImageId = result.replacedImageId;
+
+    await logAudit({
+      action: "update",
+      entity: "shows",
+      entityId: id,
+      details: JSON.stringify(result),
+    });
+    if ((imageUrl || shouldRemoveImage) && result.before.imageUrl !== imageUrl) {
+      await discardManagedMedia(result.before.imageUrl);
+    }
   } catch (error) {
-    if (uploadedImageId) await discardManagedMedia(uploadedImageId);
-    return mediaErrorState(error);
-  }
-  if (replacedImageId && (uploadedImageId || shouldRemoveImage)) {
-    await archiveManagedMedia(replacedImageId).catch((error) =>
-      console.error("[Admin] Unable to archive replaced image", error),
-    );
+    await cleanupFailedUpload(imageUrl);
+    return storageErrorState(error);
   }
 
   updateTag("shows");
@@ -278,33 +262,24 @@ export async function updateShowAction(
 }
 
 export async function deleteShowAction(formData: FormData) {
-  "use server";
   await requireAdmin();
-
+  if (isReadOnlyDeployment()) return;
   const id = normalizeInput(formData.get("id"));
-  if (!id) {
-    return;
-  }
+  if (!id) return;
 
-  const removedImageId = await serializeContentMutation(async () => {
-    const shows = await readShows();
-    const removed = shows.find((show) => show.id === id);
-    if (!removed) return undefined;
-    await writeShows(shows.filter((show) => show.id !== id));
-    await logAudit({
-      action: "delete",
-      entity: "shows",
-      entityId: id,
-      details: JSON.stringify({ before: removed }),
-    });
-    return removed.imageId;
+  const removed = await mutateShows((shows) => {
+    const item = shows.find((show) => show.id === id);
+    return { data: shows.filter((show) => show.id !== id), result: item };
   });
-  if (removedImageId) {
-    await archiveManagedMedia(removedImageId).catch((error) =>
-      console.error("[Admin] Unable to archive deleted image", error),
-    );
-  }
+  if (!removed) return;
 
+  await logAudit({
+    action: "delete",
+    entity: "shows",
+    entityId: id,
+    details: JSON.stringify({ before: removed }),
+  });
+  await discardManagedMedia(removed.imageUrl);
   updateTag("shows");
   redirect("/admin/shows?saved=deleted");
 }
@@ -313,18 +288,19 @@ export async function createMerchAction(
   _prevState: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
-  "use server";
   await requireAdmin();
+  const blocked = readOnlyState();
+  if (blocked) return blocked;
 
-  const input = {
+  const uploadedImageUrl = getUploadedImageUrl(formData);
+  const parsed = merchInputSchema.safeParse({
     name: normalizeInput(formData.get("name")),
     description: optionalInput(formData.get("description")),
     price: normalizeInput(formData.get("price")),
     href: normalizeInput(formData.get("href")),
-  };
-
-  const parsed = merchInputSchema.safeParse(input);
+  });
   if (!parsed.success) {
+    await cleanupFailedUpload(uploadedImageUrl);
     return {
       status: "error",
       message: "Please correct the highlighted fields.",
@@ -332,11 +308,12 @@ export async function createMerchAction(
     };
   }
 
-  let imageId: string | null = null;
+  let imageUrl: string | undefined;
   try {
-    imageId = await processMediaUpload(formData.get("image"));
+    imageUrl = uploadedImageUrl ? await validateManagedMedia(uploadedImageUrl, "merch") : undefined;
   } catch (error) {
-    return mediaErrorState(error);
+    await cleanupFailedUpload(uploadedImageUrl);
+    return storageErrorState(error);
   }
 
   const now = new Date().toISOString();
@@ -345,25 +322,22 @@ export async function createMerchAction(
     ...parsed.data,
     createdAt: now,
     updatedAt: now,
-    ...(imageId ? { imageId } : {}),
+    ...(imageUrl ? { imageUrl } : {}),
   };
 
   try {
-    await serializeContentMutation(async () => {
-      const items = await readMerch();
-      await writeMerch([...items, nextItem]);
-      await logAudit({
-        action: "create",
-        entity: "merch",
-        entityId: nextItem.id,
-        details: JSON.stringify({ after: nextItem }),
-      });
-    });
+    await mutateMerch((items) => ({ data: [...items, nextItem], result: undefined }));
   } catch (error) {
-    if (imageId) await discardManagedMedia(imageId);
-    return mediaErrorState(error);
+    await cleanupFailedUpload(imageUrl);
+    return storageErrorState(error);
   }
 
+  await logAudit({
+    action: "create",
+    entity: "merch",
+    entityId: nextItem.id,
+    details: JSON.stringify({ after: nextItem }),
+  });
   updateTag("merch");
   redirect("/admin/merch?saved=created");
 }
@@ -372,26 +346,25 @@ export async function updateMerchAction(
   _prevState: AdminFormState,
   formData: FormData,
 ): Promise<AdminFormState> {
-  "use server";
   await requireAdmin();
+  const blocked = readOnlyState();
+  if (blocked) return blocked;
 
   const id = normalizeInput(formData.get("id"));
+  const uploadedImageUrl = getUploadedImageUrl(formData);
   if (!id) {
-    return {
-      status: "error",
-      message: "Merch ID is missing.",
-    };
+    await cleanupFailedUpload(uploadedImageUrl);
+    return { status: "error", message: "Merch ID is missing." };
   }
 
-  const input = {
+  const parsed = merchInputSchema.safeParse({
     name: normalizeInput(formData.get("name")),
     description: optionalInput(formData.get("description")),
     price: normalizeInput(formData.get("price")),
     href: normalizeInput(formData.get("href")),
-  };
-
-  const parsed = merchInputSchema.safeParse(input);
+  });
   if (!parsed.success) {
+    await cleanupFailedUpload(uploadedImageUrl);
     return {
       status: "error",
       message: "Please correct the highlighted fields.",
@@ -399,58 +372,47 @@ export async function updateMerchAction(
     };
   }
 
-  let uploadedImageId: string | null = null;
+  let imageUrl: string | undefined;
   try {
-    uploadedImageId = await processMediaUpload(formData.get("image"));
+    imageUrl = uploadedImageUrl ? await validateManagedMedia(uploadedImageUrl, "merch") : undefined;
   } catch (error) {
-    return mediaErrorState(error);
+    await cleanupFailedUpload(uploadedImageUrl);
+    return storageErrorState(error);
   }
-  const shouldRemoveImage = booleanInput(formData.get("removeImage"));
 
-  let replacedImageId: string | undefined;
+  const shouldRemoveImage = booleanInput(formData.get("removeImage"));
   try {
-    const result = await serializeContentMutation(async () => {
-      const items = await readMerch();
+    const result = await mutateMerch((items) => {
       const index = items.findIndex((item) => item.id === id);
       const before = items[index];
-      if (index === -1 || !before) return { found: false as const };
-      const nextItem: MerchItem = {
-        ...before,
-        ...parsed.data,
-        updatedAt: new Date().toISOString(),
-      };
-      if (uploadedImageId) {
-        nextItem.imageId = uploadedImageId;
-        delete nextItem.imageUrl;
-      } else if (shouldRemoveImage) {
-        delete nextItem.imageId;
-        delete nextItem.imageUrl;
-      }
+      if (!before) return { data: items, result: null };
 
-      const nextItems = [...items];
-      nextItems[index] = nextItem;
-      await writeMerch(nextItems);
-      await logAudit({
-        action: "update",
-        entity: "merch",
-        entityId: nextItem.id,
-        details: JSON.stringify({ before, after: nextItem }),
-      });
-      return { found: true as const, replacedImageId: before.imageId };
+      const after: MerchItem = { ...before, ...parsed.data, updatedAt: new Date().toISOString() };
+      if (imageUrl) after.imageUrl = imageUrl;
+      else if (shouldRemoveImage) delete after.imageUrl;
+
+      const next = [...items];
+      next[index] = after;
+      return { data: next, result: { before, after } };
     });
-    if (!result.found) {
-      if (uploadedImageId) await discardManagedMedia(uploadedImageId);
+
+    if (!result) {
+      await cleanupFailedUpload(imageUrl);
       return { status: "error", message: "Merch item not found." };
     }
-    replacedImageId = result.replacedImageId;
+
+    await logAudit({
+      action: "update",
+      entity: "merch",
+      entityId: id,
+      details: JSON.stringify(result),
+    });
+    if ((imageUrl || shouldRemoveImage) && result.before.imageUrl !== imageUrl) {
+      await discardManagedMedia(result.before.imageUrl);
+    }
   } catch (error) {
-    if (uploadedImageId) await discardManagedMedia(uploadedImageId);
-    return mediaErrorState(error);
-  }
-  if (replacedImageId && (uploadedImageId || shouldRemoveImage)) {
-    await archiveManagedMedia(replacedImageId).catch((error) =>
-      console.error("[Admin] Unable to archive replaced image", error),
-    );
+    await cleanupFailedUpload(imageUrl);
+    return storageErrorState(error);
   }
 
   updateTag("merch");
@@ -458,33 +420,24 @@ export async function updateMerchAction(
 }
 
 export async function deleteMerchAction(formData: FormData) {
-  "use server";
   await requireAdmin();
-
+  if (isReadOnlyDeployment()) return;
   const id = normalizeInput(formData.get("id"));
-  if (!id) {
-    return;
-  }
+  if (!id) return;
 
-  const removedImageId = await serializeContentMutation(async () => {
-    const items = await readMerch();
-    const removed = items.find((item) => item.id === id);
-    if (!removed) return undefined;
-    await writeMerch(items.filter((item) => item.id !== id));
-    await logAudit({
-      action: "delete",
-      entity: "merch",
-      entityId: id,
-      details: JSON.stringify({ before: removed }),
-    });
-    return removed.imageId;
+  const removed = await mutateMerch((items) => {
+    const item = items.find((entry) => entry.id === id);
+    return { data: items.filter((entry) => entry.id !== id), result: item };
   });
-  if (removedImageId) {
-    await archiveManagedMedia(removedImageId).catch((error) =>
-      console.error("[Admin] Unable to archive deleted image", error),
-    );
-  }
+  if (!removed) return;
 
+  await logAudit({
+    action: "delete",
+    entity: "merch",
+    entityId: id,
+    details: JSON.stringify({ before: removed }),
+  });
+  await discardManagedMedia(removed.imageUrl);
   updateTag("merch");
   redirect("/admin/merch?saved=deleted");
 }

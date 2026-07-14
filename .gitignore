@@ -27,10 +27,8 @@
 .DS_Store
 *.pem
 
-# content backups / audit logs
-/content/.history/
-/content/admin-audit.json
-/content/media/
+# legacy local content from the retired filesystem backend
+/content/
 
 # debug
 *.log

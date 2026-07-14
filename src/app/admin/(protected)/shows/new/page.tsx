@@ -1,9 +1,13 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { ShowForm } from "@/components/admin/ShowForm";
 import { createShowAction } from "@/lib/admin-actions";
+import { getMediaUploadPrefix } from "@/lib/media-store";
+import { isReadOnlyDeployment } from "@/lib/runtime-environment";
 
 export default function AdminShowNewPage() {
+  if (isReadOnlyDeployment()) redirect("/admin/shows");
   return (
     <section className="rounded-2xl border border-border/70 bg-surface/70 p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -15,7 +19,11 @@ export default function AdminShowNewPage() {
           Back to shows
         </Link>
       </div>
-      <ShowForm action={createShowAction} submitLabel="Create show" />
+      <ShowForm
+        action={createShowAction}
+        submitLabel="Create show"
+        uploadPrefix={getMediaUploadPrefix("shows")}
+      />
     </section>
   );
 }

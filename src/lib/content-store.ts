@@ -1,8 +1,6 @@
 import "server-only";
 
-import { randomUUID } from "crypto";
-import { promises as fs } from "fs";
-import path from "path";
+import { BlobError, BlobPreconditionFailedError, get, put } from "@vercel/blob";
 import { z } from "zod";
 
 import {
@@ -13,11 +11,10 @@ import {
   type MerchItem,
   type Show,
 } from "@/content/schema";
+import { getDataNamespace, requireWritableDeployment } from "@/lib/runtime-environment";
 
-const CONTENT_ROOT = process.env.CONTENT_DIR?.trim() || path.join(process.cwd(), "content");
-const HISTORY_ROOT = process.env.CONTENT_HISTORY_DIR?.trim() || path.join(CONTENT_ROOT, ".history");
-const MAX_BACKUPS = 50;
-let mutationQueue: Promise<void> = Promise.resolve();
+const MAX_MUTATION_ATTEMPTS = 4;
+const MAX_AUDIT_ENTRIES = 100;
 
 const CONTENT_FILES = {
   shows: "shows.json",
@@ -26,128 +23,109 @@ const CONTENT_FILES = {
 } as const;
 
 type ContentKey = keyof typeof CONTENT_FILES;
+type MutationResult<T, R> = { data: T; result: R };
 
-function resolveContentPath(key: ContentKey) {
-  return path.join(CONTENT_ROOT, CONTENT_FILES[key]);
-}
-
-async function ensureHistoryDir() {
-  await fs.mkdir(HISTORY_ROOT, { recursive: true });
-}
-
-async function ensureContentDir(filePath: string) {
-  await fs.mkdir(path.dirname(filePath), { recursive: true });
-}
-
-function buildBackupName(filePath: string) {
-  const base = path.basename(filePath, ".json");
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-  return `${base}-${timestamp}.json`;
-}
-
-async function createBackup(filePath: string) {
-  try {
-    await ensureHistoryDir();
-    const backupPath = path.join(HISTORY_ROOT, buildBackupName(filePath));
-    await fs.copyFile(filePath, backupPath);
-  } catch (error) {
-    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
-      return;
-    }
-    throw error;
+export class ContentConflictError extends Error {
+  constructor() {
+    super("Content changed while this update was being saved. Please try again.");
+    this.name = "ContentConflictError";
   }
 }
 
-async function pruneBackups(filePath: string) {
-  try {
-    const base = path.basename(filePath, ".json");
-    const entries = await fs.readdir(HISTORY_ROOT);
-    const matches = entries.filter((entry) => entry.startsWith(`${base}-`)).sort();
-    if (matches.length <= MAX_BACKUPS) {
-      return;
-    }
-    const toRemove = matches.slice(0, matches.length - MAX_BACKUPS);
-    await Promise.all(toRemove.map((entry) => fs.unlink(path.join(HISTORY_ROOT, entry))));
-  } catch (error) {
-    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
-      return;
-    }
-    throw error;
+function getContentToken() {
+  const token = process.env.CONTENT_BLOB_READ_WRITE_TOKEN?.trim();
+  if (!token) {
+    throw new Error("CONTENT_BLOB_READ_WRITE_TOKEN is not configured.");
   }
+  return token;
 }
 
-async function readJsonFile<T>(key: ContentKey, schema: z.ZodType<T>, fallback?: T) {
-  const filePath = resolveContentPath(key);
-  try {
-    const raw = await fs.readFile(filePath, "utf8");
-    const parsed = JSON.parse(raw);
-    return schema.parse(parsed);
-  } catch (error) {
-    if (
-      fallback !== undefined &&
-      error instanceof Error &&
-      "code" in error &&
-      error.code === "ENOENT"
-    ) {
-      return schema.parse(fallback);
-    }
-    throw error;
-  }
+function getContentPath(key: ContentKey) {
+  return `content/${getDataNamespace()}/${CONTENT_FILES[key]}`;
 }
 
-async function writeJsonFile<T>(key: ContentKey, schema: z.ZodType<T>, data: T) {
-  const filePath = resolveContentPath(key);
-  const validated = schema.parse(data);
-  await createBackup(filePath);
-  await ensureContentDir(filePath);
-  const tempPath = `${filePath}.${randomUUID()}.tmp`;
-  const serialized = `${JSON.stringify(validated, null, 2)}\n`;
-  await fs.writeFile(tempPath, serialized, "utf8");
-  await fs.rename(tempPath, filePath);
-  await pruneBackups(filePath);
-  return validated;
+async function readSnapshot<T>(key: ContentKey, schema: z.ZodType<T>, fallback: T) {
+  const response = await get(getContentPath(key), {
+    access: "private",
+    token: getContentToken(),
+    useCache: false,
+  });
+
+  if (!response) {
+    return { data: schema.parse(fallback), etag: null };
+  }
+
+  const raw = await new Response(response.stream).text();
+  return {
+    data: schema.parse(JSON.parse(raw)),
+    etag: response.blob.etag,
+  };
+}
+
+async function mutateJson<T, R>(
+  key: ContentKey,
+  schema: z.ZodType<T>,
+  fallback: T,
+  mutate: (current: T) => MutationResult<T, R> | Promise<MutationResult<T, R>>,
+) {
+  requireWritableDeployment();
+  for (let attempt = 0; attempt < MAX_MUTATION_ATTEMPTS; attempt += 1) {
+    const current = await readSnapshot(key, schema, fallback);
+    const mutation = await mutate(current.data);
+    const validated = schema.parse(mutation.data);
+
+    try {
+      await put(getContentPath(key), `${JSON.stringify(validated, null, 2)}\n`, {
+        access: "private",
+        token: getContentToken(),
+        contentType: "application/json",
+        cacheControlMaxAge: 60,
+        allowOverwrite: current.etag !== null,
+        ...(current.etag ? { ifMatch: current.etag } : {}),
+      });
+      return mutation.result;
+    } catch (error) {
+      const isConflict =
+        error instanceof BlobPreconditionFailedError ||
+        (current.etag === null && error instanceof BlobError);
+      if (!isConflict) {
+        throw error;
+      }
+    }
+  }
+
+  throw new ContentConflictError();
 }
 
 export async function readShows() {
-  return readJsonFile("shows", showSchema.array(), []);
+  return (await readSnapshot("shows", showSchema.array(), [])).data;
 }
 
-export async function writeShows(shows: Show[]) {
-  return writeJsonFile("shows", showSchema.array(), shows);
+export async function mutateShows<R>(
+  mutate: (shows: Show[]) => MutationResult<Show[], R> | Promise<MutationResult<Show[], R>>,
+) {
+  return mutateJson("shows", showSchema.array(), [], mutate);
 }
 
 export async function readMerch() {
-  return readJsonFile("merch", merchItemSchema.array(), []);
+  return (await readSnapshot("merch", merchItemSchema.array(), [])).data;
 }
 
-export async function writeMerch(items: MerchItem[]) {
-  return writeJsonFile("merch", merchItemSchema.array(), items);
+export async function mutateMerch<R>(
+  mutate: (
+    items: MerchItem[],
+  ) => MutationResult<MerchItem[], R> | Promise<MutationResult<MerchItem[], R>>,
+) {
+  return mutateJson("merch", merchItemSchema.array(), [], mutate);
 }
 
 export async function readAudit() {
-  return readJsonFile("audit", adminAuditSchema.array(), []);
-}
-
-export async function writeAudit(entries: AdminAuditEntry[]) {
-  return writeJsonFile("audit", adminAuditSchema.array(), entries);
+  return (await readSnapshot("audit", adminAuditSchema.array(), [])).data;
 }
 
 export async function appendAuditEntry(entry: AdminAuditEntry) {
-  const existing = await readAudit();
-  return writeAudit([entry, ...existing]);
-}
-
-export async function serializeContentMutation<T>(operation: () => Promise<T>) {
-  const previous = mutationQueue;
-  let release: () => void = () => undefined;
-  mutationQueue = new Promise<void>((resolve) => {
-    release = resolve;
-  });
-
-  await previous.catch(() => undefined);
-  try {
-    return await operation();
-  } finally {
-    release();
-  }
+  return mutateJson("audit", adminAuditSchema.array(), [], (entries) => ({
+    data: [entry, ...entries].slice(0, MAX_AUDIT_ENTRIES),
+    result: undefined,
+  }));
 }

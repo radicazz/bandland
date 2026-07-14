@@ -3,16 +3,8 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
-import { createRateLimiter, getClientIp } from "@/lib/rate-limit";
-
 const credentialsSchema = z.object({
   password: z.string().min(1),
-});
-
-const loginLimiter = createRateLimiter({
-  limit: 5,
-  windowMs: 15 * 60 * 1000,
-  storageDir: process.env.AUTH_RATE_LIMIT_DIR,
 });
 
 class AdminSignInError extends CredentialsSignin {
@@ -53,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, request) {
+      async authorize(credentials) {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) {
           console.error("[Auth] Invalid credentials schema");
@@ -64,14 +56,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!passwordHash) {
           console.error("[Auth] ADMIN_PASSWORD_HASH missing from environment");
           throw new AdminSignInError("missing_hash");
-        }
-
-        const headers = request?.headers ?? new Headers();
-        const ip = getClientIp(headers);
-        const { allowed } = await loginLimiter.check(ip);
-        if (!allowed) {
-          console.error("[Auth] Rate limited:", ip);
-          throw new AdminSignInError("rate_limited");
         }
 
         const normalizedPassword = parsed.data.password.trim();

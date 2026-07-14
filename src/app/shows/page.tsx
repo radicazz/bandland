@@ -66,14 +66,13 @@ function ShowCard({
     >
       <div
         className={`grid gap-4 md:items-start ${
-          show.imageId || show.imageUrl ? "md:grid-cols-[160px_minmax(0,1fr)]" : ""
+          show.imageUrl ? "md:grid-cols-[160px_minmax(0,1fr)]" : ""
         }`}
       >
-        {show.imageId || show.imageUrl ? (
+        {show.imageUrl ? (
           <div className="overflow-hidden border border-border bg-bg/50">
             <ContentImage
               src={show.imageUrl}
-              imageId={show.imageId}
               alt={`${show.venue} show poster`}
               className="h-32 w-full object-cover"
               fallbackClassName="flex h-32 w-full items-center justify-center bg-surface/50"

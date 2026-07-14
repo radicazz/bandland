@@ -63,9 +63,6 @@ export default async function AdminDashboardPage() {
       <section className="punk-panel p-4 sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold text-text">Recent changes</h2>
-          <Link href="/admin/system" className="text-xs uppercase tracking-[0.2em] text-highlight">
-            System status
-          </Link>
         </div>
         {audit.length === 0 ? (
           <p className="mt-4 text-sm text-text-muted">No changes recorded yet.</p>

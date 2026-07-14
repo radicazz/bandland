@@ -42,14 +42,13 @@ export default async function MerchPage() {
               <li key={item.id} className="card-interactive punk-panel p-4 sm:p-6">
                 <div
                   className={`grid gap-4 md:items-start lg:block ${
-                    item.imageId || item.imageUrl ? "md:grid-cols-[140px_minmax(0,1fr)]" : ""
+                    item.imageUrl ? "md:grid-cols-[140px_minmax(0,1fr)]" : ""
                   }`}
                 >
-                  {item.imageId || item.imageUrl ? (
+                  {item.imageUrl ? (
                     <div className="overflow-hidden border border-border bg-bg/50 lg:mb-5">
                       <ContentImage
                         src={item.imageUrl}
-                        imageId={item.imageId}
                         alt={item.name}
                         className="h-28 w-full object-cover lg:h-36"
                         fallbackClassName="flex h-28 w-full items-center justify-center bg-surface/50 lg:h-36"

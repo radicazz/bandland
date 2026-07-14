@@ -5,6 +5,7 @@ import { AdminNotice } from "@/components/admin/AdminNotice";
 import { DeleteButton } from "@/components/admin/DeleteButton";
 import { deleteMerchAction } from "@/lib/admin-actions";
 import { readMerch } from "@/lib/content-store";
+import { isReadOnlyDeployment } from "@/lib/runtime-environment";
 
 export default async function AdminMerchPage({
   searchParams,
@@ -13,6 +14,7 @@ export default async function AdminMerchPage({
 }) {
   const { saved } = await searchParams;
   const items = await readMerch();
+  const readOnly = isReadOnlyDeployment();
 
   return (
     <section className="punk-panel p-4 sm:p-6">
@@ -21,9 +23,11 @@ export default async function AdminMerchPage({
           <h2 className="text-lg font-semibold text-text">Merch</h2>
           <p className="mt-2 text-sm text-text-muted">Manage merch items and store links.</p>
         </div>
-        <Link href="/admin/merch/new" className="btn-primary w-full sm:w-auto">
-          New merch
-        </Link>
+        {!readOnly ? (
+          <Link href="/admin/merch/new" className="btn-primary w-full sm:w-auto">
+            New merch
+          </Link>
+        ) : null}
       </div>
       <AdminNotice value={saved} entity="Merch item" />
 
@@ -38,7 +42,6 @@ export default async function AdminMerchPage({
               <div className="grid gap-4 sm:grid-cols-[7rem_minmax(0,1fr)_auto] sm:items-start">
                 <div className="overflow-hidden border border-border bg-surface/50">
                   <ContentImage
-                    imageId={item.imageId}
                     src={item.imageUrl}
                     alt=""
                     className="h-28 w-full object-cover sm:h-24"
@@ -53,15 +56,17 @@ export default async function AdminMerchPage({
                   ) : null}
                   <p className="mt-2 break-words text-sm tabular-nums text-text">{item.price}</p>
                 </div>
-                <div className="grid w-full gap-2 sm:w-auto sm:items-center">
-                  <Link href={`/admin/merch/${item.id}`} className="btn-primary w-full sm:w-auto">
-                    Edit
-                  </Link>
-                  <form action={deleteMerchAction} className="w-full sm:w-auto">
-                    <input type="hidden" name="id" value={item.id} />
-                    <DeleteButton confirmMessage="Delete this merch item?" />
-                  </form>
-                </div>
+                {!readOnly ? (
+                  <div className="grid w-full gap-2 sm:w-auto sm:items-center">
+                    <Link href={`/admin/merch/${item.id}`} className="btn-primary w-full sm:w-auto">
+                      Edit
+                    </Link>
+                    <form action={deleteMerchAction} className="w-full sm:w-auto">
+                      <input type="hidden" name="id" value={item.id} />
+                      <DeleteButton confirmMessage="Delete this merch item?" />
+                    </form>
+                  </div>
+                ) : null}
               </div>
               <a
                 className="mt-4 inline-flex break-all text-xs uppercase tracking-[0.3em] text-highlight"
