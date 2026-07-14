@@ -38,17 +38,17 @@ Rules:
 
 ## Current Features
 
-- Home hero uses a slideshow sourced from `public/slideshow/` (image files only)
+- Home hero uses the image manifest in `src/config/slideshow.ts` for files under `public/slideshow/`
 - Latest release card with Spotify embed in `src/components/HomeCarousel.tsx`
-- Shows + Merch pages read JSON from `content/`
+- Shows + Merch pages read JSON documents from a private Vercel Blob store
 - Admin panel at `/admin` for managing shows + merch
 - Locale toggle in header; translations in `src/i18n/translations.ts`
 
 ## Content System
 
-Location: `content/` (JSON files)
+Location: private Vercel Blob objects under `content/{production|development}/`
 
-Shows (`content/shows.json`)
+Shows (`shows.json`)
 
 ```ts
 {
@@ -64,7 +64,7 @@ Shows (`content/shows.json`)
 }
 ```
 
-Merch (`content/merch.json`)
+Merch (`merch.json`)
 
 ```ts
 {
@@ -79,7 +79,7 @@ Merch (`content/merch.json`)
 }
 ```
 
-Admin audit (`content/admin-audit.json`)
+Admin audit (`admin-audit.json`, capped at 100 entries)
 
 ```ts
 {
@@ -189,28 +189,26 @@ npm run format
 - `NEXT_PUBLIC_SITE_URL` — canonical site URL (metadata/sitemap)
 - `ADMIN_PASSWORD_HASH` — bcrypt hash for admin login
 - `AUTH_SECRET` — Auth.js secret
-- `AUTH_URL` — canonical URL for Auth.js
-- `CONTENT_DIR` / `CONTENT_HISTORY_DIR` — persistent JSON content and backups
-- `MEDIA_DIR` / `MEDIA_HISTORY_DIR` — persistent uploaded photos and archives
-- `AUTH_RATE_LIMIT_DIR` — persistent admin login throttling
-- `APP_PORT` — optional systemd/reverse-proxy port
-- `DEPLOY_HEALTHCHECK_URL` — optional deploy health-check override
+- `CONTENT_BLOB_READ_WRITE_TOKEN` — private content Blob store token
+- `MEDIA_BLOB_READ_WRITE_TOKEN` — public uploaded-media Blob store token
 
-Generate local or production access configuration with `npm run setup-access`.
-Generated env files are gitignored and must remain mode `0600`.
+Generate auth values with `npm run auth:generate`. Pull Development values with
+`npx vercel env pull .env.local`; generated env files are gitignored.
 
 ## Adding Content
 
-1. Edit JSON files in `content/`
-2. Schema validation runs on page load
-3. Restart dev server to see changes
+1. Sign in at `/admin`
+2. Create or edit shows and merch
+3. Server actions validate content before conditional Blob writes
 
 ## Admin Panel Notes
 
-- Admin writes to `CONTENT_DIR` when configured, otherwise to `content/`
-- Backups use `CONTENT_HISTORY_DIR` or `<CONTENT_DIR>/.history`
-- Uploaded photos use `MEDIA_DIR` and `MEDIA_HISTORY_DIR`
-- Server actions enforce Zod validation before writing
+- Admin content and audit records use the private content Blob store
+- Uploaded photos go directly from the browser to the public media Blob store
+- Preview deployments read production content but cannot mutate or upload
+- Local development uses an isolated `development` namespace
+- Vercel Firewall rate-limits the credentials callback
+- Server actions enforce Zod validation and optimistic concurrency before writing
 
 ## Extending
 
