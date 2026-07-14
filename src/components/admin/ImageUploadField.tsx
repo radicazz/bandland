@@ -8,14 +8,32 @@ type ImageUploadFieldProps = {
   currentImageUrl?: string | undefined;
   error?: string | undefined;
   label: string;
+  onPreviewChange?: ((imageUrl: string | undefined) => void) | undefined;
+  previewVariant?: "landscape" | "poster";
 };
 
-export function ImageUploadField({ currentImageUrl, error, label }: ImageUploadFieldProps) {
+export function ImageUploadField({
+  currentImageUrl,
+  error,
+  label,
+  onPreviewChange,
+  previewVariant = "landscape",
+}: ImageUploadFieldProps) {
   const inputId = useId();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [removeCurrent, setRemoveCurrent] = useState(false);
   const hasCurrent = Boolean(currentImageUrl);
+  const isPoster = previewVariant === "poster";
+  const previewFrameClassName = isPoster
+    ? "mx-auto aspect-[2/3] w-full max-w-64 overflow-hidden border border-border bg-bg/60"
+    : "overflow-hidden border border-border bg-bg/60";
+  const previewImageClassName = isPoster
+    ? "h-full w-full object-contain"
+    : "h-48 w-full object-cover";
+  const fallbackClassName = isPoster
+    ? "flex h-full w-full items-center justify-center bg-surface/50"
+    : "flex h-48 w-full items-center justify-center bg-surface/50";
 
   useEffect(
     () => () => {
@@ -52,11 +70,14 @@ export function ImageUploadField({ currentImageUrl, error, label }: ImageUploadF
             if (!file) {
               setPreviewUrl(null);
               setFileName(null);
+              onPreviewChange?.(removeCurrent ? undefined : currentImageUrl);
               return;
             }
-            setPreviewUrl(URL.createObjectURL(file));
+            const nextPreviewUrl = URL.createObjectURL(file);
+            setPreviewUrl(nextPreviewUrl);
             setFileName(file.name);
             setRemoveCurrent(false);
+            onPreviewChange?.(nextPreviewUrl);
           }}
         />
       </label>
@@ -68,18 +89,18 @@ export function ImageUploadField({ currentImageUrl, error, label }: ImageUploadF
       ) : null}
 
       {previewUrl ? (
-        <div className="mt-4 overflow-hidden border border-border bg-bg/60">
+        <div className={`mt-4 ${previewFrameClassName}`}>
           {/* Browser-generated object URLs need a native image element. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={previewUrl} alt="New upload preview" className="h-48 w-full object-cover" />
+          <img src={previewUrl} alt="New upload preview" className={previewImageClassName} />
         </div>
       ) : hasCurrent && !removeCurrent ? (
-        <div className="mt-4 overflow-hidden border border-border bg-bg/60">
+        <div className={`mt-4 ${previewFrameClassName}`}>
           <ContentImage
             src={currentImageUrl}
             alt="Current image"
-            className="h-48 w-full object-cover"
-            fallbackClassName="flex h-48 w-full items-center justify-center bg-surface/50"
+            className={previewImageClassName}
+            fallbackClassName={fallbackClassName}
             fallbackLabel="Current image unavailable"
           />
         </div>
@@ -93,7 +114,13 @@ export function ImageUploadField({ currentImageUrl, error, label }: ImageUploadF
           <button
             type="button"
             className="min-h-10 border border-border px-3 text-xs font-bold uppercase tracking-[0.18em] text-text-muted hover:border-highlight hover:text-highlight"
-            onClick={() => setRemoveCurrent((current) => !current)}
+            onClick={() =>
+              setRemoveCurrent((current) => {
+                const nextValue = !current;
+                onPreviewChange?.(nextValue ? undefined : currentImageUrl);
+                return nextValue;
+              })
+            }
           >
             {removeCurrent ? "Keep photo" : "Remove"}
           </button>
