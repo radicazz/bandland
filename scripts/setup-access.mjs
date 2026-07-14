@@ -1,9 +1,16 @@
 #!/usr/bin/env node
 import { randomBytes } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 import path, { resolve } from "node:path";
 import readline from "node:readline/promises";
 import bcrypt from "bcryptjs";
+
+import {
+  normalizeEnvironment,
+  normalizeHttpUrl,
+  normalizePort,
+  writePrivateFile,
+} from "./lib/env.mjs";
 
 function parseArgs(argv) {
   const args = {
@@ -104,14 +111,15 @@ async function promptIfMissing(currentValue, prompt) {
 const run = async () => {
   const envInput =
     (await promptIfMissing(options.environment, "Environment (dev/prod, default dev): ")) || "dev";
-  const environment = envInput.toLowerCase();
-  const isProduction = environment === "prod" || environment === "production";
+  const environment = normalizeEnvironment(envInput);
+  const isProduction = environment === "prod";
 
-  const siteUrl =
+  const siteUrlInput =
     (await promptIfMissing(
       options.siteUrl,
       `Site URL (default ${isProduction ? "https://example.com" : "http://localhost:3000"}): `,
     )) || (isProduction ? "https://example.com" : "http://localhost:3000");
+  const siteUrl = normalizeHttpUrl(siteUrlInput, "Site URL");
 
   const password = await promptIfMissing(options.password, "Admin password: ");
 
@@ -136,14 +144,18 @@ const run = async () => {
   let resolvedRateLimitDir = path.join(path.dirname(resolvedContentDir), "auth-rate-limit");
   let resolvedMediaDir = path.join(process.cwd(), "content", "media");
 
-  const appPort = options.appPort?.trim();
+  const appPortInput = options.appPort?.trim();
+  const appPort = appPortInput ? normalizePort(appPortInput) : undefined;
   if (appPort) {
     appPortSection = `
 APP_PORT=${appPort}
 `;
   }
 
-  const healthcheckUrl = options.healthcheckUrl?.trim();
+  const healthcheckUrlInput = options.healthcheckUrl?.trim();
+  const healthcheckUrl = healthcheckUrlInput
+    ? normalizeHttpUrl(healthcheckUrlInput, "Health-check URL")
+    : undefined;
   if (healthcheckUrl) {
     healthcheckSection = `
 DEPLOY_HEALTHCHECK_URL=${healthcheckUrl}
@@ -181,7 +193,7 @@ MEDIA_HISTORY_DIR=${path.join(resolvedMediaDir, ".history")}
 `;
 
   const envContents = `# Admin Panel
-# Generate hash: npx bcrypt-cli hash "your-password" 12
+# Regenerate safely with: npm run setup-access
 ADMIN_PASSWORD_HASH='${finalPasswordHash}'
 AUTH_SECRET='${authSecret}'
 AUTH_URL=${siteUrl}
@@ -197,7 +209,8 @@ NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}${mediaDirSection}${rateLimit
       ? resolve(process.cwd(), ".env.production")
       : resolve(process.cwd(), ".env.local"));
 
-  await writeFile(envFilePath, envContents, "utf8");
+  await mkdir(path.dirname(envFilePath), { recursive: true });
+  await writePrivateFile(envFilePath, envContents);
   console.log(`✓ Wrote ${envFilePath}`);
 
   if (!isProduction) {
@@ -207,19 +220,11 @@ NEXT_PUBLIC_SITE_URL=${siteUrl}${contentDirSection}${mediaDirSection}${rateLimit
 
   if (isProduction) {
     console.log("\nProduction environment configured.");
-    console.log("Next steps:");
-    console.log("  1. Create persistent directories:");
-    console.log(`     sudo mkdir -p ${resolvedContentDir}`);
-    console.log(`     sudo mkdir -p ${resolvedContentDir}/.history`);
-    console.log(`     sudo mkdir -p ${resolvedRateLimitDir}`);
-    console.log(`     sudo mkdir -p ${resolvedMediaDir}/.history`);
-    console.log(
-      `     sudo chown -R www-data:www-data ${resolvedContentDir} ${resolvedMediaDir} ${resolvedRateLimitDir}`,
-    );
-    console.log("  2. Run bootstrap if this is a live VPS setup:");
-    console.log("     sudo npm run bootstrap:vps");
-    console.log("  3. Run the deploy flow:");
-    console.log("     ./scripts/deploy.sh");
+    console.log("For a systemd VPS:");
+    console.log("  1. npm run bootstrap:vps");
+    console.log("  2. ./scripts/deploy.sh");
+    console.log("For containers:");
+    console.log("  npm run docker:up  # or npm run podman:up");
   } else {
     console.log("\nDevelopment environment configured.");
     console.log("Start the dev server: npm run dev");

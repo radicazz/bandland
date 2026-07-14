@@ -3,10 +3,14 @@ import { execFile } from "node:child_process";
 import { constants as fsConstants, promises as fs } from "node:fs";
 import path from "node:path";
 
+import { isValidBcryptHash, loadEnvFile, normalizeHttpUrl, normalizePort } from "./lib/env.mjs";
+import { inspectModeForIdentity } from "./lib/permissions.mjs";
+
 function parseArgs(argv) {
   const args = {
     repoDir: process.cwd(),
     serviceName: "bandland",
+    serviceUser: "www-data",
     envFile: undefined,
   };
 
@@ -29,6 +33,9 @@ function parseArgs(argv) {
       case "--service-name":
         args.serviceName = next;
         break;
+      case "--service-user":
+        args.serviceUser = next;
+        break;
       case "--env-file":
         args.envFile = next;
         break;
@@ -42,58 +49,40 @@ function parseArgs(argv) {
   return args;
 }
 
-function normalizeEnvValue(value) {
-  let normalized = value.trim();
-  if (
-    (normalized.startsWith('"') && normalized.endsWith('"')) ||
-    (normalized.startsWith("'") && normalized.endsWith("'"))
-  ) {
-    normalized = normalized.slice(1, -1);
-  }
-  return normalized.replaceAll("\\$", "$");
+function execFileAsync(command, args) {
+  return new Promise((resolve, reject) => {
+    execFile(command, args, (error, stdout) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+      resolve(stdout.trim());
+    });
+  });
 }
 
-async function loadEnvFile(envFilePath) {
-  const contents = await fs.readFile(envFilePath, "utf8");
-  const values = {};
+async function resolveServiceIdentity(serviceUser) {
+  const [uidOutput, groupsOutput] = await Promise.all([
+    execFileAsync("id", ["-u", serviceUser]),
+    execFileAsync("id", ["-G", serviceUser]),
+  ]);
 
-  for (const rawLine of contents.split("\n")) {
-    const line = rawLine.trim();
-    if (!line || line.startsWith("#")) {
-      continue;
-    }
-
-    const equalsIndex = line.indexOf("=");
-    if (equalsIndex === -1) {
-      continue;
-    }
-
-    const key = line.slice(0, equalsIndex).trim();
-    const value = line.slice(equalsIndex + 1);
-    values[key] = normalizeEnvValue(value);
-  }
-
-  return values;
+  return {
+    uid: Number.parseInt(uidOutput, 10),
+    groups: new Set(groupsOutput.split(/\s+/).map((value) => Number.parseInt(value, 10))),
+  };
 }
 
-async function canAccess(targetPath, mode) {
-  return fs
-    .access(targetPath, mode)
-    .then(() => true)
-    .catch(() => false);
-}
-
-async function inspectDirectory(targetPath) {
+async function inspectDirectory(targetPath, identity) {
   try {
     const stats = await fs.stat(targetPath);
     if (!stats.isDirectory()) {
       return { exists: true, readable: false, writable: false, isDirectory: false };
     }
 
-    const [readable, writable] = await Promise.all([
-      canAccess(targetPath, fsConstants.R_OK),
-      canAccess(targetPath, fsConstants.W_OK),
-    ]);
+    const mode = inspectModeForIdentity(stats, identity);
+    const readable = mode.readable && mode.executable;
+    const writable = mode.writable && mode.executable;
 
     return { exists: true, readable, writable, isDirectory: true };
   } catch (error) {
@@ -158,13 +147,6 @@ try {
     await fs.access(envFilePath, fsConstants.R_OK);
   }
 
-  if (typeof process.getuid === "function" && process.getuid() !== 0) {
-    pushWarning(
-      results,
-      "Preflight is running without root privileges. Filesystem writability checks reflect the current user.",
-    );
-  }
-
   const env = envFilePath ? await loadEnvFile(envFilePath) : {};
   const requiredEnvKeys = [
     "ADMIN_PASSWORD_HASH",
@@ -180,6 +162,49 @@ try {
     }
   }
 
+  if (env.ADMIN_PASSWORD_HASH && !isValidBcryptHash(env.ADMIN_PASSWORD_HASH)) {
+    pushError(results, "ADMIN_PASSWORD_HASH is not a valid bcrypt hash.");
+  }
+
+  for (const [key, label] of [
+    ["AUTH_URL", "AUTH_URL"],
+    ["NEXT_PUBLIC_SITE_URL", "NEXT_PUBLIC_SITE_URL"],
+    ["DEPLOY_HEALTHCHECK_URL", "DEPLOY_HEALTHCHECK_URL"],
+  ]) {
+    if (!env[key]) {
+      continue;
+    }
+    try {
+      normalizeHttpUrl(env[key], label);
+    } catch (error) {
+      pushError(results, error instanceof Error ? error.message : `${label} is invalid.`);
+    }
+  }
+
+  if (env.APP_PORT) {
+    try {
+      normalizePort(env.APP_PORT);
+    } catch (error) {
+      pushError(results, error instanceof Error ? error.message : "APP_PORT is invalid.");
+    }
+  }
+
+  let serviceIdentity;
+  try {
+    serviceIdentity = await resolveServiceIdentity(args.serviceUser);
+  } catch (error) {
+    pushError(
+      results,
+      `Unable to resolve service user ${args.serviceUser}: ${
+        error instanceof Error ? error.message : "unknown error"
+      }`,
+    );
+    serviceIdentity = {
+      uid: typeof process.getuid === "function" ? process.getuid() : 0,
+      groups: new Set(typeof process.getgroups === "function" ? process.getgroups() : []),
+    };
+  }
+
   const contentDir = env.CONTENT_DIR || path.join(repoDir, "content");
   const historyDir = env.CONTENT_HISTORY_DIR || path.join(contentDir, ".history");
   const rateLimitDir = env.AUTH_RATE_LIMIT_DIR || null;
@@ -193,11 +218,11 @@ try {
     mediaDirStatus,
     mediaHistoryDirStatus,
   ] = await Promise.all([
-    inspectDirectory(contentDir),
-    inspectDirectory(historyDir),
-    rateLimitDir ? inspectDirectory(rateLimitDir) : Promise.resolve(null),
-    inspectDirectory(mediaDir),
-    inspectDirectory(mediaHistoryDir),
+    inspectDirectory(contentDir, serviceIdentity),
+    inspectDirectory(historyDir, serviceIdentity),
+    rateLimitDir ? inspectDirectory(rateLimitDir, serviceIdentity) : Promise.resolve(null),
+    inspectDirectory(mediaDir, serviceIdentity),
+    inspectDirectory(mediaHistoryDir, serviceIdentity),
   ]);
 
   for (const [label, directory, status] of [
@@ -215,20 +240,10 @@ try {
     pushError(results, `Content directory is not readable and writable: ${contentDir}`);
   }
 
-  if (env.CONTENT_HISTORY_DIR) {
-    if (!historyDirStatus.exists || !historyDirStatus.isDirectory) {
-      pushError(results, `Configured history directory is missing or invalid: ${historyDir}`);
-    } else if (!historyDirStatus.readable || !historyDirStatus.writable) {
-      pushError(
-        results,
-        `Configured history directory is not readable and writable: ${historyDir}`,
-      );
-    }
-  } else if (!contentDirStatus.writable) {
-    pushError(
-      results,
-      "Content directory is not writable, so automatic backup creation will fail.",
-    );
+  if (!historyDirStatus.exists || !historyDirStatus.isDirectory) {
+    pushError(results, `History directory is missing or invalid: ${historyDir}`);
+  } else if (!historyDirStatus.readable || !historyDirStatus.writable) {
+    pushError(results, `History directory is not readable and writable: ${historyDir}`);
   }
 
   if (rateLimitDir) {
@@ -315,6 +330,7 @@ try {
   }
 
   console.log(`Preflight repo: ${repoDir}`);
+  console.log(`Service user: ${args.serviceUser}`);
   if (envFilePath) {
     console.log(`Preflight env: ${envFilePath}`);
   }

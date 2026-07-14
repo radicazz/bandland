@@ -50,7 +50,7 @@ vi.mock("next/link", () => {
   };
 });
 
-if (!window.matchMedia) {
+if (typeof window !== "undefined" && !window.matchMedia) {
   window.matchMedia = (query: string) => {
     return {
       matches: false,

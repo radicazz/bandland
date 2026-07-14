@@ -8,12 +8,14 @@ Design + theme rules live in `AGENTS.md`.
 
 ```bash
 npm install
+npm run setup-access -- --env dev --site-url http://localhost:3000
 npm run dev
 ```
 
-The development setup command also configures ignored media storage under
-`content/media`. Sign in at `/admin`, add a show, and choose a JPEG, PNG, or
-WebP photo to test the same upload path used on the VPS.
+`setup-access` prompts for the admin password, writes a protected `.env.local`,
+and configures ignored media storage under `content/media`. Sign in at `/admin`,
+add a show, and choose a JPEG, PNG, or WebP photo to test the same upload path
+used in production.
 
 Open http://localhost:3000
 
@@ -35,10 +37,9 @@ live admin UI.
 
 Setup:
 
-1. Copy `env.example` to `.env.local`
-2. Run `npm run setup-access` to generate `ADMIN_PASSWORD_HASH` + `AUTH_SECRET`
-3. Set `AUTH_URL` and `NEXT_PUBLIC_SITE_URL` (e.g. `http://localhost:3000`)
-4. Restart the dev server
+1. Run `npm run setup-access -- --env dev --site-url http://localhost:3000`
+2. Start or restart the dev server
+3. Run `npm run verify-access` if you want to confirm the stored password
 
 Data written by the admin panel:
 
@@ -63,7 +64,7 @@ JSON outside the git repo and point the app to it.
 2. Bootstrap persistent directories and seed content without overwriting existing live data:
 
    ```bash
-   sudo npm run bootstrap:vps
+   npm run bootstrap:vps
    ```
 
    For a local dry run against user-owned temp directories, use
@@ -86,6 +87,31 @@ Once the site is bootstrapped:
 That flow now runs a production preflight, rebuilds, restarts the `systemd`
 service, and verifies `GET /api/health` before reporting success.
 
+Set `SERVICE_USER` when the unit does not run as `www-data`, and set `ENV_FILE`
+when production configuration is stored somewhere other than
+`.env.production`.
+
+## Container deployment
+
+Generate production access values first, then use the env-aware wrappers. They
+normalize the bcrypt value correctly before invoking Docker Compose or Podman
+Compose.
+
+```bash
+npm run setup-access -- --env prod --site-url https://your-site.example
+npm run docker:up
+# or: npm run podman:up
+```
+
+Stop the stack with `npm run docker:down` or `npm run podman:down`. Production
+content, uploaded media, and login rate limits use named volumes. The direct
+`docker:run` and `podman:run` commands are ephemeral public-site smoke tests;
+use the Compose commands for a persistent admin-enabled deployment.
+
+For a custom env path, set `COMPOSE_ENV_FILE=/path/to/env`. Do not pass the
+Next.js-formatted env file directly to `docker compose --env-file`; the npm
+wrapper removes dotenv escaping before Compose receives the password hash.
+
 ## Common scripts
 
 - `npm run build` / `npm run start`
@@ -94,10 +120,13 @@ service, and verifies `GET /api/health` before reporting success.
 - `npm run bootstrap:vps`
 - `npm run deploy:preflight`
 - `npm run setup-access` / `npm run verify-access`
+- `npm run docker:up` / `npm run docker:down`
+- `npm run podman:up` / `npm run podman:down`
 
 ## Environment
 
-Copy `env.example` to `.env.local` and set:
+Use `setup-access` to generate `.env.local` or `.env.production`. `env.example`
+documents the available values:
 
 - `NEXT_PUBLIC_SITE_URL`
 - `ADMIN_PASSWORD_HASH`
@@ -107,6 +136,9 @@ Copy `env.example` to `.env.local` and set:
 - `MEDIA_DIR` and optional `MEDIA_HISTORY_DIR` for uploaded photos
 - Optional: `APP_PORT`
 - Optional: `DEPLOY_HEALTHCHECK_URL`
+
+Generated env files contain secrets, are gitignored, and are forced to mode
+`0600`.
 
 ## Licensing
 

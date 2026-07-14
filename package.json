@@ -19,15 +19,15 @@
     "verify-access": "node scripts/verify-access.mjs",
     "docker:build": "docker build -t bandland .",
     "docker:run": "docker run --rm -p 3000:3000 -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
-    "docker:dev": "docker compose --profile dev up --build",
-    "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down",
+    "docker:dev": "node scripts/compose-runner.mjs docker dev --profile dev up --build dev",
+    "docker:up": "node scripts/compose-runner.mjs docker prod up --build app",
+    "docker:down": "node scripts/compose-runner.mjs docker prod down",
     "podman:build": "podman build -t bandland .",
     "podman:run": "podman run --rm -p 127.0.0.1:3000:3000 -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
     "podman:run:host": "podman run --rm --network=host -e NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL:-http://localhost:3000} bandland",
-    "podman:dev": "podman-compose --profile dev up --build",
-    "podman:up": "podman-compose up --build",
-    "podman:down": "podman-compose down"
+    "podman:dev": "node scripts/compose-runner.mjs podman dev --profile dev up --build dev",
+    "podman:up": "node scripts/compose-runner.mjs podman prod up --build app",
+    "podman:down": "node scripts/compose-runner.mjs podman prod down"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="${REPO_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
 DEFAULT_SERVICE_NAME="bandland"
 SERVICE_NAME="${SERVICE_NAME:-$DEFAULT_SERVICE_NAME}"
+SERVICE_USER="${SERVICE_USER:-www-data}"
 ENV_FILE_OVERRIDE="${ENV_FILE:-}"
 HEALTHCHECK_URL_OVERRIDE="${HEALTHCHECK_URL:-}"
 
@@ -139,6 +140,7 @@ git pull --ff-only
 node "$REPO_DIR/scripts/preflight-deploy.mjs" \
   --repo-dir "$REPO_DIR" \
   --service-name "$SERVICE_NAME" \
+  --service-user "$SERVICE_USER" \
   --env-file "$ENV_FILE_PATH"
 
 if [ -f package-lock.json ]; then

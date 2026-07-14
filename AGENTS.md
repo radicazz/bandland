@@ -14,6 +14,7 @@ Located in `src/app/globals.css`:
 ```
 
 Rules:
+
 - Never hardcode colors in components; use design tokens only
 - Single-accent approach (highlight only)
 - Translucent overlays preferred over new colors
@@ -48,6 +49,7 @@ Rules:
 Location: `content/` (JSON files)
 
 Shows (`content/shows.json`)
+
 ```ts
 {
   id: string,          // uuid
@@ -63,6 +65,7 @@ Shows (`content/shows.json`)
 ```
 
 Merch (`content/merch.json`)
+
 ```ts
 {
   id: string,          // uuid
@@ -77,6 +80,7 @@ Merch (`content/merch.json`)
 ```
 
 Admin audit (`content/admin-audit.json`)
+
 ```ts
 {
   id: string,          // uuid
@@ -128,6 +132,7 @@ Pattern: simple, functional components; minimal client JS (currently only header
 - `/admin` — Admin login + protected CRUD routes
 
 SEO:
+
 - `src/app/sitemap.ts`
 - `src/app/robots.ts`
 - `src/app/opengraph-image.tsx` (edge runtime)
@@ -169,6 +174,8 @@ npm run dev
 npm test
 npm run typecheck
 npm run lint
+npm run format:check
+npm run build
 npm run format
 ```
 
@@ -183,6 +190,14 @@ npm run format
 - `ADMIN_PASSWORD_HASH` — bcrypt hash for admin login
 - `AUTH_SECRET` — Auth.js secret
 - `AUTH_URL` — canonical URL for Auth.js
+- `CONTENT_DIR` / `CONTENT_HISTORY_DIR` — persistent JSON content and backups
+- `MEDIA_DIR` / `MEDIA_HISTORY_DIR` — persistent uploaded photos and archives
+- `AUTH_RATE_LIMIT_DIR` — persistent admin login throttling
+- `APP_PORT` — optional systemd/reverse-proxy port
+- `DEPLOY_HEALTHCHECK_URL` — optional deploy health-check override
+
+Generate local or production access configuration with `npm run setup-access`.
+Generated env files are gitignored and must remain mode `0600`.
 
 ## Adding Content
 
@@ -192,22 +207,26 @@ npm run format
 
 ## Admin Panel Notes
 
-- Admin writes to `content/shows.json`, `content/merch.json`, and `content/admin-audit.json`
-- Backups are stored in `content/.history/` (keep in gitignore if needed)
+- Admin writes to `CONTENT_DIR` when configured, otherwise to `content/`
+- Backups use `CONTENT_HISTORY_DIR` or `<CONTENT_DIR>/.history`
+- Uploaded photos use `MEDIA_DIR` and `MEDIA_HISTORY_DIR`
 - Server actions enforce Zod validation before writing
 
 ## Extending
 
 New components:
+
 - Add to `src/components/`
 - Use Tailwind utility classes
 - Reference design tokens via Tailwind (e.g., `bg-surface`, `text-text-muted`)
 
 New pages:
+
 - Add folder in `src/app/`
 - Include `page.tsx` + optional `metadata` export
 
 New content types:
+
 - Define Zod schema in `src/content/schema.ts`
 - Create loader in `src/content/`
 - Add JSON file in `content/`

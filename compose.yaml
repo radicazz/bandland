@@ -22,9 +22,11 @@ services:
       - CONTENT_HISTORY_DIR=/data/content/.history
       - MEDIA_DIR=/data/media
       - MEDIA_HISTORY_DIR=/data/media/.history
+      - AUTH_RATE_LIMIT_DIR=/data/auth-rate-limit
     volumes:
       - bandland-content:/data/content
       - bandland-media:/data/media
+      - bandland-rate-limit:/data/auth-rate-limit
     restart: unless-stopped
     healthcheck:
       test:
@@ -32,7 +34,7 @@ services:
           "CMD",
           "node",
           "-e",
-          "require('http').get('http://localhost:3000', (r) => process.exit(r.statusCode === 200 ? 0 : 1))",
+          "require('http').get('http://localhost:3000/api/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))",
         ]
       interval: 30s
       timeout: 10s
@@ -65,4 +67,5 @@ services:
 volumes:
   bandland-content:
   bandland-media:
+  bandland-rate-limit:
   bandland-dev-media:

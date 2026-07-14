@@ -5,6 +5,8 @@ RUN npm ci
 
 FROM node:22-alpine AS builder
 WORKDIR /app
+ARG NEXT_PUBLIC_SITE_URL=http://localhost:3000
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
@@ -20,7 +22,7 @@ ENV MEDIA_DIR=/data/media
 ENV MEDIA_HISTORY_DIR=/data/media/.history
 
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
-RUN mkdir -p /data/content/.history /data/media/.history && chown -R nextjs:nodejs /data
+RUN mkdir -p /data/content/.history /data/media/.history /data/auth-rate-limit && chown -R nextjs:nodejs /data
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/content/shows.json /seed-content/shows.json
@@ -30,5 +32,5 @@ COPY --from=builder /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000
-VOLUME ["/data/content", "/data/media"]
+VOLUME ["/data/content", "/data/media", "/data/auth-rate-limit"]
 CMD ["sh", "-c", "test -f /data/content/shows.json || cp /seed-content/shows.json /data/content/shows.json; test -f /data/content/merch.json || cp /seed-content/merch.json /data/content/merch.json; test -f /data/content/admin-audit.json || printf '[]\\n' > /data/content/admin-audit.json; exec node server.js"]

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import readline from "node:readline/promises";
 import bcrypt from "bcryptjs";
+
+import { loadEnvFile } from "./lib/env.mjs";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -11,32 +12,8 @@ const rl = readline.createInterface({
 
 const parseHashFromFile = async (envPath) => {
   try {
-    const contents = await readFile(envPath, "utf8");
-    for (const rawLine of contents.split("\n")) {
-      const line = rawLine.trim();
-      if (!line || line.startsWith("#")) {
-        continue;
-      }
-
-      const equalsIndex = line.indexOf("=");
-      if (equalsIndex === -1) {
-        continue;
-      }
-
-      const key = line.slice(0, equalsIndex).trim();
-      if (key !== "ADMIN_PASSWORD_HASH") {
-        continue;
-      }
-
-      let value = line.slice(equalsIndex + 1).trim();
-      if (
-        (value.startsWith("\"") && value.endsWith("\"")) ||
-        (value.startsWith("'") && value.endsWith("'"))
-      ) {
-        value = value.slice(1, -1);
-      }
-      return value.trim().replaceAll("\\$", "$");
-    }
+    const values = await loadEnvFile(envPath);
+    return values.ADMIN_PASSWORD_HASH?.trim() || null;
   } catch (error) {
     if (error && typeof error === "object" && "code" in error) {
       const code = error.code;
@@ -79,9 +56,7 @@ const run = async () => {
 
   const result = await loadPasswordHash();
   if (!result) {
-    console.error(
-      "ADMIN_PASSWORD_HASH not found. Run npm run setup-access to generate env file.",
-    );
+    console.error("ADMIN_PASSWORD_HASH not found. Run npm run setup-access to generate env file.");
     process.exitCode = 1;
     return;
   }
@@ -91,13 +66,9 @@ const run = async () => {
     result.hash.startsWith("$2b$") ||
     result.hash.startsWith("$2y$");
   if (result.hash.length !== 60 || !hasBcryptPrefix) {
-    console.error(
-      `Warning: ADMIN_PASSWORD_HASH looks unusual (length ${result.hash.length}).`,
-    );
+    console.error(`Warning: ADMIN_PASSWORD_HASH looks unusual (length ${result.hash.length}).`);
     if (result.hash.includes("$$")) {
-      console.error(
-        "It contains $$ which often means the hash was double-escaped for systemd.",
-      );
+      console.error("It contains $$ which often means the hash was double-escaped for systemd.");
     }
   }
 

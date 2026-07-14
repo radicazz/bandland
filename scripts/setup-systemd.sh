@@ -29,6 +29,12 @@ if [ -z "$NPM_BIN" ]; then
   exit 1
 fi
 
+NODE_BIN=$(command -v node || true)
+if [ -z "$NODE_BIN" ]; then
+  echo "Error: node not found in PATH. Install Node.js or ensure node is available."
+  exit 1
+fi
+
 ENV_SOURCE_FILE=""
 if [ -n "$ENV_FILE_OVERRIDE" ]; then
   if [ ! -f "$ENV_FILE_OVERRIDE" ]; then
@@ -55,18 +61,10 @@ if [ -n "$ENV_SOURCE_FILE" ]; then
   echo "  Source env file: $ENV_SOURCE_FILE"
   echo "  Systemd env file: $SYSTEMD_ENV_FILE"
 
-  # Filter out ADMIN_PASSWORD_HASH so dotenv-expand can set it from .env.production.
-  $SUDO awk '
-    /^[[:space:]]*ADMIN_PASSWORD_HASH[[:space:]]*=/ { next }
-    /^[[:space:]]*APP_PORT[[:space:]]*=/ {
-      print
-      sub(/^[^=]*=/, "", $0)
-      print "PORT=" $0
-      next
-    }
-    { print }
-  ' "$ENV_SOURCE_FILE" | $SUDO tee "$SYSTEMD_ENV_FILE" >/dev/null
+  $SUDO "$NODE_BIN" "$REPO_DIR/scripts/render-systemd-env.mjs" \
+    "$ENV_SOURCE_FILE" "$SYSTEMD_ENV_FILE"
   $SUDO chmod 600 "$SYSTEMD_ENV_FILE"
+  $SUDO chown root:root "$SYSTEMD_ENV_FILE"
 else
   echo "  Environment file: (none found)"
 fi
