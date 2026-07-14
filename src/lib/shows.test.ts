@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { Show } from "@/content/schema";
-import {
-  getResolvedHasHappened,
-  getUpcomingShow,
-  splitShowsByStatus,
-} from "@/lib/shows";
+import { getResolvedHasHappened, getUpcomingShow, splitShowsByStatus } from "@/lib/shows";
 
 const now = Date.parse("2026-03-20T12:00:00+02:00");
 

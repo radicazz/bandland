@@ -31,11 +31,7 @@ export default function Error({
         </p>
 
         <div className="mt-10 flex gap-4">
-          <button
-            onClick={reset}
-            className="btn-primary btn-primary-lg"
-            type="button"
-          >
+          <button onClick={reset} className="btn-primary btn-primary-lg" type="button">
             Try again
           </button>
           <Link href="/" className="btn-secondary btn-primary-lg">
@@ -44,9 +40,7 @@ export default function Error({
         </div>
 
         {error.digest && (
-          <p className="mt-6 text-xs text-text-dim font-mono">
-            Error ID: {error.digest}
-          </p>
+          <p className="mt-6 text-xs text-text-dim font-mono">Error ID: {error.digest}</p>
         )}
       </Container>
     </section>

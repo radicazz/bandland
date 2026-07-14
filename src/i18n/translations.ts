@@ -105,7 +105,8 @@ export const translations: Record<Locale, Translations> = {
       latestReleaseCta: "Listen",
       nextShowLabel: "Next show",
       nextShowFallbackTitle: "No upcoming shows",
-      nextShowFallbackDescription: "Nothing is locked in yet. Check the full schedule for past dates and new announcements.",
+      nextShowFallbackDescription:
+        "Nothing is locked in yet. Check the full schedule for past dates and new announcements.",
       ticketsCta: "Tickets",
       allShowsCta: "All shows",
       liveLabel: "Live",
@@ -180,7 +181,8 @@ export const translations: Record<Locale, Translations> = {
       latestReleaseCta: "Luister",
       nextShowLabel: "Volgende vertoning",
       nextShowFallbackTitle: "Geen komende vertonings",
-      nextShowFallbackDescription: "Niks is nog vas nie. Kyk na die volle rooster vir vorige datums en nuwe aankondigings.",
+      nextShowFallbackDescription:
+        "Niks is nog vas nie. Kyk na die volle rooster vir vorige datums en nuwe aankondigings.",
       ticketsCta: "Kaartjies",
       allShowsCta: "Alle vertonings",
       liveLabel: "Live",
