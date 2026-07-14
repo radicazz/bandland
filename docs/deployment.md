@@ -8,8 +8,8 @@ Import the Git repository into Vercel as a Next.js project. Keep the framework d
 
 Create two Blob stores from the project Storage page:
 
-1. A **private** store for JSON content. In Advanced Options, set the environment-variable prefix to `CONTENT`, producing `CONTENT_BLOB_READ_WRITE_TOKEN`.
-2. A **public** store for uploaded images. Set its prefix to `MEDIA`, producing `MEDIA_BLOB_READ_WRITE_TOKEN`.
+1. A **private** store for JSON content. In Advanced Options, set the environment-variable prefix to `CONTENT_BLOB`, producing `CONTENT_BLOB_READ_WRITE_TOKEN`.
+2. A **public** store for uploaded images. Set its prefix to `MEDIA_BLOB`, producing `MEDIA_BLOB_READ_WRITE_TOKEN`.
 
 Both stores are required in Production, Preview, and Development. Production and Preview read the `production` content namespace; local development reads `development`.
 
