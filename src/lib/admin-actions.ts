@@ -6,30 +6,11 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import type { MerchItem, Show } from "@/content/schema";
+import { merchInputSchema, showInputSchema, type MerchItem, type Show } from "@/content/schema";
 import type { AdminFormState } from "@/lib/admin-form-state";
 import { appendAuditEntry, mutateMerch, mutateShows } from "@/lib/content-store";
 import { discardManagedMedia, MediaValidationError, validateManagedMedia } from "@/lib/media-store";
 import { isReadOnlyDeployment } from "@/lib/runtime-environment";
-
-const showInputSchema = z.object({
-  date: z.string().datetime({ offset: true }),
-  hasHappened: z.boolean(),
-  timeFrame: z.string().min(1).optional(),
-  venue: z.string().min(1),
-  city: z.string().min(1),
-  price: z.string().min(1).optional(),
-  priceOnline: z.string().min(1).optional(),
-  priceDoor: z.string().min(1).optional(),
-  ticketUrl: z.string().url().optional(),
-});
-
-const merchInputSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().min(1).optional(),
-  price: z.string().min(1),
-  href: z.string().url(),
-});
 
 function normalizeInput(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";

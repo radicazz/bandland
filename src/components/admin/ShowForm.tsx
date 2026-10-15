@@ -1,9 +1,13 @@
 "use client";
 
 import { type FormEvent, useActionState, useEffect, useId, useRef, useState } from "react";
-import { useFormStatus } from "react-dom";
 
 import { ShowCard, type ShowCardDetails } from "@/components/ShowCard";
+import {
+  adminInputClassName as inputBase,
+  FieldError,
+  SubmitButton,
+} from "@/components/admin/FormControls";
 import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import type { Show } from "@/content/schema";
 import type { Locale, Translations } from "@/i18n/translations";
@@ -92,30 +96,6 @@ function createDraftFromFormData(formData: FormData): ShowDraft {
   };
 }
 
-function SubmitButton({ label }: { label: string }) {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      className="btn-primary min-w-[10rem] w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-70"
-      disabled={pending}
-    >
-      {pending ? "Saving..." : label}
-    </button>
-  );
-}
-
-function FieldError({ message }: { message: string | undefined }) {
-  if (!message) {
-    return null;
-  }
-  return (
-    <p className="mt-2 text-xs text-highlight" role="alert">
-      {message}
-    </p>
-  );
-}
-
 export function ShowForm({
   action,
   initialValues,
@@ -142,9 +122,6 @@ export function ShowForm({
     date: draft.showDate,
     time: draft.showTime,
   };
-
-  const inputBase =
-    "mt-2 min-h-11 w-full rounded-xl border bg-bg/60 px-4 py-3 text-sm text-text placeholder:text-text-dim";
 
   useEffect(() => {
     if (state.status === "error") {

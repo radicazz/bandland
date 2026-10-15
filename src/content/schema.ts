@@ -8,19 +8,23 @@ function deriveHasHappenedFromDate(date: string) {
   return parsed < Date.now();
 }
 
-export const showSchema = z
-  .object({
+export const showInputSchema = z.object({
+  date: z.string().datetime({ offset: true }),
+  hasHappened: z.boolean(),
+  timeFrame: z.string().min(1).optional(),
+  venue: z.string().min(1),
+  city: z.string().min(1),
+  price: z.string().min(1).optional(),
+  priceOnline: z.string().min(1).optional(),
+  priceDoor: z.string().min(1).optional(),
+  ticketUrl: z.string().url().optional(),
+});
+
+export const showSchema = showInputSchema
+  .extend({
     id: z.string().uuid(),
-    date: z.string().datetime({ offset: true }),
     // Backward-compatible for older prod content files; missing values are auto-derived.
-    hasHappened: z.boolean().optional(),
-    timeFrame: z.string().min(1).optional(),
-    venue: z.string().min(1),
-    city: z.string().min(1),
-    price: z.string().min(1).optional(),
-    priceOnline: z.string().min(1).optional(),
-    priceDoor: z.string().min(1).optional(),
-    ticketUrl: z.string().url().optional(),
+    hasHappened: showInputSchema.shape.hasHappened.optional(),
     imageUrl: z.string().url().optional(),
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
@@ -32,12 +36,15 @@ export const showSchema = z
 
 export type Show = z.infer<typeof showSchema>;
 
-export const merchItemSchema = z.object({
-  id: z.string().uuid(),
+export const merchInputSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1).optional(),
   price: z.string().min(1),
   href: z.string().url(),
+});
+
+export const merchItemSchema = merchInputSchema.extend({
+  id: z.string().uuid(),
   imageUrl: z.string().url().optional(),
   createdAt: z.string().datetime({ offset: true }),
   updatedAt: z.string().datetime({ offset: true }),
