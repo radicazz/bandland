@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SiteHeader } from "./SiteHeader";
@@ -16,6 +16,7 @@ vi.mock("next/navigation", () => ({
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
 });
 
 beforeEach(() => {
@@ -23,6 +24,10 @@ beforeEach(() => {
   nav.refresh.mockReset();
   document.cookie = "";
   document.body.style.overflow = "";
+  vi.spyOn(window, "matchMedia").mockReturnValue({
+    ...window.matchMedia("(max-width: 1023px)"),
+    matches: true,
+  });
 });
 
 describe("SiteHeader", () => {
@@ -79,5 +84,41 @@ describe("SiteHeader", () => {
 
     expect(document.cookie).toContain("bandland-locale=af");
     expect(nav.refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes the compact menu and restores scrolling when resizing to desktop", () => {
+    document.body.style.overflow = "auto";
+    render(<SiteHeader locale="af" labels={translations.af} />);
+    const button = screen.getByRole("button", { name: /Maak kieslys oop/i });
+    fireEvent.click(button);
+    expect(document.body.style.overflow).toBe("hidden");
+    const query = vi.mocked(window.matchMedia).mock.results[0]?.value as MediaQueryList;
+    const listener = vi.mocked(query.addEventListener).mock.calls[0]?.[1];
+    act(() => {
+      if (typeof listener === "function")
+        listener.call(query, { matches: false } as MediaQueryListEvent);
+    });
+    expect(button).toHaveAttribute("aria-expanded", "false");
+    expect(document.body.style.overflow).toBe("auto");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("contains keyboard focus and returns it to the opener when closed", async () => {
+    render(<SiteHeader locale="en" labels={translations.en} />);
+    const opener = screen.getByRole("button", { name: /open menu/i });
+    fireEvent.click(opener);
+    const dialog = screen.getByRole("dialog");
+    const close = within(dialog).getByRole("button", { name: "Close menu" });
+    await waitFor(() => expect(close).toHaveFocus());
+    const links = within(dialog).getAllByRole("link");
+    const last = links.at(-1);
+    close.focus();
+    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+    expect(last).toHaveFocus();
+    fireEvent.keyDown(document, { key: "Tab" });
+    expect(close).toHaveFocus();
+    fireEvent.click(close);
+    expect(opener).toHaveFocus();
+    expect(document.body.style.overflow).toBe("");
   });
 });

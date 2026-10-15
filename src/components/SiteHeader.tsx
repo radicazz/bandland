@@ -90,9 +90,10 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
   };
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 639px)");
+    const mediaQuery = window.matchMedia("(max-width: 1023px)");
     const updateViewport = (event: MediaQueryList | MediaQueryListEvent) => {
       setIsMobileViewport(event.matches);
+      if (!event.matches) setIsMenuOpen(false);
     };
 
     updateViewport(mediaQuery);
@@ -136,8 +137,9 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
       );
     };
 
+    let focusFrameId: number | undefined;
     if (isMobileViewport) {
-      window.requestAnimationFrame(() => {
+      focusFrameId = window.requestAnimationFrame(() => {
         getFocusableElements()[0]?.focus();
       });
     }
@@ -179,13 +181,14 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      if (focusFrameId !== undefined) window.cancelAnimationFrame(focusFrameId);
       document.removeEventListener("pointerdown", handlePointerDown);
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isMenuOpen, isMobileViewport]);
 
   useEffect(() => {
-    if (!isMenuOpen) {
+    if (!isMenuOpen || !isMobileViewport) {
       return;
     }
 
@@ -194,16 +197,16 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [isMenuOpen]);
+  }, [isMenuOpen, isMobileViewport]);
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/80 bg-bg/80 backdrop-blur-xl">
       <Container className="relative">
-        <div className="grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 py-2 sm:grid-cols-[auto_1fr_auto] sm:py-0">
+        <div className="grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 lg:grid-cols-[auto_1fr_auto]">
           <div className="relative min-w-0" ref={menuRef}>
             <Link
               href="/"
-              className="group hidden min-h-11 items-center gap-3 text-lg font-brand uppercase tracking-[0.18em] text-text transition-colors hover:text-highlight sm:flex"
+              className="group hidden min-h-11 items-center gap-3 text-lg font-brand uppercase tracking-[0.18em] text-text transition-colors hover:text-highlight lg:flex"
             >
               <Image
                 src="/logos/schmat-rat.png"
@@ -221,7 +224,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               aria-controls={menuId}
               aria-haspopup="dialog"
               onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="group flex min-h-11 max-w-full items-center gap-3 px-1 text-left text-base font-brand uppercase tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight sm:hidden"
+              className="group flex min-h-11 max-w-full items-center gap-3 px-1 text-left text-base font-brand uppercase tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight lg:hidden"
             >
               <Image
                 src="/logos/schmat-rat.png"
@@ -246,7 +249,9 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
             </button>
             <div
               id={menuId}
-              className={`fixed inset-x-0 top-16 z-20 w-full px-4 pt-3 transition duration-200 sm:absolute sm:left-0 sm:right-auto sm:top-full sm:w-72 sm:px-0 sm:pt-3 ${
+              aria-hidden={!isMenuOpen}
+              inert={!isMenuOpen}
+              className={`fixed inset-x-0 top-16 z-20 w-full px-4 pt-3 transition duration-200 lg:hidden ${
                 isMenuOpen
                   ? "pointer-events-auto translate-y-0 opacity-100"
                   : "pointer-events-none translate-y-2 opacity-0"
@@ -261,11 +266,21 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                 <nav
                   aria-label={labels.nav.explore}
                   aria-hidden={!isMenuOpen}
-                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto border border-border bg-surface/95 p-4 shadow-2xl sm:max-h-[60vh]"
+                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto border border-border bg-surface/95 p-4 shadow-2xl"
                 >
-                  <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
-                    {labels.nav.explore}
-                  </p>
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
+                      {labels.nav.explore}
+                    </p>
+                    <button
+                      type="button"
+                      className="min-h-11 px-3 text-sm text-text-muted hover:text-highlight"
+                      tabIndex={menuTabIndex}
+                      onClick={() => closeMenu({ returnFocus: true })}
+                    >
+                      {labels.common.closeMenu}
+                    </button>
+                  </div>
                   <ul className="mt-3 grid gap-3">
                     {(
                       [
@@ -298,7 +313,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                     })}
                   </ul>
                   {socialLinks.length ? (
-                    <div className="mt-4 border-t border-border/60 pt-4 sm:hidden">
+                    <div className="mt-4 border-t border-border/60 pt-4 lg:hidden">
                       <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
                         {labels.nav.socials}
                       </p>
@@ -329,13 +344,13 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
           </div>
           <div
             aria-hidden="true"
-            className={`fixed inset-0 top-16 z-10 bg-bg/70 transition-opacity duration-200 sm:hidden ${
+            className={`fixed inset-0 top-16 z-10 bg-bg/70 transition-opacity duration-200 lg:hidden ${
               isMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
             }`}
           />
           <nav
             aria-label={labels.nav.explore}
-            className="hidden items-center justify-center gap-1 sm:col-start-2 sm:row-start-1 sm:flex"
+            className="hidden items-center justify-center gap-1 lg:col-start-2 lg:row-start-1 lg:flex"
           >
             {(
               [
@@ -362,7 +377,10 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               );
             })}
           </nav>
-          <div className="justify-self-end sm:col-start-3 sm:row-start-1">
+          <div
+            inert={isMenuOpen && isMobileViewport}
+            className="justify-self-end lg:col-start-3 lg:row-start-1"
+          >
             <div className="flex items-center gap-2">
               <div
                 role="group"
@@ -373,7 +391,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                   type="button"
                   aria-pressed={locale === "en"}
                   onClick={() => setLocale("en")}
-                  className={`min-h-8 px-2.5 py-1 transition-colors ${
+                  className={`min-h-11 px-2.5 py-1 transition-colors ${
                     locale === "en"
                       ? "bg-highlight/20 text-highlight"
                       : "text-text-dim hover:text-highlight focus-visible:text-highlight"
@@ -385,7 +403,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                   type="button"
                   aria-pressed={locale === "af"}
                   onClick={() => setLocale("af")}
-                  className={`min-h-8 px-2.5 py-1 transition-colors ${
+                  className={`min-h-11 px-2.5 py-1 transition-colors ${
                     locale === "af"
                       ? "bg-highlight/20 text-highlight"
                       : "text-text-dim hover:text-highlight focus-visible:text-highlight"
@@ -395,7 +413,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                 </button>
               </div>
               {socialLinks.length ? (
-                <ul className="hidden items-center gap-2 text-text-dim sm:flex">
+                <ul className="hidden items-center gap-2 text-text-dim lg:flex">
                   {socialLinks.map((social) => {
                     const Icon = socialIcons[social.label as keyof typeof socialIcons];
                     return (
