@@ -69,7 +69,7 @@ export function ShowCard({
     <article
       className={`border-l-2 bg-surface/70 p-4 transition-colors sm:p-6 ${
         isPast
-          ? "border-border/50 opacity-60 hover:border-border hover:opacity-80"
+          ? "border-dashed border-border/50 hover:border-border"
           : "border-border hover:border-highlight"
       }`}
     >
@@ -92,6 +92,11 @@ export function ShowCard({
           </div>
         ) : null}
         <div className="min-w-0">
+          {isPast ? (
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
+              {labels.pastShow}
+            </p>
+          ) : null}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
             <div className="min-w-0">
               <p className="break-words text-sm font-semibold text-text">{show.venue}</p>
