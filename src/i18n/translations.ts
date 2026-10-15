@@ -79,6 +79,14 @@ export type Translations = {
     openMenu: string;
     closeMenu: string;
   };
+  errors: {
+    general: { title: string; description: string };
+    shows: { title: string; description: string };
+    merch: { title: string; description: string };
+    retry: string;
+    home: string;
+    reference: string;
+  };
 };
 
 export const translations: Record<Locale, Translations> = {
@@ -159,6 +167,23 @@ export const translations: Record<Locale, Translations> = {
       openMenu: "Open menu",
       closeMenu: "Close menu",
     },
+    errors: {
+      general: {
+        title: "Something went wrong",
+        description: "An unexpected error occurred. Please try again.",
+      },
+      shows: {
+        title: "Error loading shows",
+        description: "We could not load the shows. Please try again.",
+      },
+      merch: {
+        title: "Error loading merch",
+        description: "We could not load the merchandise. Please try again.",
+      },
+      retry: "Try again",
+      home: "Go home",
+      reference: "Error ID",
+    },
   },
   af: {
     meta: {
@@ -236,6 +261,23 @@ export const translations: Record<Locale, Translations> = {
       skipToContent: "Spring na inhoud",
       openMenu: "Maak kieslys oop",
       closeMenu: "Maak kieslys toe",
+    },
+    errors: {
+      general: {
+        title: "Iets het verkeerd geloop",
+        description: "'n Onverwagte fout het voorgekom. Probeer asseblief weer.",
+      },
+      shows: {
+        title: "Kon nie vertonings laai nie",
+        description: "Ons kon nie die vertonings laai nie. Probeer asseblief weer.",
+      },
+      merch: {
+        title: "Kon nie merch laai nie",
+        description: "Ons kon nie die merch laai nie. Probeer asseblief weer.",
+      },
+      retry: "Probeer weer",
+      home: "Gaan tuis",
+      reference: "Fout-ID",
     },
   },
 };

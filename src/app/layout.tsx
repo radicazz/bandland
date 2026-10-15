@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Grenze_Gotisch } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { ErrorMessagesProvider } from "@/components/ErrorMessagesProvider";
 import { embed, getMetadataBase } from "@/config/embed";
 import { site } from "@/config/site";
 import { getTranslationsFromCookies } from "@/i18n/server";
@@ -95,7 +96,7 @@ export default async function RootLayout({
         <div className="flex min-h-dvh flex-col">
           <SiteHeader locale={locale} labels={labels} />
           <main id="content" className="flex-1">
-            {children}
+            <ErrorMessagesProvider labels={labels.errors}>{children}</ErrorMessagesProvider>
           </main>
           <SiteFooter tagline={labels.footer.tagline} />
         </div>
