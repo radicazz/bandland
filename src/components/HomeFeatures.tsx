@@ -6,12 +6,12 @@ import type { Locale, Translations } from "@/i18n/translations";
 import { formatShowDatePretty } from "@/lib/formatters";
 import { splitShowsByStatus } from "@/lib/shows";
 
-type HomeCarouselProps = {
+type HomeFeaturesProps = {
   labels: Translations;
   locale: Locale;
 };
 
-export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
+export async function HomeFeatures({ labels, locale }: HomeFeaturesProps) {
   const { upcoming } = splitShowsByStatus(await getShows());
   const nextShow = upcoming[0];
 
@@ -21,8 +21,8 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
         <p className="section-kicker">{labels.home.releaseLabel}</p>
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h2 id="latest-release" className="display-title text-4xl sm:text-5xl">
-              {labels.home.latestReleaseTitle}
+            <h2 id="latest-release" className="display-title text-3xl sm:text-4xl">
+              {site.latestRelease.title}
             </h2>
             <p className="mt-3 text-sm text-text-muted">{labels.home.latestReleaseDescription}</p>
           </div>
@@ -37,7 +37,7 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
         </div>
         <div className="mt-6 overflow-hidden border border-border bg-bg/70">
           <iframe
-            title={`${labels.home.latestReleaseTitle} — Spotify player`}
+            title={`${labels.home.latestReleaseTitle}: ${site.latestRelease.title} — Spotify`}
             src={site.latestRelease.spotifyEmbedUrl}
             width="100%"
             height="152"
@@ -52,7 +52,7 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
         <p className="section-kicker">{labels.home.nextShowLabel}</p>
         {nextShow ? (
           <>
-            <h2 id="next-show" className="display-title mt-6 text-4xl">
+            <h2 id="next-show" className="display-title mt-5 text-3xl sm:text-4xl">
               {nextShow.venue}
             </h2>
             <p className="mt-3 text-sm text-text-muted">{nextShow.city}</p>
@@ -80,7 +80,7 @@ export async function HomeCarousel({ labels, locale }: HomeCarouselProps) {
           </>
         ) : (
           <>
-            <h2 id="next-show" className="display-title mt-6 text-4xl">
+            <h2 id="next-show" className="display-title mt-5 text-3xl sm:text-4xl">
               {labels.home.nextShowFallbackTitle}
             </h2>
             <p className="mt-4 text-sm leading-6 text-text-muted">

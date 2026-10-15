@@ -1,7 +1,8 @@
 export const site = {
   name: "schmät",
-  description: "Official landing page. Music, shows, and merch coming soon.",
+  description: "Music, live shows, and merch from Schmät.",
   latestRelease: {
+    title: "Pappa soek 'n Porsche",
     href: "https://tr.ee/7KaRvTpbLN",
     spotifyEmbedUrl:
       "https://open.spotify.com/embed/track/1ZqBftZCkFF0YOmYaQ7v2c?utm_source=generator&theme=0",

@@ -11,6 +11,7 @@ type ContentImageProps = {
   fallbackLabel: string;
   loading?: "eager" | "lazy";
   decoding?: "async" | "auto" | "sync";
+  sizes?: string;
 };
 
 export function isPlaceholderUrl(value: string | null | undefined) {
@@ -35,6 +36,7 @@ export function ContentImage({
   fallbackLabel,
   loading = "lazy",
   decoding = "async",
+  sizes = "(max-width: 768px) 100vw, 640px",
 }: ContentImageProps) {
   const resolvedSrc = src;
   const [failedSource, setFailedSource] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export function ContentImage({
       alt={alt}
       width={1280}
       height={960}
-      sizes="(max-width: 768px) 100vw, 640px"
+      sizes={sizes}
       className={className}
       loading={loading}
       decoding={decoding}

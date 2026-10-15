@@ -1,9 +1,10 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { HomeCarousel } from "./HomeCarousel";
+import { HomeFeatures } from "./HomeFeatures";
 import type { Show } from "@/content/schema";
 import { translations } from "@/i18n/translations";
+import { site } from "@/config/site";
 
 const getShowsMock = vi.hoisted(() => vi.fn<() => Promise<Show[]>>());
 
@@ -32,7 +33,7 @@ function createShow(overrides: Partial<Show>): Show {
   };
 }
 
-describe("HomeCarousel", () => {
+describe("HomeFeatures", () => {
   it("prioritizes the next show and shows direct ticket plus schedule links", async () => {
     getShowsMock.mockResolvedValue([
       createShow({
@@ -58,7 +59,7 @@ describe("HomeCarousel", () => {
       }),
     ]);
 
-    render(await HomeCarousel({ labels: translations.en, locale: "en" }));
+    render(await HomeFeatures({ labels: translations.en, locale: "en" }));
 
     expect(screen.getByText(translations.en.home.nextShowLabel)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Mercury Live" })).toBeInTheDocument();
@@ -73,6 +74,7 @@ describe("HomeCarousel", () => {
     expect(screen.queryByText("Armchair Theatre")).not.toBeInTheDocument();
     expect(screen.queryByText("Old Show")).not.toBeInTheDocument();
     expect(screen.getByText(translations.en.home.releaseLabel)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: site.latestRelease.title })).toBeInTheDocument();
   });
 
   it("renders a no-upcoming fallback while keeping secondary content", async () => {
@@ -85,7 +87,7 @@ describe("HomeCarousel", () => {
       }),
     ]);
 
-    render(await HomeCarousel({ labels: translations.en, locale: "en" }));
+    render(await HomeFeatures({ labels: translations.en, locale: "en" }));
 
     expect(
       screen.getByRole("heading", { name: translations.en.home.nextShowFallbackTitle }),

@@ -4,8 +4,8 @@ import { describe, expect, it, vi } from "vitest";
 import Home from "../app/page";
 import { site } from "../config/site";
 
-vi.mock("../components/HomeCarousel", () => ({
-  HomeCarousel: function HomeCarouselMock() {
+vi.mock("../components/HomeFeatures", () => ({
+  HomeFeatures: function HomeFeaturesMock() {
     return (
       <div>
         <h2>Merch</h2>

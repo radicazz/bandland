@@ -39,7 +39,7 @@ Rules:
 ## Current Features
 
 - Home hero uses the image manifest in `src/config/slideshow.ts` for files under `public/slideshow/`
-- Latest release card with Spotify embed in `src/components/HomeCarousel.tsx`
+- Latest release card with Spotify embed in `src/components/HomeFeatures.tsx`
 - Shows + Merch pages read JSON documents from a private Vercel Blob store
 - Admin panel at `/admin` for managing shows + merch
 - Locale toggle in header; translations in `src/i18n/translations.ts`
@@ -119,7 +119,9 @@ Location: `src/config/site.ts`
 - `Container` — max-w-6xl wrapper with padding
 - `SiteHeader` — nav + locale toggle + socials
 - `SiteFooter` — copyright + tagline
-- `HomeCarousel` — latest release + feature tiles
+- `HomeFeatures` — latest release + feature tiles
+- `PageSection` / `PageIntro` — shared public-page layout and headings
+- `MerchCard` — product image, details, and store link
 - Admin components in `src/components/admin/`
 
 Pattern: simple, functional components; client JS isolated to interactive features.

@@ -84,7 +84,7 @@ export type Translations = {
 export const translations: Record<Locale, Translations> = {
   en: {
     meta: {
-      description: "Official landing page. Music, shows, and merch coming soon.",
+      description: "Music, live shows, and merch from Schmät.",
     },
     nav: {
       explore: "Explore",
@@ -162,7 +162,7 @@ export const translations: Record<Locale, Translations> = {
   },
   af: {
     meta: {
-      description: "Amptelike landingsblad. Musiek, vertonings en merch kom binnekort.",
+      description: "Musiek, live vertonings en merch van Schmät.",
     },
     nav: {
       explore: "Verken",
