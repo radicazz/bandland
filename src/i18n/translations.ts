@@ -37,6 +37,7 @@ export type Translations = {
     liveDescription: string;
     liveCta: string;
     timeFrameLabel: string;
+    slideshow: { pause: string; resume: string };
   };
   shows: {
     label: string;
@@ -115,6 +116,7 @@ export const translations: Record<Locale, Translations> = {
       liveDescription: "Upcoming dates, tickets, and venue details.",
       liveCta: "View shows",
       timeFrameLabel: "Time frame",
+      slideshow: { pause: "Pause photos", resume: "Resume photos" },
     },
     shows: {
       label: "Live",
@@ -192,6 +194,7 @@ export const translations: Record<Locale, Translations> = {
       liveDescription: "Komende datums, kaartjies en lokaalbesonderhede.",
       liveCta: "Sien vertonings",
       timeFrameLabel: "Tydgleuf",
+      slideshow: { pause: "Onderbreek foto's", resume: "Hervat foto's" },
     },
     shows: {
       label: "Live",

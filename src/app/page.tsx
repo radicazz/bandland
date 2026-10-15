@@ -10,7 +10,7 @@ export default async function Home() {
 
   return (
     <section className="relative -mt-16 overflow-hidden border-b border-border/60 pt-16">
-      <HeroSlideshow slides={[...slideshowImages]} />
+      <HeroSlideshow slides={[...slideshowImages]} labels={labels.home.slideshow} />
 
       <Container className="relative py-12 sm:py-16 lg:py-20">
         <div className="mb-12 max-w-4xl sm:mb-16 lg:mb-20">

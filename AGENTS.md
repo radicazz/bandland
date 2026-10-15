@@ -122,7 +122,7 @@ Location: `src/config/site.ts`
 - `HomeCarousel` — latest release + feature tiles
 - Admin components in `src/components/admin/`
 
-Pattern: simple, functional components; minimal client JS (currently only header).
+Pattern: simple, functional components; client JS isolated to interactive features.
 
 ## Pages (App Router)
 
