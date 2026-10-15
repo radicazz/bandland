@@ -11,6 +11,31 @@ const CONNECTORS: Record<Locale, string> = {
   af: "om",
 };
 
+export function getShowDateTimeFields(value: string): { date: string; time: string } {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return { date: "", time: "" };
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: SHOW_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(parsed);
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((entry) => entry.type === type)?.value ?? "";
+  return {
+    date: `${part("year")}-${part("month")}-${part("day")}`,
+    time: `${part("hour")}:${part("minute")}`,
+  };
+}
+
+export function combineShowDateTime(date: string, time: string): string {
+  return `${date}T${time}:00+02:00`;
+}
+
 export function formatShowDatePretty(value: string, locale: Locale) {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) {

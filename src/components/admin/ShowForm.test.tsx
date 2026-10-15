@@ -1,9 +1,10 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ShowForm } from "./ShowForm";
 import type { Show } from "@/content/schema";
 import { translations } from "@/i18n/translations";
+import type { AdminFormState } from "@/lib/admin-form-state";
 
 afterEach(() => {
   cleanup();
@@ -28,6 +29,33 @@ const baseShow: Show = {
 };
 
 describe("ShowForm", () => {
+  it.each([
+    { stored: "2027-07-24T18:30:00Z", date: "2027-07-24", time: "20:30" },
+    { stored: "2027-07-24T23:30:00Z", date: "2027-07-25", time: "01:30" },
+    { stored: "2027-07-24T21:30:00+03:00", date: "2027-07-24", time: "20:30" },
+    { stored: "2027-07-24T20:30:00+02:00", date: "2027-07-24", time: "20:30" },
+  ])(
+    "preserves $stored when resaving without changing the time",
+    async ({ stored, date, time }) => {
+      const action = vi.fn(async (_state: AdminFormState, formData: FormData) => {
+        expect(Date.parse(String(formData.get("date")))).toBe(Date.parse(stored));
+        return { status: "idle" as const };
+      });
+      render(
+        <ShowForm
+          action={action}
+          labels={translations.en.shows}
+          locale="en"
+          submitLabel="Save changes"
+          initialValues={{ ...baseShow, date: stored }}
+        />,
+      );
+      expect(screen.getByLabelText(/^date$/i)).toHaveValue(date);
+      expect(screen.getByLabelText(/^time$/i)).toHaveValue(time);
+      fireEvent.submit(screen.getByRole("button", { name: "Save changes" }).closest("form")!);
+      await waitFor(() => expect(action).toHaveBeenCalledOnce());
+    },
+  );
   it("renders the has happened checkbox unchecked by default for new shows", () => {
     render(
       <ShowForm

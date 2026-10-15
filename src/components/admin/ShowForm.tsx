@@ -12,6 +12,7 @@ import { ImageUploadField } from "@/components/admin/ImageUploadField";
 import type { Show } from "@/content/schema";
 import type { Locale, Translations } from "@/i18n/translations";
 import { initialAdminFormState, type AdminFormState } from "@/lib/admin-form-state";
+import { combineShowDateTime, getShowDateTimeFields } from "@/lib/formatters";
 import { submitAdminFormWithImage } from "@/lib/admin-image-upload";
 
 type ShowFormProps = {
@@ -37,18 +38,6 @@ type ShowDraft = {
   ticketUrl: string;
 };
 
-const SAST_TIMEZONE_OFFSET = "+02:00";
-
-function parseISODateTime(isoString: string): { date: string; time: string } {
-  const [datePart, timePart] = isoString.split("T");
-  const time = timePart?.slice(0, 5) ?? "";
-  return { date: datePart ?? "", time };
-}
-
-function combineDateTime(date: string, time: string): string {
-  return `${date}T${time}:00${SAST_TIMEZONE_OFFSET}`;
-}
-
 function optionalDraftValue(value: string): string | undefined {
   const trimmed = value.trim();
   return trimmed || undefined;
@@ -56,7 +45,7 @@ function optionalDraftValue(value: string): string | undefined {
 
 function createInitialDraft(initialValues: Show | undefined): ShowDraft {
   const parsedDateTime = initialValues?.date
-    ? parseISODateTime(initialValues.date)
+    ? getShowDateTimeFields(initialValues.date)
     : { date: "", time: "" };
 
   return {
@@ -78,7 +67,7 @@ function createDraftFromFormData(formData: FormData): ShowDraft {
   const showDate = String(formData.get("showDate") ?? "");
   const showTime = String(formData.get("showTime") ?? "");
   const hasHappened = formData.get("hasHappened") === "on";
-  const combinedDate = showDate && showTime ? combineDateTime(showDate, showTime) : "";
+  const combinedDate = showDate && showTime ? combineShowDateTime(showDate, showTime) : "";
   const parsedDate = combinedDate ? Date.parse(combinedDate) : Number.NaN;
 
   return {
@@ -134,7 +123,7 @@ export function ShowForm({
     const time = formData.get("showTime") as string;
 
     if (date && time) {
-      const combinedDateTime = combineDateTime(date, time);
+      const combinedDateTime = combineShowDateTime(date, time);
       formData.set("date", combinedDateTime);
     }
 
@@ -151,7 +140,7 @@ export function ShowForm({
   const previewShow: ShowCardDetails = {
     date:
       draft.showDate && draft.showTime
-        ? combineDateTime(draft.showDate, draft.showTime)
+        ? combineShowDateTime(draft.showDate, draft.showTime)
         : "Choose a date and time",
     venue: optionalDraftValue(draft.venue) ?? "Venue name",
     city: optionalDraftValue(draft.city) ?? "City",
