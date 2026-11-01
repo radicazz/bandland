@@ -13,7 +13,13 @@ const blobMocks = vi.hoisted(() => {
 
 vi.mock("@vercel/blob", () => blobMocks);
 
-import { appendAuditEntry, mutateShows, readAudit, readShows } from "@/lib/content-store";
+import {
+  appendAuditEntry,
+  mutateShows,
+  readAudit,
+  readSettings,
+  readShows,
+} from "@/lib/content-store";
 
 function blobResponse(value: unknown, etag = "etag-1") {
   return {
@@ -29,6 +35,16 @@ describe("Vercel content store", () => {
     delete process.env.VERCEL_ENV;
     blobMocks.get.mockResolvedValue(null);
     blobMocks.put.mockResolvedValue({});
+  });
+
+  it("falls back to default settings when none are saved", async () => {
+    const settings = await readSettings();
+    expect(settings.widgets.map((widget) => widget.id)).toEqual(["nextShow", "release", "merch"]);
+    expect(settings.footer.contactEmail).toContain("@");
+    expect(blobMocks.get).toHaveBeenCalledWith(
+      "content/development/settings.json",
+      expect.objectContaining({ access: "private" }),
+    );
   });
 
   it("returns empty content when a namespace has not been initialized", async () => {

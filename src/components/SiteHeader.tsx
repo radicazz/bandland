@@ -7,17 +7,18 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Container } from "@/components/Container";
 import { site } from "@/config/site";
-import { getSocialLinks, socialIcons } from "@/components/SocialLinks";
+import { getSocialLinks, socialIcons, type SocialLink } from "@/components/SocialLinks";
 import type { Locale, Translations } from "@/i18n/translations";
 import { LOCALE_COOKIE } from "@/i18n/translations";
 
 type SiteHeaderProps = {
   locale: Locale;
   labels: Translations;
+  socials?: readonly SocialLink[];
 };
 
-export function SiteHeader({ locale, labels }: SiteHeaderProps) {
-  const socialLinks = getSocialLinks();
+export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
+  const socialLinks = getSocialLinks(socials);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const menuId = useId();

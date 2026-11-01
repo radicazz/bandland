@@ -15,6 +15,11 @@ const actions = [
   { href: "/admin/merch/new", label: "Add merch", hint: "Create a store listing" },
   { href: "/admin/shows", label: "Manage shows", hint: "Edit dates and tickets" },
   { href: "/admin/merch", label: "Manage merch", hint: "Edit products and links" },
+  {
+    href: "/admin/settings",
+    label: "Site settings",
+    hint: "Home widgets, latest release and footer",
+  },
 ] as const;
 
 export default async function AdminDashboardPage() {

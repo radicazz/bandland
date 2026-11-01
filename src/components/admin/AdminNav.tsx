@@ -13,6 +13,7 @@ export function AdminNav() {
     { href: "/admin/dashboard", label: "Dashboard" },
     { href: "/admin/shows", label: "Shows" },
     { href: "/admin/merch", label: "Merch" },
+    { href: "/admin/settings", label: "Settings" },
   ] as const;
 
   return (
@@ -32,7 +33,7 @@ export function AdminNav() {
         </button>
       </div>
       <nav className="mt-5 sm:mt-6" aria-label="Admin sections">
-        <ul className="flex gap-3 overflow-x-auto pb-1">
+        <ul className="flex flex-wrap gap-2">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
             return (
@@ -40,10 +41,10 @@ export function AdminNav() {
                 <Link
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex min-h-11 min-w-max items-center border-l-2 px-4 py-2 text-sm font-bold transition-colors ${
+                  className={`inline-flex min-h-11 items-center rounded-lg border px-4 py-2 text-base font-medium transition-colors ${
                     isActive
                       ? "border-highlight bg-highlight/10 text-highlight"
-                      : "border-border bg-bg/40 text-text-muted hover:border-highlight hover:text-text"
+                      : "border-border bg-bg/40 text-text-muted hover:border-text-dim hover:text-text"
                   }`}
                 >
                   {item.label}

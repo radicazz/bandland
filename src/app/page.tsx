@@ -5,10 +5,12 @@ import { HeroSlideshow } from "@/components/HeroSlideshow";
 import { HomeFeatures } from "@/components/HomeFeatures";
 import { site } from "@/config/site";
 import { slideshowImages } from "@/config/slideshow";
+import { getSiteSettings } from "@/content/settings";
 import { getTranslationsFromCookies } from "@/i18n/server";
 
 export default async function Home() {
   const { labels, locale } = await getTranslationsFromCookies();
+  const settings = await getSiteSettings();
 
   return (
     <>
@@ -20,11 +22,11 @@ export default async function Home() {
             {site.name}
           </h1>
           <p className="mt-4 max-w-xl text-lg leading-8 text-text sm:text-xl">
-            {labels.meta.description}
+            {settings.hero.tagline ?? labels.meta.description}
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
-              href={site.latestRelease.href}
+              href={settings.release.href}
               target="_blank"
               rel="noreferrer"
               className="btn-primary btn-primary-lg"
@@ -41,7 +43,7 @@ export default async function Home() {
 
       <section className="border-b border-border">
         <Container className="py-12 sm:py-16">
-          <HomeFeatures labels={labels} locale={locale} />
+          <HomeFeatures labels={labels} locale={locale} settings={settings} />
         </Container>
       </section>
     </>

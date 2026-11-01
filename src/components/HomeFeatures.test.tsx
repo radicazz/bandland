@@ -5,6 +5,7 @@ import { HomeFeatures } from "./HomeFeatures";
 import type { Show } from "@/content/schema";
 import { translations } from "@/i18n/translations";
 import { site } from "@/config/site";
+import { getDefaultSettings } from "@/content/settings-defaults";
 
 const getShowsMock = vi.hoisted(() => vi.fn<() => Promise<Show[]>>());
 
@@ -100,5 +101,36 @@ describe("HomeFeatures", () => {
     expect(
       screen.getByRole("link", { name: new RegExp(translations.en.nav.merch, "i") }),
     ).toHaveAttribute("href", "/merch");
+  });
+
+  it("renders widgets in the configured order, skips disabled ones and uses release overrides", async () => {
+    getShowsMock.mockResolvedValue([]);
+    const settings = getDefaultSettings();
+    settings.widgets = [
+      { id: "release", enabled: true, width: "full" },
+      { id: "nextShow", enabled: false, width: "half" },
+      { id: "merch", enabled: true, width: "half" },
+    ];
+    settings.release = {
+      title: "Brand new single",
+      description: "Out now everywhere.",
+      href: "https://example.com/listen",
+    };
+
+    const { container } = render(
+      await HomeFeatures({ labels: translations.en, locale: "en", settings }),
+    );
+
+    const headings = screen.getAllByRole("heading").map((heading) => heading.textContent);
+    expect(headings).toEqual(["Brand new single"]);
+    expect(screen.queryByText(translations.en.home.nextShowLabel)).not.toBeInTheDocument();
+    expect(screen.getByText("Out now everywhere.")).toBeInTheDocument();
+    expect(container.querySelector("iframe")).toBeNull();
+    expect(screen.getByRole("link", { name: /Listen/ })).toHaveAttribute(
+      "href",
+      "https://example.com/listen",
+    );
+    expect(container.firstElementChild?.children[0]).toHaveClass("lg:col-span-2");
+    expect(getShowsMock).not.toHaveBeenCalled();
   });
 });

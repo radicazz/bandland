@@ -42,7 +42,7 @@ Rules:
 - Home hero uses the image manifest in `src/config/slideshow.ts` for files under `public/slideshow/`
 - Latest release card with Spotify embed in `src/components/HomeFeatures.tsx`
 - Shows + Merch pages read JSON documents from a private Vercel Blob store
-- Admin panel at `/admin` for managing shows + merch
+- Admin panel at `/admin` for managing shows, merch, and site settings (home widget order/visibility, latest release, footer, socials)
 - Locale toggle in header; translations in `src/i18n/translations.ts`
 
 ## Content System
@@ -80,6 +80,20 @@ Merch (`merch.json`)
 }
 ```
 
+Site settings (`settings.json`, falls back to built-in defaults when missing)
+
+```ts
+{
+  hero: { tagline?: string },
+  widgets: Array<{ id: "nextShow" | "release" | "merch", enabled: boolean, width: "half" | "full" }>, // array order = home page order
+  release: { title: string, description?: string, href: string, embedUrl?: string },
+  footer: { tagline?: string, contactEmail: string },
+  socials: Array<{ label: "Instagram" | "Spotify" | "Apple Music" | "TikTok" | "YouTube" | "Linktree", href: string }>
+}
+```
+
+Read via `getSiteSettings()` in `src/content/settings.ts` (cached, tag `settings`; falls back to defaults on storage errors so the layout never fails). Edited at `/admin/settings`.
+
 Admin audit (`admin-audit.json`, capped at 100 entries)
 
 ```ts
@@ -87,7 +101,7 @@ Admin audit (`admin-audit.json`, capped at 100 entries)
   id: string,          // uuid
   actor: string,
   action: "create" | "update" | "delete",
-  entity: "shows" | "merch",
+  entity: "shows" | "merch" | "settings",
   entityId: string,    // uuid
   createdAt: string,
   details?: string
@@ -132,7 +146,7 @@ Pattern: simple, functional components; client JS isolated to interactive featur
 - `/` — Home (slideshow hero + latest release)
 - `/shows` — Show list with ticket links
 - `/merch` — Merch grid with external links
-- `/admin` — Admin login + protected CRUD routes
+- `/admin` — Admin login + protected CRUD routes (`/admin/settings` for site settings); linked from the footer
 
 SEO:
 

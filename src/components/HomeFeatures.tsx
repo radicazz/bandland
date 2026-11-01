@@ -1,7 +1,8 @@
 import Link from "next/link";
 
-import { site } from "@/config/site";
+import type { SiteSettings, WidgetId, WidgetSetting } from "@/content/schema";
 import { getShows } from "@/content/shows";
+import { getDefaultSettings } from "@/content/settings-defaults";
 import type { Locale, Translations } from "@/i18n/translations";
 import { formatShowDatePretty } from "@/lib/formatters";
 import { splitShowsByStatus } from "@/lib/shows";
@@ -9,18 +10,21 @@ import { splitShowsByStatus } from "@/lib/shows";
 type HomeFeaturesProps = {
   labels: Translations;
   locale: Locale;
+  settings?: SiteSettings;
 };
 
-export async function HomeFeatures({ labels, locale }: HomeFeaturesProps) {
-  const { upcoming } = splitShowsByStatus(await getShows());
-  const nextShow = upcoming[0];
+export async function HomeFeatures({
+  labels,
+  locale,
+  settings = getDefaultSettings(),
+}: HomeFeaturesProps) {
+  const widgets = settings.widgets.filter((widget) => widget.enabled);
+  const needsShows = widgets.some((widget) => widget.id === "nextShow");
+  const nextShow = needsShows ? splitShowsByStatus(await getShows()).upcoming[0] : undefined;
 
-  return (
-    <div className="grid w-full gap-6 lg:grid-cols-2">
-      <section
-        className="panel order-first flex flex-col p-6 sm:p-8 lg:order-none"
-        aria-labelledby="next-show"
-      >
+  const renderers: Record<WidgetId, () => React.ReactNode> = {
+    nextShow: () => (
+      <section className="panel flex h-full flex-col p-6 sm:p-8" aria-labelledby="next-show">
         <p className="section-kicker">{labels.home.nextShowLabel}</p>
         {nextShow ? (
           <>
@@ -64,27 +68,43 @@ export async function HomeFeatures({ labels, locale }: HomeFeaturesProps) {
           </>
         )}
       </section>
-
-      <section className="panel p-6 sm:p-8" aria-labelledby="latest-release">
+    ),
+    release: () => (
+      <section className="panel h-full p-6 sm:p-8" aria-labelledby="latest-release">
         <p className="section-kicker">{labels.home.releaseLabel}</p>
         <h2 id="latest-release" className="display-title mt-3 text-3xl sm:text-4xl">
-          {site.latestRelease.title}
+          {settings.release.title}
         </h2>
-        <p className="mt-2 text-lg text-text-muted">{labels.home.latestReleaseDescription}</p>
-        <div className="mt-6 overflow-hidden rounded-xl bg-bg">
-          <iframe
-            title={`${labels.home.latestReleaseTitle}: ${site.latestRelease.title} — Spotify`}
-            src={site.latestRelease.spotifyEmbedUrl}
-            width="100%"
-            height="152"
-            loading="lazy"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            className="block w-full"
-          />
-        </div>
+        <p className="mt-2 text-lg text-text-muted">
+          {settings.release.description ?? labels.home.latestReleaseDescription}
+        </p>
+        {settings.release.embedUrl ? (
+          <div className="mt-6 overflow-hidden rounded-xl bg-bg">
+            <iframe
+              title={`${labels.home.latestReleaseTitle}: ${settings.release.title}`}
+              src={settings.release.embedUrl}
+              width="100%"
+              height="152"
+              loading="lazy"
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              className="block w-full"
+            />
+          </div>
+        ) : (
+          <a
+            href={settings.release.href}
+            target="_blank"
+            rel="noreferrer"
+            className="btn-primary mt-6"
+          >
+            {labels.home.latestReleaseCta}
+            <span aria-hidden>↗</span>
+          </a>
+        )}
       </section>
-
-      <nav aria-label={labels.nav.explore} className="lg:col-span-2">
+    ),
+    merch: () => (
+      <nav aria-label={labels.nav.explore} className="h-full">
         <Link
           href="/merch"
           className="card-interactive panel flex min-h-16 items-center justify-between gap-4 px-6 py-5 text-xl font-semibold text-text"
@@ -95,6 +115,20 @@ export async function HomeFeatures({ labels, locale }: HomeFeaturesProps) {
           </span>
         </Link>
       </nav>
+    ),
+  };
+
+  const widthClass = (width: WidgetSetting["width"]) => (width === "full" ? "lg:col-span-2" : "");
+
+  if (widgets.length === 0) return null;
+
+  return (
+    <div className="grid w-full gap-6 lg:grid-cols-2">
+      {widgets.map((widget) => (
+        <div key={widget.id} className={`min-w-0 ${widthClass(widget.width)}`}>
+          {renderers[widget.id]()}
+        </div>
+      ))}
     </div>
   );
 }

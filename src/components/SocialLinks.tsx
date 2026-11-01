@@ -47,12 +47,20 @@ export const socialIcons = {
   ),
 } as const;
 
-export function getSocialLinks() {
-  return site.socials.filter((social) => social.href && social.label in socialIcons);
+export type SocialLink = { label: string; href: string | null };
+
+export function getSocialLinks(socials: readonly SocialLink[] = site.socials) {
+  return socials.filter((social) => social.href && social.label in socialIcons);
 }
 
-export function SocialLinks({ className = "" }: { className?: string }) {
-  const links = getSocialLinks();
+export function SocialLinks({
+  className = "",
+  socials,
+}: {
+  className?: string;
+  socials?: readonly SocialLink[];
+}) {
+  const links = getSocialLinks(socials);
   if (!links.length) return null;
   return (
     <ul className={`flex flex-wrap items-center gap-2 ${className}`}>

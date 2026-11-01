@@ -6,9 +6,16 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { merchInputSchema, showInputSchema, type MerchItem, type Show } from "@/content/schema";
+import {
+  merchInputSchema,
+  showInputSchema,
+  siteSettingsSchema,
+  SOCIAL_PLATFORMS,
+  type MerchItem,
+  type Show,
+} from "@/content/schema";
 import type { AdminFormState } from "@/lib/admin-form-state";
-import { appendAuditEntry, mutateMerch, mutateShows } from "@/lib/content-store";
+import { appendAuditEntry, mutateMerch, mutateSettings, mutateShows } from "@/lib/content-store";
 import { discardManagedMedia, MediaValidationError, validateManagedMedia } from "@/lib/media-store";
 import { isReadOnlyDeployment } from "@/lib/runtime-environment";
 
@@ -59,7 +66,7 @@ async function logAudit({
   details,
 }: {
   action: "create" | "update" | "delete";
-  entity: "shows" | "merch";
+  entity: "shows" | "merch" | "settings";
   entityId: string;
   details?: string;
 }) {
@@ -424,4 +431,71 @@ export async function deleteMerchAction(formData: FormData) {
   await discardManagedMedia(removed.imageUrl);
   updateTag("merch");
   redirect("/admin/merch?saved=deleted");
+}
+
+const SETTINGS_ENTITY_ID = "00000000-0000-4000-8000-000000000001";
+
+function parseWidgetsInput(value: FormDataEntryValue | null): unknown {
+  try {
+    return typeof value === "string" ? JSON.parse(value) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function updateSettingsAction(
+  _prevState: AdminFormState,
+  formData: FormData,
+): Promise<AdminFormState> {
+  await requireAdmin();
+  const blocked = readOnlyState();
+  if (blocked) return blocked;
+
+  const socials = SOCIAL_PLATFORMS.flatMap((label) => {
+    const href = optionalInput(formData.get(`social:${label}`));
+    return href ? [{ label, href }] : [];
+  });
+
+  const parsed = siteSettingsSchema.safeParse({
+    hero: { tagline: optionalInput(formData.get("heroTagline")) },
+    widgets: parseWidgetsInput(formData.get("widgets")),
+    release: {
+      title: normalizeInput(formData.get("releaseTitle")),
+      description: optionalInput(formData.get("releaseDescription")),
+      href: normalizeInput(formData.get("releaseHref")),
+      embedUrl: optionalInput(formData.get("releaseEmbedUrl")),
+    },
+    footer: {
+      tagline: optionalInput(formData.get("footerTagline")),
+      contactEmail: normalizeInput(formData.get("contactEmail")),
+    },
+    socials,
+  });
+
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const issue of parsed.error.issues) {
+      const [first, second, third] = issue.path;
+      const key =
+        first === "socials" && typeof second === "number" && third === "href"
+          ? `social:${socials[second]?.label ?? ""}`
+          : issue.path.join(".");
+      if (fieldErrors[key] === undefined) fieldErrors[key] = issue.message;
+    }
+    return { status: "error", message: "Please correct the highlighted fields.", fieldErrors };
+  }
+
+  try {
+    await mutateSettings(() => ({ data: parsed.data, result: undefined }));
+  } catch (error) {
+    return storageErrorState(error);
+  }
+
+  await logAudit({
+    action: "update",
+    entity: "settings",
+    entityId: SETTINGS_ENTITY_ID,
+  });
+  updateTag("settings");
+  redirect("/admin/settings?saved=updated");
 }

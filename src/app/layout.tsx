@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { ErrorMessagesProvider } from "@/components/ErrorMessagesProvider";
 import { embed, getMetadataBase } from "@/config/embed";
 import { site } from "@/config/site";
+import { getSiteSettings } from "@/content/settings";
 import { getTranslationsFromCookies } from "@/i18n/server";
 
 const geistSans = Geist({
@@ -74,6 +75,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { locale, labels } = await getTranslationsFromCookies();
+  const settings = await getSiteSettings();
   return (
     <html lang={locale} className="bg-bg text-text">
       <head>
@@ -98,11 +100,16 @@ export default async function RootLayout({
           {labels.common.skipToContent}
         </a>
         <div className="flex min-h-dvh flex-col">
-          <SiteHeader locale={locale} labels={labels} />
+          <SiteHeader locale={locale} labels={labels} socials={settings.socials} />
           <main id="content" className="flex-1">
             <ErrorMessagesProvider labels={labels.errors}>{children}</ErrorMessagesProvider>
           </main>
-          <SiteFooter tagline={labels.footer.tagline} bookingLabel={labels.footer.booking} />
+          <SiteFooter
+            tagline={settings.footer.tagline ?? labels.footer.tagline}
+            bookingLabel={labels.footer.booking}
+            contactEmail={settings.footer.contactEmail}
+            socials={settings.socials}
+          />
         </div>
       </body>
     </html>

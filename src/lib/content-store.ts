@@ -7,10 +7,13 @@ import {
   adminAuditSchema,
   merchItemSchema,
   showSchema,
+  siteSettingsSchema,
   type AdminAuditEntry,
   type MerchItem,
   type Show,
+  type SiteSettings,
 } from "@/content/schema";
+import { getDefaultSettings } from "@/content/settings-defaults";
 import { getDataNamespace, requireWritableDeployment } from "@/lib/runtime-environment";
 
 const MAX_MUTATION_ATTEMPTS = 4;
@@ -20,6 +23,7 @@ const CONTENT_FILES = {
   shows: "shows.json",
   merch: "merch.json",
   audit: "admin-audit.json",
+  settings: "settings.json",
 } as const;
 
 type ContentKey = keyof typeof CONTENT_FILES;
@@ -117,6 +121,18 @@ export async function mutateMerch<R>(
   ) => MutationResult<MerchItem[], R> | Promise<MutationResult<MerchItem[], R>>,
 ) {
   return mutateJson("merch", merchItemSchema.array(), [], mutate);
+}
+
+export async function readSettings() {
+  return (await readSnapshot("settings", siteSettingsSchema, getDefaultSettings())).data;
+}
+
+export async function mutateSettings<R>(
+  mutate: (
+    settings: SiteSettings,
+  ) => MutationResult<SiteSettings, R> | Promise<MutationResult<SiteSettings, R>>,
+) {
+  return mutateJson("settings", siteSettingsSchema, getDefaultSettings(), mutate);
 }
 
 export async function readAudit() {
