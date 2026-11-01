@@ -1,5 +1,6 @@
 import { ContentImage } from "@/components/ContentImage";
 import type { Locale, Translations } from "@/i18n/translations";
+import { buildShowCalendar } from "@/lib/calendar";
 import { formatShowDatePretty } from "@/lib/formatters";
 
 export type ShowCardDetails = {
@@ -19,7 +20,9 @@ type ShowCardProps = {
   locale: Locale;
   labels: Translations["shows"];
   isPast?: boolean;
+  isNext?: boolean;
   previewOnly?: boolean;
+  newTabLabel?: string;
 };
 
 export function OnlinePriceIcon() {
@@ -60,8 +63,11 @@ export function ShowCard({
   locale,
   labels,
   isPast = false,
+  isNext = false,
   previewOnly = false,
+  newTabLabel = "opens in a new tab",
 }: ShowCardProps) {
+  const calendar = !isPast && !previewOnly ? buildShowCalendar(show) : null;
   const hasSplitPrices = Boolean(show.priceOnline || show.priceDoor);
   const formattedDate = formatShowDatePretty(show.date, locale);
 
@@ -70,7 +76,9 @@ export function ShowCard({
       className={`border-l-2 bg-surface/70 p-4 transition-colors sm:p-6 ${
         isPast
           ? "border-dashed border-border/50 hover:border-border"
-          : "border-border hover:border-highlight"
+          : isNext
+            ? "border-highlight bg-surface"
+            : "border-border hover:border-highlight"
       }`}
     >
       <div
@@ -92,6 +100,11 @@ export function ShowCard({
           </div>
         ) : null}
         <div className="min-w-0">
+          {isNext ? (
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-highlight">
+              {labels.nextShowBadge}
+            </p>
+          ) : null}
           {isPast ? (
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
               {labels.pastShow}
@@ -143,24 +156,42 @@ export function ShowCard({
           ) : show.price ? (
             <p className="mt-2 break-words text-sm tabular-nums text-text">{show.price}</p>
           ) : null}
-          {show.ticketUrl ? (
-            previewOnly ? (
-              <span
-                className="btn-primary pointer-events-none mt-4 w-full sm:w-auto"
-                aria-label={`${labels.tickets} preview`}
-              >
-                {labels.tickets}
-              </span>
-            ) : (
-              <a
-                className="btn-primary mt-4 w-full sm:w-auto"
-                href={show.ticketUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {labels.tickets}
-              </a>
-            )
+          {show.ticketUrl || calendar ? (
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+              {show.ticketUrl ? (
+                previewOnly ? (
+                  <span
+                    className="btn-primary pointer-events-none w-full sm:w-auto"
+                    aria-label={`${labels.tickets} preview`}
+                  >
+                    {labels.tickets}
+                  </span>
+                ) : (
+                  <a
+                    className="btn-primary w-full sm:w-auto"
+                    href={show.ticketUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`${labels.tickets}: ${show.venue} (${newTabLabel})`}
+                  >
+                    {labels.tickets}
+                    <span aria-hidden className="ml-2">
+                      ↗
+                    </span>
+                  </a>
+                )
+              ) : null}
+              {calendar ? (
+                <a
+                  className="btn-secondary w-full sm:w-auto"
+                  href={calendar.href}
+                  download={calendar.filename}
+                  aria-label={`${labels.addToCalendar}: ${show.venue}`}
+                >
+                  {labels.addToCalendar}
+                </a>
+              ) : null}
+            </div>
           ) : null}
         </div>
       </div>

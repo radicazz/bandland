@@ -102,7 +102,7 @@ export default async function RootLayout({
           <main id="content" className="flex-1">
             <ErrorMessagesProvider labels={labels.errors}>{children}</ErrorMessagesProvider>
           </main>
-          <SiteFooter tagline={labels.footer.tagline} />
+          <SiteFooter tagline={labels.footer.tagline} bookingLabel={labels.footer.booking} />
         </div>
       </body>
     </html>

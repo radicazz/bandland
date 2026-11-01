@@ -48,7 +48,10 @@ export async function HomeFeatures({ labels, locale }: HomeFeaturesProps) {
         </div>
       </section>
 
-      <section className="punk-panel flex flex-col p-4 sm:p-6" aria-labelledby="next-show">
+      <section
+        className="punk-panel order-first flex flex-col p-4 sm:p-6 lg:order-none"
+        aria-labelledby="next-show"
+      >
         <p className="section-kicker">{labels.home.nextShowLabel}</p>
         {nextShow ? (
           <>

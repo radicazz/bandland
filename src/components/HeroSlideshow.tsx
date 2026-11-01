@@ -66,20 +66,24 @@ export function HeroSlideshow({ slides, intervalSeconds = 6, labels }: HeroSlide
             />
           </div>
         ))}
-        <div className="absolute inset-0 bg-bg/60" />
+        <div className="absolute inset-0 bg-bg/45" />
         <div className="absolute inset-0 bg-highlight/10 mix-blend-screen" />
         <div className="absolute inset-0 bg-gradient-to-b from-bg/20 via-transparent to-bg" />
         <div className="absolute inset-0 hero-vignette" />
         <div className="absolute inset-0 hero-grain" />
       </div>
       {slides.length > 1 && !reduceMotion ? (
-        <div className="absolute inset-x-0 top-20 z-10 mx-auto flex max-w-6xl justify-end px-4 sm:px-6">
+        <div className="absolute inset-x-0 top-[4.75rem] z-10 mx-auto flex max-w-6xl justify-end px-4 sm:px-6">
           <button
             type="button"
             onClick={() => setIsPaused((paused) => !paused)}
-            className="pointer-events-auto min-h-11 border border-border bg-bg/90 px-3 text-xs text-text-muted transition-colors hover:border-highlight hover:text-highlight"
+            aria-label={isPaused ? labels.resume : labels.pause}
+            title={isPaused ? labels.resume : labels.pause}
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center border border-border bg-bg/80 text-text-muted backdrop-blur transition-colors hover:border-highlight hover:text-highlight"
           >
-            {isPaused ? labels.resume : labels.pause}
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="currentColor">
+              {isPaused ? <path d="M8 5v14l11-7z" /> : <path d="M7 5h4v14H7zM13 5h4v14h-4z" />}
+            </svg>
           </button>
         </div>
       ) : null}

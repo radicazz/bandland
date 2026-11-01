@@ -106,6 +106,19 @@ export function MerchForm({
         <FieldError message={state.fieldErrors?.href} />
       </label>
 
+      <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+        Label (optional)
+        <select
+          name="badge"
+          defaultValue={initialValues?.badge ?? ""}
+          className={`${inputBase} border-border/70`}
+        >
+          <option value="">None</option>
+          <option value="new">New</option>
+          <option value="sold-out">Sold out</option>
+        </select>
+      </label>
+
       <ImageUploadField
         label="Merch photo (optional)"
         currentImageUrl={initialValues?.imageUrl}

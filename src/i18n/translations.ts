@@ -56,6 +56,9 @@ export type Translations = {
     ticketPriceGuideFallbackNote: string;
     onlinePriceLabel: string;
     doorPriceLabel: string;
+    nextShowBadge: string;
+    addToCalendar: string;
+    showOlder: string;
   };
   merch: {
     label: string;
@@ -64,6 +67,8 @@ export type Translations = {
     introSuffix: string;
     empty: string;
     view: string;
+    badgeNew: string;
+    badgeSoldOut: string;
   };
   gallery: {
     label: string;
@@ -73,11 +78,13 @@ export type Translations = {
   };
   footer: {
     tagline: string;
+    booking: string;
   };
   common: {
     skipToContent: string;
     openMenu: string;
     closeMenu: string;
+    opensInNewTab: string;
   };
   errors: {
     general: { title: string; description: string };
@@ -144,6 +151,9 @@ export const translations: Record<Locale, Translations> = {
         "Shows may list one or both prices. If only a general price is available, it is shown without icons.",
       onlinePriceLabel: "Online",
       doorPriceLabel: "Door",
+      nextShowBadge: "Next show",
+      addToCalendar: "Add to calendar",
+      showOlder: "Show older shows ({count})",
     },
     merch: {
       label: "Store",
@@ -152,6 +162,8 @@ export const translations: Record<Locale, Translations> = {
       introSuffix: "",
       empty: "Storefront coming soon.",
       view: "View",
+      badgeNew: "New",
+      badgeSoldOut: "Sold out",
     },
     gallery: {
       label: "Gallery",
@@ -160,12 +172,14 @@ export const translations: Record<Locale, Translations> = {
       follow: "Follow on Instagram",
     },
     footer: {
-      tagline: "Built for fast shows + fast pages.",
+      tagline: "Loud guitars. Afrikaans lyrics. Skollie spirit.",
+      booking: "Booking & press",
     },
     common: {
       skipToContent: "Skip to content",
       openMenu: "Open menu",
       closeMenu: "Close menu",
+      opensInNewTab: "opens in a new tab",
     },
     errors: {
       general: {
@@ -239,6 +253,9 @@ export const translations: Record<Locale, Translations> = {
         "Vertonings kan een of albei pryse wys. As net 'n algemene prys beskikbaar is, word dit sonder ikone gewys.",
       onlinePriceLabel: "Aanlyn",
       doorPriceLabel: "Deur",
+      nextShowBadge: "Volgende vertoning",
+      addToCalendar: "Voeg by kalender",
+      showOlder: "Wys ouer vertonings ({count})",
     },
     merch: {
       label: "Winkel",
@@ -247,6 +264,8 @@ export const translations: Record<Locale, Translations> = {
       introSuffix: "",
       empty: "Winkelblad kom binnekort.",
       view: "Bekyk",
+      badgeNew: "Nuut",
+      badgeSoldOut: "Uitverkoop",
     },
     gallery: {
       label: "Galerie",
@@ -255,12 +274,14 @@ export const translations: Record<Locale, Translations> = {
       follow: "Volg op Instagram",
     },
     footer: {
-      tagline: "Gebou vir vinnige vertonings + vinnige bladsye.",
+      tagline: "Harde kitare. Afrikaanse lirieke. Skollie-gees.",
+      booking: "Besprekings & pers",
     },
     common: {
       skipToContent: "Spring na inhoud",
       openMenu: "Maak kieslys oop",
       closeMenu: "Maak kieslys toe",
+      opensInNewTab: "maak in 'n nuwe oortjie oop",
     },
     errors: {
       general: {

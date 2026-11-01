@@ -37,4 +37,21 @@ describe("ShowCard", () => {
     expect(screen.getByLabelText("Tickets preview")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Tickets" })).not.toBeInTheDocument();
   });
+
+  it("marks the next show and offers calendar and named ticket links", () => {
+    render(<ShowCard show={show} locale="en" labels={translations.en.shows} isNext />);
+    expect(screen.getByText("Next show")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Add to calendar: Mercury Live/ })).toHaveAttribute(
+      "download",
+      "schmat-2027-07-24.ics",
+    );
+    expect(
+      screen.getByRole("link", { name: "Tickets: Mercury Live (opens in a new tab)" }),
+    ).toBeInTheDocument();
+  });
+
+  it("does not offer calendar links for past shows", () => {
+    render(<ShowCard show={show} locale="en" labels={translations.en.shows} isPast />);
+    expect(screen.queryByRole("link", { name: /calendar/i })).not.toBeInTheDocument();
+  });
 });

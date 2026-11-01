@@ -23,10 +23,9 @@ describe("MerchCard", () => {
     expect(screen.getByRole("heading", { name: item.name })).toBeInTheDocument();
     expect(screen.getByText(item.price)).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: `Bekyk: ${item.name}` })).toHaveAttribute(
-      "href",
-      item.href,
-    );
+    expect(
+      screen.getByRole("link", { name: `Bekyk: ${item.name} (opens in a new tab)` }),
+    ).toHaveAttribute("href", item.href);
   });
 
   it("preserves the image frame and store action when a product photo fails", () => {
@@ -38,9 +37,13 @@ describe("MerchCard", () => {
     );
     fireEvent.error(screen.getByRole("img", { name: item.name }));
     expect(screen.getByRole("img", { name: item.name })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: `View: ${item.name}` })).toHaveAttribute(
-      "href",
-      item.href,
-    );
+    expect(
+      screen.getByRole("link", { name: `View: ${item.name} (opens in a new tab)` }),
+    ).toHaveAttribute("href", item.href);
+  });
+
+  it("shows a sold-out label", () => {
+    render(<MerchCard item={{ ...item, badge: "sold-out" }} labels={translations.en.merch} />);
+    expect(screen.getByText("Sold out")).toBeInTheDocument();
   });
 });

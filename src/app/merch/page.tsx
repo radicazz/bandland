@@ -28,7 +28,11 @@ export default async function MerchPage() {
         <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {merchItems.map((item) => (
             <li key={item.id} className="min-w-0">
-              <MerchCard item={item} labels={labels.merch} />
+              <MerchCard
+                item={item}
+                labels={labels.merch}
+                newTabLabel={labels.common.opensInNewTab}
+              />
             </li>
           ))}
         </ul>

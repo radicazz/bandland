@@ -279,6 +279,7 @@ export async function createMerchAction(
     description: optionalInput(formData.get("description")),
     price: normalizeInput(formData.get("price")),
     href: normalizeInput(formData.get("href")),
+    badge: optionalInput(formData.get("badge")),
   });
   if (!parsed.success) {
     await cleanupFailedUpload(uploadedImageUrl);
@@ -343,6 +344,7 @@ export async function updateMerchAction(
     description: optionalInput(formData.get("description")),
     price: normalizeInput(formData.get("price")),
     href: normalizeInput(formData.get("href")),
+    badge: optionalInput(formData.get("badge")),
   });
   if (!parsed.success) {
     await cleanupFailedUpload(uploadedImageUrl);
@@ -369,6 +371,7 @@ export async function updateMerchAction(
       if (!before) return { data: items, result: null };
 
       const after: MerchItem = { ...before, ...parsed.data, updatedAt: new Date().toISOString() };
+      if (!parsed.data.badge) delete after.badge;
       if (imageUrl) after.imageUrl = imageUrl;
       else if (shouldRemoveImage) delete after.imageUrl;
 

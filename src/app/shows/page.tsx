@@ -15,6 +15,9 @@ function ShowListSection({
   locale,
   labels,
   isPast = false,
+  highlightFirst = false,
+  collapseAfter,
+  newTabLabel,
 }: {
   heading: string;
   headingId: string;
@@ -22,19 +25,38 @@ function ShowListSection({
   locale: Locale;
   labels: Translations["shows"];
   isPast?: boolean;
+  highlightFirst?: boolean;
+  collapseAfter?: number;
+  newTabLabel: string;
 }) {
+  const visible = collapseAfter === undefined ? shows : shows.slice(0, collapseAfter);
+  const hidden = collapseAfter === undefined ? [] : shows.slice(collapseAfter);
+  const renderShow = (show: Show, index: number) => (
+    <li key={show.id}>
+      <ShowCard
+        show={show}
+        locale={locale}
+        labels={labels}
+        isPast={isPast}
+        isNext={highlightFirst && index === 0}
+        newTabLabel={newTabLabel}
+      />
+    </li>
+  );
   return (
     <section aria-labelledby={headingId}>
       <h2 id={headingId} className="section-kicker">
         {heading}
       </h2>
-      <ul className="mt-4 grid gap-4 sm:gap-5">
-        {shows.map((show) => (
-          <li key={show.id}>
-            <ShowCard show={show} locale={locale} labels={labels} isPast={isPast} />
-          </li>
-        ))}
-      </ul>
+      <ul className="mt-4 grid gap-4 sm:gap-5">{visible.map(renderShow)}</ul>
+      {hidden.length > 0 ? (
+        <details className="group mt-4">
+          <summary className="btn-secondary w-full cursor-pointer list-none sm:w-auto group-open:hidden [&::-webkit-details-marker]:hidden">
+            {labels.showOlder.replace("{count}", String(hidden.length))}
+          </summary>
+          <ul className="grid gap-4 sm:gap-5">{hidden.map(renderShow)}</ul>
+        </details>
+      ) : null}
     </section>
   );
 }
@@ -95,6 +117,8 @@ export default async function ShowsPage() {
               shows={upcoming}
               locale={locale}
               labels={labels.shows}
+              highlightFirst
+              newTabLabel={labels.common.opensInNewTab}
             />
           ) : null}
           {past.length > 0 ? (
@@ -105,6 +129,8 @@ export default async function ShowsPage() {
               locale={locale}
               labels={labels.shows}
               isPast
+              collapseAfter={3}
+              newTabLabel={labels.common.opensInNewTab}
             />
           ) : null}
         </div>

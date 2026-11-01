@@ -41,6 +41,7 @@ export const merchInputSchema = z.object({
   description: z.string().min(1).optional(),
   price: z.string().min(1),
   href: z.string().url(),
+  badge: z.enum(["new", "sold-out"]).optional(),
 });
 
 export const merchItemSchema = merchInputSchema.extend({
