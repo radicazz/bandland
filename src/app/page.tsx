@@ -15,7 +15,7 @@ export default async function Home() {
       <Container className="relative py-12 sm:py-16 lg:py-20">
         <div className="mb-8 max-w-4xl sm:mb-12 lg:mb-16">
           <p className="section-kicker">{labels.home.pinned}</p>
-          <h1 className="display-title mt-6 text-[clamp(4.5rem,18vw,10rem)]">{site.name}</h1>
+          <h1 className="display-title mt-6 text-[clamp(3.25rem,19vw,10rem)]">{site.name}</h1>
           <div className="mt-6 flex max-w-xl items-start gap-4 border-l-2 border-highlight pl-4 sm:mt-8">
             <p className="text-sm font-medium leading-6 text-text-muted sm:text-base">
               {labels.meta.description}

@@ -100,7 +100,7 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex min-h-11 items-center justify-center border border-highlight bg-highlight px-5 py-2 text-center text-xs font-bold uppercase tracking-[0.22em] text-bg transition-colors hover:bg-transparent hover:text-highlight whitespace-normal;
+    @apply inline-flex min-h-11 items-center justify-center border border-highlight bg-highlight px-5 py-2 text-center text-xs font-bold uppercase tracking-[0.22em] text-bg transition-colors hover:bg-highlight/85 whitespace-normal;
     clip-path: polygon(
       0 0,
       calc(100% - 0.55rem) 0,
@@ -117,14 +117,6 @@ body {
 
   .btn-secondary {
     @apply inline-flex min-h-11 items-center justify-center border border-border bg-surface/80 px-5 py-2 text-center text-xs font-bold uppercase tracking-[0.22em] text-text transition-colors hover:border-highlight hover:text-highlight whitespace-normal;
-    clip-path: polygon(
-      0 0,
-      calc(100% - 0.55rem) 0,
-      100% 0.55rem,
-      100% 100%,
-      0.55rem 100%,
-      0 calc(100% - 0.55rem)
-    );
   }
 
   .menu-tile {

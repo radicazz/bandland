@@ -1,6 +1,5 @@
 "use client";
 
-import type { SVGProps } from "react";
 import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,53 +7,9 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Container } from "@/components/Container";
 import { site } from "@/config/site";
+import { getSocialLinks, socialIcons } from "@/components/SocialLinks";
 import type { Locale, Translations } from "@/i18n/translations";
 import { LOCALE_COOKIE } from "@/i18n/translations";
-
-type IconProps = SVGProps<SVGSVGElement>;
-
-const socialIcons = {
-  Instagram: (props: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}>
-      <rect x="4" y="4" width="16" height="16" rx="4" />
-      <circle cx="12" cy="12" r="4.2" />
-      <circle cx="17.5" cy="6.5" r="1.3" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  TikTok: (props: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}>
-      <path d="M14 4c0 3 2 5 5 5" />
-      <path d="M14 4v10.5a3.5 3.5 0 1 1-3-3.45" />
-    </svg>
-  ),
-  YouTube: (props: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}>
-      <rect x="3" y="6" width="18" height="12" rx="3" />
-      <path d="M10 9l5 3-5 3z" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  Spotify: (props: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M7 11c3.8-1.3 7.7-.9 10.8 1" strokeLinecap="round" />
-      <path d="M7.8 14.2c2.8-.9 5.8-.6 8.1.7" strokeLinecap="round" />
-      <path d="M8.8 17c2-.6 4.1-.4 5.8.4" strokeLinecap="round" />
-    </svg>
-  ),
-  "Apple Music": (props: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}>
-      <path d="M14.5 5.5v8.6a2.5 2.5 0 1 1-1-2V7.2l6-1.2v7.1a2.5 2.5 0 1 1-1-2V4.6z" />
-    </svg>
-  ),
-  Linktree: (props: IconProps) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" {...props}>
-      <path d="M12 3v10" strokeLinecap="round" />
-      <path d="M6 7l6 6 6-6" strokeLinecap="round" />
-      <path d="M9 13l-3 3h6l-3 5" />
-      <path d="M15 13l3 3h-6l3 5" />
-    </svg>
-  ),
-} as const;
 
 type SiteHeaderProps = {
   locale: Locale;
@@ -62,7 +17,7 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ locale, labels }: SiteHeaderProps) {
-  const socialLinks = site.socials.filter((social) => social.href && social.label in socialIcons);
+  const socialLinks = getSocialLinks();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const menuId = useId();
@@ -145,7 +100,8 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
     }
 
     function handlePointerDown(event: PointerEvent) {
-      if (!menuRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (!menuRef.current?.contains(target) && !menuButtonRef.current?.contains(target)) {
         closeMenu();
       }
     }
@@ -202,51 +158,22 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
   return (
     <header className="sticky top-0 z-30 border-b border-border/80 bg-bg/80 backdrop-blur-xl">
       <Container className="relative">
-        <div className="grid min-h-16 grid-cols-[1fr_auto] items-center gap-3 lg:grid-cols-[auto_1fr_auto]">
+        <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 lg:grid-cols-[auto_1fr_auto] lg:gap-3">
           <div className="relative min-w-0" ref={menuRef}>
             <Link
               href="/"
-              className="group hidden min-h-11 items-center gap-3 text-lg font-brand uppercase tracking-[0.18em] text-text transition-colors hover:text-highlight lg:flex"
+              onClick={() => closeMenu()}
+              className="group flex min-h-11 min-w-0 items-center gap-3 text-base font-brand uppercase tracking-[0.14em] text-text transition-colors hover:text-highlight lg:text-lg lg:tracking-[0.18em]"
             >
               <Image
                 src="/logos/schmat-rat.png"
                 alt=""
                 width={32}
                 height={32}
-                className="h-8 w-8 border border-border bg-surface p-0.5 transition-transform group-hover:-rotate-6"
-              />
-              {site.name}
-            </Link>
-            <button
-              ref={menuButtonRef}
-              type="button"
-              aria-expanded={isMenuOpen}
-              aria-controls={menuId}
-              aria-haspopup="dialog"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-              className="group flex min-h-11 max-w-full items-center gap-3 px-1 text-left text-base font-brand uppercase tracking-[0.14em] text-text transition-colors hover:text-highlight focus-visible:text-highlight lg:hidden"
-            >
-              <Image
-                src="/logos/schmat-rat.png"
-                alt="Schmat logo"
-                width={28}
-                height={28}
-                className="h-8 w-8 border border-border bg-surface p-0.5 transition-transform group-hover:-rotate-6"
+                className="h-8 w-8 shrink-0 border border-border bg-surface p-0.5 transition-transform group-hover:-rotate-6"
               />
               <span className="truncate">{site.name}</span>
-              <span className="sr-only">
-                {isMenuOpen ? labels.common.closeMenu : labels.common.openMenu}
-              </span>
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                className={`h-4 w-4 text-text-dim transition-transform duration-200 ${
-                  isMenuOpen ? "rotate-180 text-highlight" : ""
-                }`}
-              >
-                <path d="M6 9l6 6 6-6" fill="currentColor" />
-              </svg>
-            </button>
+            </Link>
             <div
               id={menuId}
               aria-hidden={!isMenuOpen}
@@ -266,7 +193,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
                 <nav
                   aria-label={labels.nav.explore}
                   aria-hidden={!isMenuOpen}
-                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto border border-border bg-surface/95 p-4 shadow-2xl"
+                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto border border-border bg-surface p-4 shadow-2xl"
                 >
                   <div className="flex items-center justify-between gap-4">
                     <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">
@@ -344,7 +271,7 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
           </div>
           <div
             aria-hidden="true"
-            className={`fixed inset-0 top-16 z-10 bg-bg/70 transition-opacity duration-200 lg:hidden ${
+            className={`fixed inset-0 top-16 z-10 bg-bg/85 backdrop-blur-sm transition-opacity duration-200 lg:hidden ${
               isMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
             }`}
           />
@@ -434,6 +361,36 @@ export function SiteHeader({ locale, labels }: SiteHeaderProps) {
               ) : null}
             </div>
           </div>
+          <button
+            ref={menuButtonRef}
+            type="button"
+            aria-expanded={isMenuOpen}
+            aria-controls={menuId}
+            aria-haspopup="dialog"
+            onClick={() => setIsMenuOpen((prev) => !prev)}
+            className={`flex h-11 w-11 items-center justify-center border bg-surface/60 text-text transition-colors hover:border-highlight hover:text-highlight focus-visible:text-highlight lg:hidden ${
+              isMenuOpen ? "border-highlight text-highlight" : "border-border"
+            }`}
+          >
+            <span className="sr-only">
+              {isMenuOpen ? labels.common.closeMenu : labels.common.openMenu}
+            </span>
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+            >
+              {isMenuOpen ? (
+                <path d="M6 6l12 12M18 6L6 18" />
+              ) : (
+                <path d="M4 7h16M4 12h16M4 17h16" />
+              )}
+            </svg>
+          </button>
         </div>
       </Container>
     </header>

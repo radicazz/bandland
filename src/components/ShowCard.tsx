@@ -102,7 +102,11 @@ export function ShowCard({
               <p className="break-words text-sm font-semibold text-text">{show.venue}</p>
               <p className="break-words text-sm text-text-muted">{show.city}</p>
             </div>
-            <p className="break-words text-sm tabular-nums text-text-dim sm:text-right">
+            <p
+              className={`break-words text-sm font-medium tabular-nums sm:text-right ${
+                isPast ? "text-text-muted" : "text-text"
+              }`}
+            >
               {formattedDate}
             </p>
           </div>

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Grenze_Gotisch } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -26,6 +26,10 @@ const bandlandGothic = Grenze_Gotisch({
   weight: "700",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  themeColor: "#060606",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const { labels, locale } = await getTranslationsFromCookies();
