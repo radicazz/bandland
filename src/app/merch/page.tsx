@@ -23,9 +23,9 @@ export default async function MerchPage() {
         description={labels.merch.introPrefix + labels.merch.introSuffix}
       />
       {merchItems.length === 0 ? (
-        <div className="punk-panel mt-10 p-6 text-sm text-text-muted">{labels.merch.empty}</div>
+        <div className="panel mt-10 p-6 text-base text-text-muted">{labels.merch.empty}</div>
       ) : (
-        <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {merchItems.map((item) => (
             <li key={item.id} className="min-w-0">
               <MerchCard

@@ -58,3 +58,19 @@ export function formatShowDatePretty(value: string, locale: Locale) {
 
   return `${dateLabel} ${CONNECTORS[locale]} ${timeLabel}`;
 }
+
+export function getShowDateBlock(value: string, locale: Locale) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  const format = (options: Intl.DateTimeFormatOptions) =>
+    new Intl.DateTimeFormat(LOCALE_TAGS[locale], { timeZone: SHOW_TIME_ZONE, ...options }).format(
+      parsed,
+    );
+
+  return {
+    day: format({ day: "numeric" }),
+    month: format({ month: "short" }).replace(/\.$/, ""),
+    year: format({ year: "numeric" }),
+  };
+}

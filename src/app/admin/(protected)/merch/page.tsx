@@ -17,7 +17,7 @@ export default async function AdminMerchPage({
   const readOnly = isReadOnlyDeployment();
 
   return (
-    <section className="punk-panel p-4 sm:p-6">
+    <section className="panel p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-text">Merch</h2>
@@ -69,7 +69,7 @@ export default async function AdminMerchPage({
                 ) : null}
               </div>
               <a
-                className="mt-4 inline-flex break-all text-xs uppercase tracking-[0.3em] text-highlight"
+                className="mt-4 inline-flex break-all text-xs text-highlight"
                 href={item.href}
                 target="_blank"
                 rel="noreferrer"

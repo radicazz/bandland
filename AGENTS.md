@@ -8,8 +8,8 @@ Located in `src/app/globals.css`:
 
 ```css
 --bg: #060606 /* near-black background */ --surface: #0f0f10 /* elevated panels */
-  --surface-2: #1a1b1d /* cards */ --border: #2a2b2e /* dividers */ --text: #f2f2f2
-  /* primary text */ --text-muted: #b7b7b7 /* secondary text */ --text-dim: #909090 /* metadata */
+  --surface-2: #1a1b1d /* cards */ --border: #2e2f33 /* dividers */ --text: #f2f2f2
+  /* primary text */ --text-muted: #c2c2c2 /* secondary text */ --text-dim: #a1a1a1 /* metadata */
   --highlight: #e36b6b /* muted red accent */;
 ```
 
@@ -22,7 +22,8 @@ Rules:
 
 ## Typography
 
-- Sans: Geist (variable) for headings & body
+- Sans: Geist (variable) for headings & body; sentence case, no wide-tracked all-caps labels
+- Brand: Grenze Gotisch (blackletter) for the wordmark only — never for headings or body
 - Mono: Geist Mono for code/technical content
 - Use tabular numbers for dates/times/prices
 

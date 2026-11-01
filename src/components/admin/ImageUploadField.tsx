@@ -44,9 +44,7 @@ export function ImageUploadField({
 
   return (
     <fieldset className="border border-border/70 bg-bg/30 p-4 sm:p-5">
-      <legend className="px-1 text-xs font-bold uppercase tracking-[0.24em] text-text-dim">
-        {label}
-      </legend>
+      <legend className="px-1 text-xs font-semibold text-text-muted">{label}</legend>
       <label
         htmlFor={inputId}
         className="mt-3 flex min-h-32 cursor-pointer flex-col items-center justify-center border border-dashed border-border bg-surface/50 px-5 py-6 text-center transition-colors hover:border-highlight focus-within:border-highlight"
@@ -113,7 +111,7 @@ export function ImageUploadField({
           </p>
           <button
             type="button"
-            className="min-h-10 border border-border px-3 text-xs font-bold uppercase tracking-[0.18em] text-text-muted hover:border-highlight hover:text-highlight"
+            className="min-h-10 border border-border px-3 text-xs font-bold text-text-muted hover:border-highlight hover:text-highlight"
             onClick={() =>
               setRemoveCurrent((current) => {
                 const nextValue = !current;

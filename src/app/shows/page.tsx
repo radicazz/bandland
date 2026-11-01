@@ -45,16 +45,16 @@ function ShowListSection({
   );
   return (
     <section aria-labelledby={headingId}>
-      <h2 id={headingId} className="section-kicker">
+      <h2 id={headingId} className="text-2xl font-bold text-text">
         {heading}
       </h2>
-      <ul className="mt-4 grid gap-4 sm:gap-5">{visible.map(renderShow)}</ul>
+      <ul className="mt-5 grid gap-4">{visible.map(renderShow)}</ul>
       {hidden.length > 0 ? (
         <details className="group mt-4">
           <summary className="btn-secondary w-full cursor-pointer list-none sm:w-auto group-open:hidden [&::-webkit-details-marker]:hidden">
             {labels.showOlder.replace("{count}", String(hidden.length))}
           </summary>
-          <ul className="grid gap-4 sm:gap-5">{hidden.map(renderShow)}</ul>
+          <ul className="grid gap-4">{hidden.map(renderShow)}</ul>
         </details>
       ) : null}
     </section>
@@ -84,11 +84,9 @@ export default async function ShowsPage() {
         description={labels.shows.introPrefix + labels.shows.introSuffix}
       />
       {hasSplitPricing ? (
-        <div className="mt-7 grid gap-2 border-l-2 border-highlight bg-surface/70 p-4 text-sm text-text-muted sm:max-w-2xl">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-text-dim">
-            {labels.shows.ticketPriceGuideTitle}
-          </p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div className="mt-8 grid gap-3 rounded-xl border border-border bg-surface p-5 text-base text-text-muted sm:max-w-2xl">
+          <p className="font-semibold text-text">{labels.shows.ticketPriceGuideTitle}</p>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <span className="inline-flex items-center gap-2">
               <span className="text-highlight" aria-hidden="true">
                 <OnlinePriceIcon />
@@ -102,14 +100,14 @@ export default async function ShowsPage() {
               <span>{labels.shows.ticketPriceGuideDoor}</span>
             </span>
           </div>
-          <p className="text-xs text-text-dim">{labels.shows.ticketPriceGuideFallbackNote}</p>
+          <p className="text-sm text-text-dim">{labels.shows.ticketPriceGuideFallbackNote}</p>
         </div>
       ) : null}
 
       {upcoming.length === 0 && past.length === 0 ? (
-        <div className="punk-panel mt-10 p-6 text-sm text-text-muted">{labels.shows.empty}</div>
+        <div className="panel mt-10 p-6 text-base text-text-muted">{labels.shows.empty}</div>
       ) : (
-        <div className="mt-10 grid gap-8">
+        <div className="mt-12 grid gap-12">
           {upcoming.length > 0 ? (
             <ShowListSection
               heading={labels.shows.upcomingTitle}

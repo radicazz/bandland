@@ -1,7 +1,7 @@
 import { ContentImage } from "@/components/ContentImage";
 import type { Locale, Translations } from "@/i18n/translations";
 import { buildShowCalendar } from "@/lib/calendar";
-import { formatShowDatePretty } from "@/lib/formatters";
+import { formatShowDatePretty, getShowDateBlock } from "@/lib/formatters";
 
 export type ShowCardDetails = {
   date: string;
@@ -70,69 +70,53 @@ export function ShowCard({
   const calendar = !isPast && !previewOnly ? buildShowCalendar(show) : null;
   const hasSplitPrices = Boolean(show.priceOnline || show.priceDoor);
   const formattedDate = formatShowDatePretty(show.date, locale);
+  const dateBlock = getShowDateBlock(show.date, locale);
 
   return (
     <article
-      className={`border-l-2 bg-surface/70 p-4 transition-colors sm:p-6 ${
-        isPast
-          ? "border-dashed border-border/50 hover:border-border"
-          : isNext
-            ? "border-highlight bg-surface"
-            : "border-border hover:border-highlight"
+      className={`rounded-2xl border p-5 sm:p-6 ${
+        isNext ? "border-highlight/70 bg-surface-2" : "border-border bg-surface"
       }`}
     >
-      <div
-        className={`grid gap-4 md:items-start ${
-          show.imageUrl ? "md:grid-cols-[160px_minmax(0,1fr)]" : ""
-        }`}
-      >
-        {show.imageUrl ? (
-          <div className="mx-auto aspect-[2/3] w-full max-w-64 overflow-hidden border border-border bg-bg/50 md:mx-0 md:max-w-none">
-            <ContentImage
-              src={show.imageUrl}
-              alt={`${show.venue} show poster`}
-              className="h-full w-full object-contain"
-              fallbackClassName="flex h-full w-full items-center justify-center bg-surface/50"
-              fallbackLabel={show.venue}
-              loading="lazy"
-              decoding="async"
-            />
+      <div className="flex gap-4 sm:gap-6">
+        {dateBlock ? (
+          <div
+            aria-hidden="true"
+            className={`flex h-20 w-16 shrink-0 flex-col items-center justify-center rounded-xl border text-center sm:h-24 sm:w-20 ${
+              isPast ? "border-border text-text-muted" : "border-border bg-bg text-text"
+            }`}
+          >
+            <span className="text-sm font-semibold uppercase leading-none text-highlight">
+              {dateBlock.month}
+            </span>
+            <span className="mt-1 text-3xl font-bold tabular-nums leading-none sm:text-4xl">
+              {dateBlock.day}
+            </span>
+            <span className="mt-1 text-xs tabular-nums leading-none text-text-dim">
+              {dateBlock.year}
+            </span>
           </div>
         ) : null}
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           {isNext ? (
-            <p className="mb-3 text-xs font-bold uppercase tracking-[0.22em] text-highlight">
-              {labels.nextShowBadge}
-            </p>
+            <p className="mb-1 text-sm font-semibold text-highlight">{labels.nextShowBadge}</p>
           ) : null}
           {isPast ? (
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
-              {labels.pastShow}
-            </p>
+            <p className="mb-1 text-sm font-semibold text-text-dim">{labels.pastShow}</p>
           ) : null}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
-            <div className="min-w-0">
-              <p className="break-words text-sm font-semibold text-text">{show.venue}</p>
-              <p className="break-words text-sm text-text-muted">{show.city}</p>
-            </div>
-            <p
-              className={`break-words text-sm font-medium tabular-nums sm:text-right ${
-                isPast ? "text-text-muted" : "text-text"
-              }`}
-            >
-              {formattedDate}
-            </p>
-          </div>
+          <p className="break-words text-xl font-bold leading-snug text-text">{show.venue}</p>
+          <p className="break-words text-base text-text-muted">{show.city}</p>
+          <p className="mt-2 break-words text-base tabular-nums text-text">{formattedDate}</p>
           {show.timeFrame ? (
-            <p className="mt-2 break-words text-sm text-text-muted">
+            <p className="mt-1 break-words text-base text-text-muted">
               {labels.timeFrameLabel}: <span className="text-text">{show.timeFrame}</span>
             </p>
           ) : null}
           {hasSplitPrices ? (
-            <div className="mt-2 grid gap-2 text-sm">
+            <div className="mt-3 grid gap-1.5 text-base">
               {show.priceOnline ? (
                 <p className="inline-flex items-start gap-2 break-words text-text">
-                  <span className="mt-0.5 text-highlight" aria-hidden="true">
+                  <span className="mt-1 text-highlight" aria-hidden="true">
                     <OnlinePriceIcon />
                   </span>
                   <span>
@@ -143,7 +127,7 @@ export function ShowCard({
               ) : null}
               {show.priceDoor ? (
                 <p className="inline-flex items-start gap-2 break-words text-text">
-                  <span className="mt-0.5 text-highlight" aria-hidden="true">
+                  <span className="mt-1 text-highlight" aria-hidden="true">
                     <DoorPriceIcon />
                   </span>
                   <span>
@@ -154,47 +138,60 @@ export function ShowCard({
               ) : null}
             </div>
           ) : show.price ? (
-            <p className="mt-2 break-words text-sm tabular-nums text-text">{show.price}</p>
-          ) : null}
-          {show.ticketUrl || calendar ? (
-            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-              {show.ticketUrl ? (
-                previewOnly ? (
-                  <span
-                    className="btn-primary pointer-events-none w-full sm:w-auto"
-                    aria-label={`${labels.tickets} preview`}
-                  >
-                    {labels.tickets}
-                  </span>
-                ) : (
-                  <a
-                    className="btn-primary w-full sm:w-auto"
-                    href={show.ticketUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label={`${labels.tickets}: ${show.venue} (${newTabLabel})`}
-                  >
-                    {labels.tickets}
-                    <span aria-hidden className="ml-2">
-                      ↗
-                    </span>
-                  </a>
-                )
-              ) : null}
-              {calendar ? (
-                <a
-                  className="btn-secondary w-full sm:w-auto"
-                  href={calendar.href}
-                  download={calendar.filename}
-                  aria-label={`${labels.addToCalendar}: ${show.venue}`}
-                >
-                  {labels.addToCalendar}
-                </a>
-              ) : null}
-            </div>
+            <p className="mt-3 break-words text-base tabular-nums text-text">{show.price}</p>
           ) : null}
         </div>
       </div>
+
+      {show.imageUrl ? (
+        <div className="mx-auto mt-5 aspect-[2/3] w-full max-w-64 overflow-hidden rounded-xl border border-border bg-bg sm:mx-0">
+          <ContentImage
+            src={show.imageUrl}
+            alt={`${show.venue} show poster`}
+            className="h-full w-full object-contain"
+            fallbackClassName="flex h-full w-full items-center justify-center bg-surface"
+            fallbackLabel={show.venue}
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+      ) : null}
+
+      {show.ticketUrl || calendar ? (
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          {show.ticketUrl ? (
+            previewOnly ? (
+              <span
+                className="btn-primary pointer-events-none w-full sm:w-auto"
+                aria-label={`${labels.tickets} preview`}
+              >
+                {labels.tickets}
+              </span>
+            ) : (
+              <a
+                className="btn-primary w-full sm:w-auto"
+                href={show.ticketUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${labels.tickets}: ${show.venue} (${newTabLabel})`}
+              >
+                {labels.tickets}
+                <span aria-hidden>↗</span>
+              </a>
+            )
+          ) : null}
+          {calendar ? (
+            <a
+              className="btn-secondary w-full sm:w-auto"
+              href={calendar.href}
+              download={calendar.filename}
+              aria-label={`${labels.addToCalendar}: ${show.venue}`}
+            >
+              {labels.addToCalendar}
+            </a>
+          ) : null}
+        </div>
+      ) : null}
     </article>
   );
 }

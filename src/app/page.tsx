@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { Container } from "@/components/Container";
 import { HeroSlideshow } from "@/components/HeroSlideshow";
 import { HomeFeatures } from "@/components/HomeFeatures";
@@ -9,21 +11,39 @@ export default async function Home() {
   const { labels, locale } = await getTranslationsFromCookies();
 
   return (
-    <section className="relative -mt-16 overflow-hidden border-b border-border/60 pt-16">
-      <HeroSlideshow slides={[...slideshowImages]} labels={labels.home.slideshow} />
+    <>
+      <section className="relative -mt-16 flex min-h-[78svh] items-end overflow-hidden border-b border-border pt-16 sm:min-h-[70svh]">
+        <HeroSlideshow slides={[...slideshowImages]} labels={labels.home.slideshow} />
 
-      <Container className="relative py-12 sm:py-16 lg:py-20">
-        <div className="mb-8 max-w-4xl sm:mb-12 lg:mb-16">
-          <p className="section-kicker">{labels.home.pinned}</p>
-          <h1 className="display-title mt-6 text-[clamp(3.25rem,19vw,10rem)]">{site.name}</h1>
-          <div className="mt-6 flex max-w-xl items-start gap-4 border-l-2 border-highlight pl-4 sm:mt-8">
-            <p className="text-sm font-medium leading-6 text-text-muted sm:text-base">
-              {labels.meta.description}
-            </p>
+        <Container className="relative pb-10 pt-32 sm:pb-14 lg:pb-20">
+          <h1 className="font-brand text-[clamp(4rem,19vw,9.5rem)] leading-[0.9] text-text">
+            {site.name}
+          </h1>
+          <p className="mt-4 max-w-xl text-lg leading-8 text-text sm:text-xl">
+            {labels.meta.description}
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a
+              href={site.latestRelease.href}
+              target="_blank"
+              rel="noreferrer"
+              className="btn-primary btn-primary-lg"
+            >
+              {labels.home.latestReleaseCta}
+              <span aria-hidden>↗</span>
+            </a>
+            <Link href="/shows" className="btn-secondary btn-primary-lg">
+              {labels.home.allShowsCta}
+            </Link>
           </div>
-        </div>
-        <HomeFeatures labels={labels} locale={locale} />
-      </Container>
-    </section>
+        </Container>
+      </section>
+
+      <section className="border-b border-border">
+        <Container className="py-12 sm:py-16">
+          <HomeFeatures labels={labels} locale={locale} />
+        </Container>
+      </section>
+    </>
   );
 }

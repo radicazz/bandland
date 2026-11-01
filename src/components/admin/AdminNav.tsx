@@ -16,13 +16,11 @@ export function AdminNav() {
   ] as const;
 
   return (
-    <div className="punk-panel p-4 sm:p-6">
+    <div className="panel p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.4em] text-text-dim">Admin</p>
-          <h1 className="mt-2 font-brand text-3xl uppercase tracking-[0.08em] text-text">
-            Control Room
-          </h1>
+          <p className="text-sm text-text-dim">Admin</p>
+          <h1 className="mt-2 text-3xl font-bold text-text">Control Room</h1>
         </div>
         <button
           type="button"
@@ -42,7 +40,7 @@ export function AdminNav() {
                 <Link
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex min-h-11 min-w-max items-center border-l-2 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.18em] transition-colors ${
+                  className={`inline-flex min-h-11 min-w-max items-center border-l-2 px-4 py-2 text-sm font-bold transition-colors ${
                     isActive
                       ? "border-highlight bg-highlight/10 text-highlight"
                       : "border-border bg-bg/40 text-text-muted hover:border-highlight hover:text-text"

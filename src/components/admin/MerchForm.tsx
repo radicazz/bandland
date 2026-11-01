@@ -51,7 +51,7 @@ export function MerchForm({
 
       {initialValues?.id ? <input type="hidden" name="id" value={initialValues.id} /> : null}
 
-      <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+      <label className="text-sm font-medium text-text-muted">
         Name
         <input
           name="name"
@@ -64,7 +64,7 @@ export function MerchForm({
         <FieldError message={state.fieldErrors?.name} />
       </label>
 
-      <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+      <label className="text-sm font-medium text-text-muted">
         Description (optional)
         <textarea
           name="description"
@@ -77,7 +77,7 @@ export function MerchForm({
         <FieldError message={state.fieldErrors?.description} />
       </label>
 
-      <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+      <label className="text-sm font-medium text-text-muted">
         Price
         <input
           name="price"
@@ -90,7 +90,7 @@ export function MerchForm({
         <FieldError message={state.fieldErrors?.price} />
       </label>
 
-      <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+      <label className="text-sm font-medium text-text-muted">
         Link URL
         <input
           name="href"
@@ -106,7 +106,7 @@ export function MerchForm({
         <FieldError message={state.fieldErrors?.href} />
       </label>
 
-      <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+      <label className="text-sm font-medium text-text-muted">
         Label (optional)
         <select
           name="badge"

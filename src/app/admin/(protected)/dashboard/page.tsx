@@ -36,7 +36,7 @@ export default async function AdminDashboardPage() {
               href={action.href}
               className="group border-l-2 border-border bg-bg/60 p-4 transition-colors hover:border-highlight hover:bg-highlight/5 sm:p-5"
             >
-              <span className="font-mono text-[10px] text-text-dim">0{index + 1}</span>
+              <span className="font-mono text-sm text-text-dim">0{index + 1}</span>
               <span className="mt-3 block text-base font-semibold text-text group-hover:text-highlight">
                 {action.label}
               </span>
@@ -51,16 +51,14 @@ export default async function AdminDashboardPage() {
           { label: "Shows", count: shows.length, href: "/admin/shows" },
           { label: "Merch", count: merch.length, href: "/admin/merch" },
         ].map((item) => (
-          <Link key={item.label} href={item.href} className="punk-panel p-5 sm:p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.24em] text-text-dim">
-              {item.label}
-            </p>
+          <Link key={item.label} href={item.href} className="panel p-5 sm:p-6">
+            <p className="text-xs font-semibold text-text-muted">{item.label}</p>
             <p className="mt-3 font-mono text-4xl tabular-nums text-highlight">{item.count}</p>
           </Link>
         ))}
       </section>
 
-      <section className="punk-panel p-4 sm:p-6">
+      <section className="panel p-4 sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold text-text">Recent changes</h2>
         </div>

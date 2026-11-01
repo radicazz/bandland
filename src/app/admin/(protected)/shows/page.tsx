@@ -24,7 +24,7 @@ export default async function AdminShowsPage({
   const formatShowDate = (value: string) => formatShowDatePretty(value, locale);
 
   return (
-    <section className="punk-panel p-4 sm:p-6">
+    <section className="panel p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-semibold text-text">Shows</h2>
@@ -63,7 +63,7 @@ export default async function AdminShowsPage({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span
-                        className={`inline-flex min-h-7 items-center rounded-full border px-2.5 text-[10px] font-semibold uppercase tracking-[0.22em] ${
+                        className={`inline-flex min-h-7 items-center rounded-full border px-2.5 text-sm font-semibold ${
                           hasHappened
                             ? "border-border/70 bg-surface/50 text-text-muted"
                             : "border-highlight/40 bg-highlight/10 text-highlight"
@@ -71,7 +71,7 @@ export default async function AdminShowsPage({
                       >
                         {hasHappened ? "Happened" : "Upcoming"}
                       </span>
-                      <p className="break-words text-xs uppercase tracking-[0.3em] text-text-dim">
+                      <p className="break-words text-xs text-text-dim">
                         {formatShowDate(show.date)}
                       </p>
                     </div>
@@ -122,7 +122,7 @@ export default async function AdminShowsPage({
                 </div>
                 {show.ticketUrl ? (
                   <a
-                    className="mt-4 inline-flex break-all text-xs uppercase tracking-[0.3em] text-highlight"
+                    className="mt-4 inline-flex break-all text-xs text-highlight"
                     href={show.ticketUrl}
                     target="_blank"
                     rel="noreferrer"

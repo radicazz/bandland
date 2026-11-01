@@ -16,56 +16,25 @@ export async function HomeFeatures({ labels, locale }: HomeFeaturesProps) {
   const nextShow = upcoming[0];
 
   return (
-    <div className="grid w-full gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(18rem,0.75fr)]">
-      <section className="punk-panel p-4 sm:p-6 lg:p-7" aria-labelledby="latest-release">
-        <p className="section-kicker">{labels.home.releaseLabel}</p>
-        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 id="latest-release" className="display-title text-3xl sm:text-4xl">
-              {site.latestRelease.title}
-            </h2>
-            <p className="mt-3 text-sm text-text-muted">{labels.home.latestReleaseDescription}</p>
-          </div>
-          <a
-            href={site.latestRelease.href}
-            target="_blank"
-            rel="noreferrer"
-            className="btn-primary shrink-0"
-          >
-            {labels.home.latestReleaseCta}
-          </a>
-        </div>
-        <div className="mt-6 overflow-hidden border border-border bg-bg/70">
-          <iframe
-            title={`${labels.home.latestReleaseTitle}: ${site.latestRelease.title} — Spotify`}
-            src={site.latestRelease.spotifyEmbedUrl}
-            width="100%"
-            height="152"
-            loading="lazy"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            className="block w-full"
-          />
-        </div>
-      </section>
-
+    <div className="grid w-full gap-6 lg:grid-cols-2">
       <section
-        className="punk-panel order-first flex flex-col p-4 sm:p-6 lg:order-none"
+        className="panel order-first flex flex-col p-6 sm:p-8 lg:order-none"
         aria-labelledby="next-show"
       >
         <p className="section-kicker">{labels.home.nextShowLabel}</p>
         {nextShow ? (
           <>
-            <h2 id="next-show" className="display-title mt-5 text-3xl sm:text-4xl">
+            <h2 id="next-show" className="display-title mt-3 text-3xl sm:text-4xl">
               {nextShow.venue}
             </h2>
-            <p className="mt-3 text-sm text-text-muted">{nextShow.city}</p>
-            <p className="mt-5 border-l border-highlight pl-3 font-mono text-sm tabular-nums text-text">
+            <p className="mt-2 text-lg text-text-muted">{nextShow.city}</p>
+            <p className="mt-6 text-xl font-semibold tabular-nums text-text">
               {formatShowDatePretty(nextShow.date, locale)}
             </p>
             {nextShow.timeFrame ? (
-              <p className="mt-2 text-sm text-text-muted">{nextShow.timeFrame}</p>
+              <p className="mt-1 text-base text-text-muted">{nextShow.timeFrame}</p>
             ) : null}
-            <div className="mt-auto grid gap-2 pt-6 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <div className="mt-auto grid gap-3 pt-8 sm:grid-cols-2">
               {nextShow.ticketUrl ? (
                 <a
                   href={nextShow.ticketUrl}
@@ -83,35 +52,45 @@ export async function HomeFeatures({ labels, locale }: HomeFeaturesProps) {
           </>
         ) : (
           <>
-            <h2 id="next-show" className="display-title mt-5 text-3xl sm:text-4xl">
+            <h2 id="next-show" className="display-title mt-3 text-3xl sm:text-4xl">
               {labels.home.nextShowFallbackTitle}
             </h2>
-            <p className="mt-4 text-sm leading-6 text-text-muted">
+            <p className="mt-4 text-lg leading-8 text-text-muted">
               {labels.home.nextShowFallbackDescription}
             </p>
-            <Link href="/shows" className="btn-primary mt-6">
+            <Link href="/shows" className="btn-primary mt-8 self-start">
               {labels.home.allShowsCta}
             </Link>
           </>
         )}
       </section>
 
-      <nav className="grid gap-2 sm:grid-cols-2 lg:col-span-2" aria-label={labels.nav.explore}>
-        <Link
-          href="/shows"
-          className="menu-tile py-4 font-bold uppercase tracking-[0.18em] text-text"
-        >
-          {labels.nav.shows}{" "}
-          <span aria-hidden className="float-right text-highlight">
-            →
-          </span>
-        </Link>
+      <section className="panel p-6 sm:p-8" aria-labelledby="latest-release">
+        <p className="section-kicker">{labels.home.releaseLabel}</p>
+        <h2 id="latest-release" className="display-title mt-3 text-3xl sm:text-4xl">
+          {site.latestRelease.title}
+        </h2>
+        <p className="mt-2 text-lg text-text-muted">{labels.home.latestReleaseDescription}</p>
+        <div className="mt-6 overflow-hidden rounded-xl bg-bg">
+          <iframe
+            title={`${labels.home.latestReleaseTitle}: ${site.latestRelease.title} — Spotify`}
+            src={site.latestRelease.spotifyEmbedUrl}
+            width="100%"
+            height="152"
+            loading="lazy"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            className="block w-full"
+          />
+        </div>
+      </section>
+
+      <nav aria-label={labels.nav.explore} className="lg:col-span-2">
         <Link
           href="/merch"
-          className="menu-tile py-4 font-bold uppercase tracking-[0.18em] text-text"
+          className="card-interactive panel flex min-h-16 items-center justify-between gap-4 px-6 py-5 text-xl font-semibold text-text"
         >
-          {labels.nav.merch}{" "}
-          <span aria-hidden className="float-right text-highlight">
+          {labels.nav.merch}
+          <span aria-hidden className="text-highlight">
             →
           </span>
         </Link>

@@ -22,7 +22,7 @@ export function PasswordField({
 
   return (
     <div>
-      <label htmlFor={inputId} className="block text-xs uppercase tracking-[0.3em] text-text-dim">
+      <label htmlFor={inputId} className="block text-xs text-text-dim">
         {label}
       </label>
       <div className="mt-2 flex flex-col gap-2 sm:flex-row">
@@ -41,7 +41,7 @@ export function PasswordField({
           aria-pressed={isVisible}
           aria-label={isVisible ? "Hide password" : "Show password"}
           onClick={() => setIsVisible((current) => !current)}
-          className="min-h-11 w-full rounded-xl border border-border/70 bg-surface/60 px-4 text-xs font-semibold uppercase tracking-[0.2em] text-text-muted transition-colors hover:border-highlight/60 hover:text-text sm:min-w-[5.5rem] sm:w-auto"
+          className="min-h-11 w-full rounded-xl border border-border/70 bg-surface/60 px-4 text-xs font-semibold text-text-muted transition-colors hover:border-highlight/60 hover:text-text sm:min-w-[5.5rem] sm:w-auto"
         >
           {isVisible ? "Hide" : "Show"}
         </button>

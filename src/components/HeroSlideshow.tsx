@@ -66,11 +66,8 @@ export function HeroSlideshow({ slides, intervalSeconds = 6, labels }: HeroSlide
             />
           </div>
         ))}
-        <div className="absolute inset-0 bg-bg/45" />
-        <div className="absolute inset-0 bg-highlight/10 mix-blend-screen" />
-        <div className="absolute inset-0 bg-gradient-to-b from-bg/20 via-transparent to-bg" />
-        <div className="absolute inset-0 hero-vignette" />
-        <div className="absolute inset-0 hero-grain" />
+        <div className="absolute inset-0 bg-bg/35" />
+        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/70 to-transparent" />
       </div>
       {slides.length > 1 && !reduceMotion ? (
         <div className="absolute inset-x-0 top-[4.75rem] z-10 mx-auto flex max-w-6xl justify-end px-4 sm:px-6">
@@ -79,7 +76,7 @@ export function HeroSlideshow({ slides, intervalSeconds = 6, labels }: HeroSlide
             onClick={() => setIsPaused((paused) => !paused)}
             aria-label={isPaused ? labels.resume : labels.pause}
             title={isPaused ? labels.resume : labels.pause}
-            className="pointer-events-auto flex h-11 w-11 items-center justify-center border border-border bg-bg/80 text-text-muted backdrop-blur transition-colors hover:border-highlight hover:text-highlight"
+            className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-bg/80 text-text backdrop-blur transition-colors hover:border-highlight hover:text-highlight"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4" fill="currentColor">
               {isPaused ? <path d="M8 5v14l11-7z" /> : <path d="M7 5h4v14H7zM13 5h4v14h-4z" />}

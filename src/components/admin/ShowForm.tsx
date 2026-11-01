@@ -172,11 +172,9 @@ export function ShowForm({
 
       <div className="grid min-w-0 gap-5 sm:gap-6">
         <fieldset className="grid gap-4 rounded-2xl border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
-          <legend className="mb-2 px-1 text-xs uppercase tracking-[0.3em] text-text-dim">
-            Show Date & Time
-          </legend>
+          <legend className="mb-2 px-1 text-xs text-text-dim">Show Date & Time</legend>
 
-          <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+          <label className="text-sm font-medium text-text-muted">
             Date
             <input
               type="date"
@@ -188,7 +186,7 @@ export function ShowForm({
             />
           </label>
 
-          <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+          <label className="text-sm font-medium text-text-muted">
             Time
             <input
               type="time"
@@ -210,9 +208,7 @@ export function ShowForm({
         </fieldset>
 
         <fieldset className="rounded-2xl border border-border/60 bg-bg/30 p-4 sm:p-5">
-          <legend className="px-1 text-xs uppercase tracking-[0.3em] text-text-dim">
-            Show Status
-          </legend>
+          <legend className="px-1 text-xs text-text-dim">Show Status</legend>
           <div className="mt-3 flex items-start gap-3">
             <input
               id={hasHappenedId}
@@ -234,7 +230,7 @@ export function ShowForm({
           </div>
         </fieldset>
 
-        <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+        <label className="text-sm font-medium text-text-muted">
           Venue
           <input
             name="venue"
@@ -247,7 +243,7 @@ export function ShowForm({
           <FieldError message={state.fieldErrors?.venue} />
         </label>
 
-        <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+        <label className="text-sm font-medium text-text-muted">
           City
           <input
             name="city"
@@ -260,7 +256,7 @@ export function ShowForm({
           <FieldError message={state.fieldErrors?.city} />
         </label>
 
-        <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+        <label className="text-sm font-medium text-text-muted">
           Time Frame (optional)
           <input
             name="timeFrame"
@@ -276,11 +272,9 @@ export function ShowForm({
         </label>
 
         <fieldset className="grid gap-4 rounded-2xl border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
-          <legend className="px-1 text-xs uppercase tracking-[0.3em] text-text-dim">
-            Ticket Pricing
-          </legend>
+          <legend className="px-1 text-xs text-text-dim">Ticket Pricing</legend>
 
-          <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+          <label className="text-sm font-medium text-text-muted">
             Online Price (optional)
             <input
               name="priceOnline"
@@ -292,7 +286,7 @@ export function ShowForm({
             <FieldError message={state.fieldErrors?.priceOnline} />
           </label>
 
-          <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+          <label className="text-sm font-medium text-text-muted">
             Door Price (optional)
             <input
               name="priceDoor"
@@ -310,7 +304,7 @@ export function ShowForm({
           </p>
         </fieldset>
 
-        <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+        <label className="text-sm font-medium text-text-muted">
           General Price (optional fallback)
           <input
             name="price"
@@ -322,7 +316,7 @@ export function ShowForm({
           <FieldError message={state.fieldErrors?.price} />
         </label>
 
-        <label className="text-xs uppercase tracking-[0.3em] text-text-dim">
+        <label className="text-sm font-medium text-text-muted">
           Ticket URL (optional)
           <input
             name="ticketUrl"
@@ -350,9 +344,7 @@ export function ShowForm({
         aria-labelledby={previewHeadingId}
         className="min-w-0 border border-border/70 bg-bg/30 p-4 sm:p-5 lg:sticky lg:top-20"
       >
-        <p className="text-[10px] font-bold uppercase tracking-[0.35em] text-highlight">
-          Live preview
-        </p>
+        <p className="text-sm font-bold text-highlight">Live preview</p>
         <h3 id={previewHeadingId} className="mt-2 text-base font-semibold text-text">
           Public show card
         </h3>

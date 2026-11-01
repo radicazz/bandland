@@ -62,12 +62,12 @@ export function SocialLinks({ className = "" }: { className?: string }) {
           <li key={social.label}>
             <a
               href={social.href ?? undefined}
-              className="flex h-11 w-11 items-center justify-center border border-border bg-surface/30 text-text transition-colors hover:border-highlight hover:text-highlight focus-visible:text-highlight"
+              className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface text-text transition-colors hover:border-highlight hover:text-highlight focus-visible:text-highlight"
               target="_blank"
               rel="noreferrer"
               aria-label={social.label}
             >
-              <Icon className="h-4 w-4" aria-hidden="true" />
+              <Icon className="h-5 w-5" aria-hidden="true" />
             </a>
           </li>
         );
