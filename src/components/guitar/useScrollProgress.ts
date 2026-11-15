@@ -54,11 +54,13 @@ function measure(route: readonly StopId[]): number {
 }
 
 /** Current scroll position along `route`, in index units, read from `[data-stop]` elements. */
-export function useScrollProgress(route: readonly StopId[]): number {
+export function useScrollProgress(route: readonly StopId[], enabled = true): number {
   const [position, setPosition] = useState(0);
   const routeKey = route.join(",");
 
   useEffect(() => {
+    // No canvas to drive: skip listeners, rAF and layout reads entirely.
+    if (!enabled) return;
     const stops = routeKey.split(",") as StopId[];
     let frame = 0;
     const schedule = () => {
@@ -76,7 +78,7 @@ export function useScrollProgress(route: readonly StopId[]): number {
       window.removeEventListener("resize", schedule);
       if (frame !== 0) window.cancelAnimationFrame(frame);
     };
-  }, [routeKey]);
+  }, [routeKey, enabled]);
 
   return position;
 }

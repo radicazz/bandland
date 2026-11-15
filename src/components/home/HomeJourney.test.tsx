@@ -197,6 +197,31 @@ describe("HomeJourney", () => {
     expect(getMerchItemsMock).toHaveBeenCalledTimes(1);
   });
 
+  it("renders without the body section when merch storage rejects", async () => {
+    getMerchItemsMock.mockRejectedValue(new Error("blob down"));
+    const { container } = await renderJourney();
+    expect(stops(container)).toEqual(["hero", "release", "neck", "outro"]);
+  });
+
+  it("degrades to the no-shows fallback when show storage rejects", async () => {
+    getShowsMock.mockRejectedValue(new Error("blob down"));
+    const { container } = await renderJourney();
+    expect(stops(container)).toContain("neck");
+    expect(screen.getByText(labels.home.nextShowFallbackTitle)).toBeInTheDocument();
+  });
+
+  it("keeps focus targets clear of the pinned mobile stage with scroll margins", async () => {
+    getMerchItemsMock.mockResolvedValue([createMerch({})]);
+    const { container } = await renderJourney();
+    const section = container.querySelector("[data-stop='release']");
+    expect(section?.className).toContain("scroll-mt-[calc(4rem+45svh");
+    expect(section?.className).toContain("md:scroll-mt-20");
+    const column = section?.parentElement;
+    expect(column?.className).toContain("[&_a]:scroll-mt-[calc(4rem+45svh");
+    expect(column?.className).toContain("[&_button]:scroll-mt-");
+    expect(column?.className).toContain("md:[&_a]:scroll-mt-20");
+  });
+
   it("renders merch items in the body section", async () => {
     getMerchItemsMock.mockResolvedValue([createMerch({})]);
     const { container } = await renderJourney();

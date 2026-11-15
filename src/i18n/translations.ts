@@ -23,21 +23,18 @@ export type Translations = {
   };
   home: {
     pinned: string;
-    releaseLabel: string;
     latestReleaseTitle: string;
     latestReleaseDescription: string;
     latestReleaseCta: string;
     nextShowLabel: string;
     nextShowFallbackTitle: string;
     nextShowFallbackDescription: string;
-    ticketsCta: string;
     allShowsCta: string;
     liveLabel: string;
     liveTitle: string;
     liveDescription: string;
     liveCta: string;
     timeFrameLabel: string;
-    slideshow: { pause: string; resume: string };
     journey: {
       play: string;
       pause: string;
@@ -124,7 +121,6 @@ export const translations: Record<Locale, Translations> = {
     },
     home: {
       pinned: "Pinned",
-      releaseLabel: "Release",
       latestReleaseTitle: "Newest release",
       latestReleaseDescription: "Listen to the newest drop.",
       latestReleaseCta: "Listen",
@@ -132,14 +128,12 @@ export const translations: Record<Locale, Translations> = {
       nextShowFallbackTitle: "No upcoming shows",
       nextShowFallbackDescription:
         "Nothing is locked in yet. Check the full schedule for past dates and new announcements.",
-      ticketsCta: "Tickets",
       allShowsCta: "All shows",
       liveLabel: "Live",
       liveTitle: "Shows",
       liveDescription: "Upcoming dates, tickets, and venue details.",
       liveCta: "View shows",
       timeFrameLabel: "Time frame",
-      slideshow: { pause: "Pause photos", resume: "Resume photos" },
       journey: {
         play: "Play",
         pause: "Pause",
@@ -234,7 +228,6 @@ export const translations: Record<Locale, Translations> = {
     },
     home: {
       pinned: "Vasgepen",
-      releaseLabel: "Vrystelling",
       latestReleaseTitle: "Nuutste vrystelling",
       latestReleaseDescription: "Luister na die nuutste vrystelling.",
       latestReleaseCta: "Luister",
@@ -242,17 +235,15 @@ export const translations: Record<Locale, Translations> = {
       nextShowFallbackTitle: "Geen komende vertonings",
       nextShowFallbackDescription:
         "Niks is nog vas nie. Kyk na die volle rooster vir vorige datums en nuwe aankondigings.",
-      ticketsCta: "Kaartjies",
       allShowsCta: "Alle vertonings",
       liveLabel: "Live",
       liveTitle: "Vertonings",
       liveDescription: "Komende datums, kaartjies en lokaalbesonderhede.",
       liveCta: "Sien vertonings",
       timeFrameLabel: "Tydgleuf",
-      slideshow: { pause: "Onderbreek foto's", resume: "Hervat foto's" },
       journey: {
         play: "Speel",
-        pause: "Wag",
+        pause: "Onderbreek",
         playHint: "Druk speel en rol met die kitaar af.",
         neckTitle: "Teen die nek op",
         bodyTitle: "In die kitaarlyf",

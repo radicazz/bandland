@@ -18,6 +18,13 @@ import { JourneyStage } from "./JourneyStage";
 const MERCH_PREVIEW_COUNT = 3;
 const NECK_ROWS_ID = "journey-neck-rows";
 
+// On phones the opaque stage is pinned under the 4rem header and covers the top
+// 45svh of the viewport; keep focus/scroll-into-view targets below it. On md+ the
+// stage sits beside the text, so only the header needs clearing.
+const SCROLL_CLEAR = "scroll-mt-[calc(4rem+45svh+1rem)] md:scroll-mt-20";
+const INTERACTIVE_SCROLL_CLEAR =
+  "[&_a]:scroll-mt-[calc(4rem+45svh+1rem)] [&_button]:scroll-mt-[calc(4rem+45svh+1rem)] [&_iframe]:scroll-mt-[calc(4rem+45svh+1rem)] md:[&_a]:scroll-mt-20 md:[&_button]:scroll-mt-20 md:[&_iframe]:scroll-mt-20";
+
 type HomeJourneyProps = {
   labels: Translations;
   locale: Locale;
@@ -39,7 +46,7 @@ function Stop({
     <section
       data-stop={id}
       aria-labelledby={labelledBy}
-      className={`flex min-h-[70svh] flex-col md:min-h-svh ${className}`}
+      className={`flex min-h-[70svh] flex-col md:min-h-svh ${SCROLL_CLEAR} ${className}`}
     >
       {children}
     </section>
@@ -50,9 +57,10 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
   const enabled = new Set(
     settings.widgets.filter((widget) => widget.enabled).map((widget) => widget.id),
   );
+  // Storage errors degrade to empty stops rather than failing the whole page.
   const [shows, merch] = await Promise.all([
-    enabled.has("nextShow") ? getShows() : Promise.resolve([]),
-    enabled.has("merch") ? getMerchItems() : Promise.resolve([]),
+    enabled.has("nextShow") ? getShows().catch(() => []) : Promise.resolve([]),
+    enabled.has("merch") ? getMerchItems().catch(() => []) : Promise.resolve([]),
   ]);
   // One show per fret; the "All shows" link covers the rest.
   const upcoming = splitShowsByStatus(shows).upcoming.slice(0, proceduralAnchors.fretCount);
@@ -206,7 +214,7 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
         <div className="sticky top-16 z-10 h-[45svh] md:order-2 md:h-[calc(100svh-4rem)]">
           <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
         </div>
-        <div className="relative px-4 sm:px-6 md:order-1 md:px-0">
+        <div className={`relative px-4 sm:px-6 md:order-1 md:px-0 ${INTERACTIVE_SCROLL_CLEAR}`}>
           {route.map((stop) => (
             <Fragment key={stop}>{sections[stop]()}</Fragment>
           ))}

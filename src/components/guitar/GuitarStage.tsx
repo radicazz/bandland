@@ -92,7 +92,9 @@ export function GuitarStage({ route, litFret }: { route: readonly StopId[]; litF
   const [contextLost, setContextLost] = useState(false);
   const [canvasFailed, setCanvasFailed] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const position = useScrollProgress(route);
+  // Reduced motion pins the camera to the hero pose, so scroll tracking is idle too.
+  const showCanvas = webgl && !contextLost && !canvasFailed;
+  const position = useScrollProgress(route, showCanvas && !reducedMotion);
 
   useEffect(() => {
     const element = wrapperRef.current;
@@ -109,8 +111,6 @@ export function GuitarStage({ route, litFret }: { route: readonly StopId[]; litF
   const handleCanvasError = useCallback(() => setCanvasFailed(true), []);
 
   // Reduced motion keeps the canvas but pins it to the hero pose (see Guitar.tsx).
-  const showCanvas = webgl && !contextLost && !canvasFailed;
-
   return (
     <div
       ref={wrapperRef}

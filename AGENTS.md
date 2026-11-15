@@ -40,10 +40,10 @@ Rules:
 
 ## Current Features
 
-- Home is a scroll journey around a pinned procedural 3D guitar (`src/components/home/HomeJourney.tsx`): hero (wordmark, tagline, Play) → headstock (latest release + Spotify embed) → neck (upcoming shows, one fret each; the fret of the row in view lights red) → body (merch) → outro (links). Admin widget order/visibility drives the neck/body stops; empty merch skips the body stop
+- Home is a scroll journey around a pinned procedural 3D guitar (`src/components/home/HomeJourney.tsx`): hero (wordmark, tagline, Play) → headstock (latest release + Spotify embed) → neck (upcoming shows, one fret each; the fret of the row in view lights red) → body (merch) → outro (links). Admin widget order/visibility drives the neck/body stops (the release stop is always second, right after the hero, whenever its widget is enabled, regardless of widget order); empty merch skips the body stop. The widget `width` setting is still stored and editable in admin but no longer affects `/` (the journey is a single column)
 - Play button drives a simulated playback signal (no audio yet; `src/components/guitar/playback.ts` is the swap point for a Web Audio driver)
 - Static poster `public/guitar-poster.jpg` (hero pose) shows first and stays as the fallback without WebGL; reduced motion pins the camera to the hero pose
-- `public/slideshow/` images are no longer shown on the home page but are still the OG/Twitter images via `src/config/embed.ts`; `src/config/slideshow.ts` is currently unused
+- `public/slideshow/` images are no longer shown on the home page but are still the OG/Twitter images via `src/config/embed.ts`
 - Shows + Merch pages read JSON documents from a private Vercel Blob store
 - Admin panel at `/admin` for managing shows, merch, and site settings (home widget order/visibility, latest release, footer, socials)
 - Locale toggle in header; translations in `src/i18n/translations.ts`

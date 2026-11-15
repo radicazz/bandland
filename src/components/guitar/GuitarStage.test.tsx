@@ -180,6 +180,38 @@ describe("GuitarCanvas", () => {
   });
 });
 
+describe("GuitarStage scroll tracking", () => {
+  it("runs scroll tracking only while a full-motion canvas is shown", async () => {
+    const raf = vi.spyOn(window, "requestAnimationFrame");
+
+    stubMatchMedia(false);
+    stubWebGL(false);
+    await renderStage();
+    await flush();
+    expect(raf).not.toHaveBeenCalled();
+    cleanup();
+
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    const rafReduced = vi.spyOn(window, "requestAnimationFrame");
+    stubMatchMedia(true);
+    stubWebGL(true);
+    await renderStage();
+    await flush();
+    expect(rafReduced).not.toHaveBeenCalled();
+    cleanup();
+
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    const rafFull = vi.spyOn(window, "requestAnimationFrame");
+    stubMatchMedia(false);
+    stubWebGL(true);
+    await renderStage();
+    await screen.findByTestId("r3f-canvas");
+    expect(rafFull).toHaveBeenCalled();
+  });
+});
+
 describe("GuitarStage context loss", () => {
   it("drops the canvas and keeps the poster when the WebGL context is lost", async () => {
     stubMatchMedia(false);
