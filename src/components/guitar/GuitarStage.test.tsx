@@ -162,6 +162,22 @@ describe("GuitarCanvas", () => {
     expect(stagePose(route, 2, true)).toEqual(CAMERA_POSES.hero);
     expect(stagePose(route, 1.5, false)).toEqual(sampleCamera(route, 1.5));
   });
+
+  it("stagePose slides along the neck toward the lit fret only near the neck stop", async () => {
+    const { stagePose } = await import("./Guitar");
+    const { CAMERA_POSES, sampleCamera } = await import("./journey");
+    const route = ["hero", "release", "neck", "outro"] as const;
+    const fretY = CAMERA_POSES.neck.target[1] + 0.5;
+    const atNeck = stagePose(route, 2, false, fretY);
+    expect(atNeck.target[1]).toBeCloseTo(fretY);
+    expect(atNeck.position[1]).toBeCloseTo(CAMERA_POSES.neck.position[1] + 0.5);
+    expect(stagePose(route, 2.5, false, fretY).target[1]).toBeCloseTo(
+      sampleCamera(route, 2.5).target[1] + 0.25,
+    );
+    expect(stagePose(route, 1, false, fretY)).toEqual(sampleCamera(route, 1));
+    expect(stagePose(route, 2, true, fretY)).toEqual(CAMERA_POSES.hero);
+    expect(stagePose(route, 2, false, null)).toEqual(sampleCamera(route, 2));
+  });
 });
 
 describe("GuitarStage context loss", () => {

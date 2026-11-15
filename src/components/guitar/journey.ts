@@ -5,12 +5,14 @@ export type Vec3 = [number, number, number];
 export type CameraPose = { position: Vec3; target: Vec3 };
 
 // Guitar stands upright along +y: headstock at the top, body at the bottom.
+// Hero/outro sit far enough back (fov 35) for the whole ~6-unit guitar to fit a
+// portrait stage; release leaves room for the pulse ring at full scale.
 export const CAMERA_POSES: Record<StopId, CameraPose> = {
-  hero: { position: [0, -0.6, 7], target: [0, 0, 0] },
-  release: { position: [0.6, 2.8, 2.2], target: [0, 2.6, 0] },
+  hero: { position: [0, -0.4, 11.5], target: [0, 0.1, 0] },
+  release: { position: [0.4, 2.7, 3.2], target: [0, 2.62, 0] },
   neck: { position: [1.2, 1, 2.6], target: [0, 1, 0] },
   body: { position: [0, -1.8, 5], target: [0, -1.6, 0] },
-  outro: { position: [0, -0.6, 7], target: [0, 0, 0] },
+  outro: { position: [0, -0.4, 11.5], target: [0, 0.1, 0] },
 };
 
 const WIDGET_STOP: Partial<Record<WidgetSetting["id"], StopId>> = {

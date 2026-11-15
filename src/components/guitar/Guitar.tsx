@@ -360,23 +360,41 @@ export function Guitar({
   );
 }
 
-/** Camera goal for the stage: reduced motion pins the hero pose and ignores scroll. */
+/**
+ * Camera goal for the stage: reduced motion pins the hero pose and ignores scroll.
+ * At the neck stop, `fretY` (the lit fret's height) slides the camera along the
+ * neck so the lit fret stays in frame; the shift fades out away from that stop.
+ */
 export function stagePose(
   route: readonly StopId[],
   position: number,
   reducedMotion: boolean,
+  fretY: number | null = null,
 ): CameraPose {
-  return reducedMotion ? CAMERA_POSES.hero : sampleCamera(route, position);
+  if (reducedMotion) return CAMERA_POSES.hero;
+  const pose = sampleCamera(route, position);
+  const neckIndex = route.indexOf("neck");
+  if (fretY === null || neckIndex < 0) return pose;
+  const weight = Math.max(0, 1 - Math.abs(position - neckIndex));
+  const dy = (fretY - CAMERA_POSES.neck.target[1]) * weight;
+  if (dy === 0) return pose;
+  const [px, py, pz] = pose.position;
+  const [tx, ty, tz] = pose.target;
+  return { position: [px, py + dy, pz], target: [tx, ty + dy, tz] };
 }
 
 function CameraRig({
   route,
   position,
   reducedMotion,
+  litFret,
+  anchors = proceduralAnchors,
 }: {
   route: readonly StopId[];
   position: number;
   reducedMotion: boolean;
+  litFret: number;
+  anchors?: GuitarAnchors;
 }) {
   const invalidate = useThree((state) => state.invalidate);
   const lookAt = useRef(new Vector3(...CAMERA_POSES.hero.target));
@@ -385,11 +403,14 @@ function CameraRig({
 
   useEffect(() => {
     invalidate();
-  }, [route, position, reducedMotion, invalidate]);
+  }, [route, position, reducedMotion, litFret, invalidate]);
+
+  const fret = clampLitFret(litFret, anchors.fretCount);
+  const fretY = fret === null ? null : anchors.fretPosition(fret)[1];
 
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, FRAME_DELTA_CAP);
-    const pose = stagePose(route, position, reducedMotion);
+    const pose = stagePose(route, position, reducedMotion, fretY);
     goalPosition.current.set(...pose.position);
     goalTarget.current.set(...pose.target);
     // Reduced motion snaps straight to the pose instead of easing (no scrub).
@@ -471,12 +492,18 @@ export function GuitarCanvas({
       }}
     >
       <color attach="background" args={[palette.bg]} />
-      <fog attach="fog" args={[palette.bg, 6, 14]} />
+      {/* Starts just past the hero distance so the wide shot stays legible. */}
+      <fog attach="fog" args={[palette.bg, 10, 22]} />
       <ambientLight color={palette.text} intensity={0.12} />
       <directionalLight color={palette.text} position={[3, 4, 5]} intensity={1.3} />
       <directionalLight color={palette.text} position={[-4, 2, -4]} intensity={0.9} />
       <Invalidator deps={[active, litFret, reducedMotion]} />
-      <CameraRig route={route} position={position} reducedMotion={reducedMotion} />
+      <CameraRig
+        route={route}
+        position={position}
+        reducedMotion={reducedMotion}
+        litFret={litFret}
+      />
       <Guitar signal={signal} palette={palette} litFret={litFret} reducedMotion={reducedMotion} />
     </Canvas>
   );

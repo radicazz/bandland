@@ -27,7 +27,7 @@ type HomeJourneyProps = {
 function Stop({
   id,
   labelledBy,
-  className = "",
+  className = "justify-center py-16",
   children,
 }: {
   id: StopId;
@@ -39,7 +39,7 @@ function Stop({
     <section
       data-stop={id}
       aria-labelledby={labelledBy}
-      className={`flex min-h-[70svh] flex-col justify-center py-16 md:min-h-svh ${className}`}
+      className={`flex min-h-[70svh] flex-col md:min-h-svh ${className}`}
     >
       {children}
     </section>
@@ -67,7 +67,12 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
 
   const sections: Record<StopId, () => ReactNode> = {
     hero: () => (
-      <Stop id="hero" labelledBy="journey-hero" className="md:pt-32">
+      <Stop
+        id="hero"
+        labelledBy="journey-hero"
+        // Mobile: start right under the pinned stage so the Play button is above the fold.
+        className="pt-8 pb-16 md:justify-center md:py-16"
+      >
         <h1
           id="journey-hero"
           className="font-brand text-[clamp(4rem,19vw,9.5rem)] leading-[0.9] text-text md:text-[clamp(4rem,10vw,8rem)]"
@@ -196,9 +201,9 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
 
   return (
     <PlaybackProvider>
-      {/* -mt-16 slides the journey under the translucent sticky header, as the old hero did. */}
-      <div className="relative mx-auto -mt-16 w-full max-w-6xl md:grid md:grid-cols-2 md:gap-10 md:px-6">
-        <div className="sticky top-0 z-10 h-[45svh] md:order-2 md:h-svh">
+      <div className="relative mx-auto w-full max-w-6xl md:grid md:grid-cols-2 md:gap-10 md:px-6">
+        {/* Pinned just below the 4rem sticky header so the header never covers the guitar. */}
+        <div className="sticky top-16 z-10 h-[45svh] md:order-2 md:h-[calc(100svh-4rem)]">
           <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
         </div>
         <div className="relative px-4 sm:px-6 md:order-1 md:px-0">
