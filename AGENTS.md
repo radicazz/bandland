@@ -36,11 +36,14 @@ Rules:
 - Zod 4 for content schemas
 - Vitest 3 + React Testing Library
 - Fonts via `next/font/google` (Geist, Geist_Mono)
+- three + @react-three/fiber for the procedural 3D guitar on `/` (client-only, lazy-loaded)
 
 ## Current Features
 
-- Home hero uses the image manifest in `src/config/slideshow.ts` for files under `public/slideshow/`
-- Latest release card with Spotify embed in `src/components/HomeFeatures.tsx`
+- Home is a scroll journey around a pinned procedural 3D guitar (`src/components/home/HomeJourney.tsx`): hero (wordmark, tagline, Play) → headstock (latest release + Spotify embed) → neck (upcoming shows, one fret each; the fret of the row in view lights red) → body (merch) → outro (links). Admin widget order/visibility drives the neck/body stops; empty merch skips the body stop
+- Play button drives a simulated playback signal (no audio yet; `src/components/guitar/playback.ts` is the swap point for a Web Audio driver)
+- Static poster `public/guitar-poster.jpg` (hero pose) shows first and stays as the fallback without WebGL; reduced motion pins the camera to the hero pose
+- `public/slideshow/` images are no longer shown on the home page but are still the OG/Twitter images via `src/config/embed.ts`; `src/config/slideshow.ts` is currently unused
 - Shows + Merch pages read JSON documents from a private Vercel Blob store
 - Admin panel at `/admin` for managing shows, merch, and site settings (home widget order/visibility, latest release, footer, socials)
 - Locale toggle in header; translations in `src/i18n/translations.ts`
@@ -134,7 +137,11 @@ Location: `src/config/site.ts`
 - `Container` — max-w-6xl wrapper with padding
 - `SiteHeader` — nav + locale toggle + socials
 - `SiteFooter` — copyright + tagline
-- `HomeFeatures` — latest release + feature tiles
+- `home/HomeJourney` — server component; renders the journey sections as HTML beside the sticky stage
+- `home/JourneyStage` — client; maps the show row on the reading line to a lit fret
+- `guitar/GuitarStage` — client; poster + lazy (`next/dynamic`, `ssr: false`) canvas with WebGL/context-loss/error fallbacks
+- `guitar/Guitar` — r3f scene (procedural body, neck, frets, strings, headstock) and camera rig
+- `guitar/guitarModel` (named anchors, GLB swap point), `guitar/journey` (route + camera poses), `guitar/useScrollProgress`, `guitar/playback` + `PlaybackProvider`, `guitar/PlayButton`
 - `PageSection` / `PageIntro` — shared public-page layout and headings
 - `MerchCard` — product image, details, and store link
 - Admin components in `src/components/admin/`
@@ -143,7 +150,7 @@ Pattern: simple, functional components; client JS isolated to interactive featur
 
 ## Pages (App Router)
 
-- `/` — Home (slideshow hero + latest release)
+- `/` — Home (3D guitar scroll journey: hero, latest release, shows, merch, outro)
 - `/shows` — Show list with ticket links
 - `/merch` — Merch grid with external links
 - `/admin` — Admin login + protected CRUD routes (`/admin/settings` for site settings); linked from the footer
@@ -173,7 +180,7 @@ SEO:
 
 - Slow fades, subtle transitions
 - Respect `prefers-reduced-motion` (instant transitions when enabled)
-- No auto-playing animations beyond the hero slideshow
+- No auto-playing animations; the guitar only animates while scrolling or after Play is pressed
 - Parallax/zoom only if user motion preferences allow
 
 ## Performance Budget
@@ -182,6 +189,7 @@ SEO:
 - Static generation where possible
 - Optimize images (next/image)
 - Edge runtime for OG/Twitter images
+- The three.js canvas is a separate chunk loaded only on `/`, after first paint and only when WebGL is available (~240 KB gzip); the poster is the LCP image. It renders on demand when idle, continuously only while playing, and stops when hidden/off-screen; DPR capped at 2
 
 ## Development Workflow
 
