@@ -38,6 +38,14 @@ export type Translations = {
     liveCta: string;
     timeFrameLabel: string;
     slideshow: { pause: string; resume: string };
+    journey: {
+      play: string;
+      pause: string;
+      playHint: string;
+      neckTitle: string;
+      bodyTitle: string;
+      outroTitle: string;
+    };
   };
   shows: {
     label: string;
@@ -132,6 +140,14 @@ export const translations: Record<Locale, Translations> = {
       liveCta: "View shows",
       timeFrameLabel: "Time frame",
       slideshow: { pause: "Pause photos", resume: "Resume photos" },
+      journey: {
+        play: "Play",
+        pause: "Pause",
+        playHint: "Press play and scroll down the guitar.",
+        neckTitle: "Up the neck",
+        bodyTitle: "Into the body",
+        outroTitle: "Hear it live",
+      },
     },
     shows: {
       label: "Live",
@@ -234,6 +250,14 @@ export const translations: Record<Locale, Translations> = {
       liveCta: "Sien vertonings",
       timeFrameLabel: "Tydgleuf",
       slideshow: { pause: "Onderbreek foto's", resume: "Hervat foto's" },
+      journey: {
+        play: "Speel",
+        pause: "Wag",
+        playHint: "Druk speel en rol met die kitaar af.",
+        neckTitle: "Teen die nek op",
+        bodyTitle: "In die kitaarlyf",
+        outroTitle: "Hoor dit regstreeks",
+      },
     },
     shows: {
       label: "Live",
