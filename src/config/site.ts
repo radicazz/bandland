@@ -8,6 +8,12 @@ export const site = {
       "https://open.spotify.com/embed/track/1ZqBftZCkFF0YOmYaQ7v2c?utm_source=generator&theme=0",
   },
 
+  // The song the Play button on the home page plays (file lives in public/audio).
+  featuredTrack: {
+    title: "Engel uit die Hemel",
+    src: "/audio/engel-uit-die-hemel.mp3",
+  },
+
   // Add your booking/press contact email here
   contactEmail: "info@bandland.com",
 

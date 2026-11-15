@@ -55,7 +55,7 @@ function Stop({
   );
 }
 
-/** Stop number + fret-wire rule + label, e.g. "02 —— Newest release". */
+/** Stop number + fret-wire rule + label, e.g. "02 ── Newest release". */
 function Kicker({ number, children }: { number: string; children: ReactNode }) {
   return (
     <p className="flex items-center gap-3 text-sm font-semibold tabular-nums">
@@ -120,7 +120,7 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
             </span>
           </a>
         ) : null}
-        <div className="mt-10 flex flex-col items-start gap-3">
+        <div className="mt-10 flex flex-col items-start gap-2">
           <PlayButton labels={journey} />
           <p className="text-sm text-text-dim">{journey.playHint}</p>
         </div>

@@ -36,6 +36,11 @@ export type Translations = {
     journey: {
       play: string;
       pause: string;
+      /** Status line under Play; `{track}` is the song title. */
+      trackIdle: string;
+      trackLoading: string;
+      trackPlaying: string;
+      trackError: string;
       playHint: string;
       neckTitle: string;
       bodyTitle: string;
@@ -126,7 +131,11 @@ export const translations: Record<Locale, Translations> = {
       journey: {
         play: "Play",
         pause: "Pause",
-        playHint: "Press play and scroll down the guitar.",
+        trackIdle: "Song: {track}",
+        trackLoading: "Loading {track}…",
+        trackPlaying: "Now playing: {track}",
+        trackError: "{track} didn't load. Press play to try again.",
+        playHint: "Scroll down to follow the guitar from headstock to body.",
         neckTitle: "Up the neck",
         bodyTitle: "Into the body",
         outroTitle: "Hear it live",
@@ -143,7 +152,7 @@ export const translations: Record<Locale, Translations> = {
       empty: "No dates announced yet.",
       tickets: "Tickets",
       timeFrameLabel: "Time frame",
-      ticketPriceGuideTitle: "Ticket Price Guide",
+      ticketPriceGuideTitle: "Ticket prices",
       ticketPriceGuideOnline: "Online price",
       ticketPriceGuideDoor: "At-door price",
       ticketPriceGuideFallbackNote: "Prices are per show. Online and door prices can differ.",
@@ -174,19 +183,19 @@ export const translations: Record<Locale, Translations> = {
     },
     errors: {
       general: {
-        title: "Something went wrong",
-        description: "An unexpected error occurred. Please try again.",
+        title: "This page didn't load",
+        description: "Something broke on our side. Try again, or head back to the home page.",
       },
       shows: {
-        title: "Error loading shows",
-        description: "We could not load the shows. Please try again.",
+        title: "The shows didn't load",
+        description: "We couldn't reach the show list. Try again in a moment.",
       },
       merch: {
-        title: "Error loading merch",
-        description: "We could not load the merchandise. Please try again.",
+        title: "The merch didn't load",
+        description: "We couldn't reach the merch list. Try again in a moment.",
       },
       retry: "Try again",
-      home: "Go home",
+      home: "Back to home",
       reference: "Error ID",
     },
   },
@@ -223,7 +232,11 @@ export const translations: Record<Locale, Translations> = {
       journey: {
         play: "Speel",
         pause: "Onderbreek",
-        playHint: "Druk speel en rol met die kitaar af.",
+        trackIdle: "Liedjie: {track}",
+        trackLoading: "Laai {track}…",
+        trackPlaying: "Speel nou: {track}",
+        trackError: "{track} wou nie laai nie. Druk speel om weer te probeer.",
+        playHint: "Rol af om die kitaar van kop tot lyf te volg.",
         neckTitle: "Teen die nek op",
         bodyTitle: "In die kitaarlyf",
         outroTitle: "Hoor dit regstreeks",
@@ -240,7 +253,7 @@ export const translations: Record<Locale, Translations> = {
       empty: "Nog geen datums aangekondig nie.",
       tickets: "Kaartjies",
       timeFrameLabel: "Tydgleuf",
-      ticketPriceGuideTitle: "Kaartjieprysgids",
+      ticketPriceGuideTitle: "Kaartjiepryse",
       ticketPriceGuideOnline: "Aanlyn prys",
       ticketPriceGuideDoor: "By-die-deur prys",
       ticketPriceGuideFallbackNote:
@@ -272,19 +285,19 @@ export const translations: Record<Locale, Translations> = {
     },
     errors: {
       general: {
-        title: "Iets het verkeerd geloop",
-        description: "'n Onverwagte fout het voorgekom. Probeer asseblief weer.",
+        title: "Hierdie bladsy het nie gelaai nie",
+        description: "Iets het aan ons kant gebreek. Probeer weer, of gaan terug na die tuisblad.",
       },
       shows: {
-        title: "Kon nie vertonings laai nie",
-        description: "Ons kon nie die vertonings laai nie. Probeer asseblief weer.",
+        title: "Die vertonings het nie gelaai nie",
+        description: "Ons kon nie die vertoningslys bereik nie. Probeer weer oor 'n oomblik.",
       },
       merch: {
-        title: "Kon nie merch laai nie",
-        description: "Ons kon nie die merch laai nie. Probeer asseblief weer.",
+        title: "Die merch het nie gelaai nie",
+        description: "Ons kon nie die merch-lys bereik nie. Probeer weer oor 'n oomblik.",
       },
       retry: "Probeer weer",
-      home: "Gaan tuis",
+      home: "Terug na tuis",
       reference: "Fout-ID",
     },
   },
