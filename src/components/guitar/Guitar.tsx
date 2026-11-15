@@ -23,7 +23,7 @@ import {
   proceduralAnchors,
   type GuitarAnchors,
 } from "./guitarModel";
-import { CAMERA_POSES, sampleCamera, type StopId } from "./journey";
+import { CAMERA_POSES, sampleCamera, type CameraPose, type StopId } from "./journey";
 import type { PlaybackSignal } from "./playback";
 
 type Palette = {
@@ -108,7 +108,7 @@ function createStrings(color: Color): GuitarString[] {
   });
 }
 
-function Strings({ signal, palette }: { signal: PlaybackSignal; palette: Palette }) {
+function Strings({ signal, palette, reducedMotion }: GuitarStringsProps) {
   const [strings] = useState(() => createStrings(palette.text));
   const energy = useRef<number[]>(Array.from({ length: D.stringCount }, () => 0));
   const plucks = useRef(0);
@@ -146,8 +146,10 @@ function Strings({ signal, palette }: { signal: PlaybackSignal; palette: Palette
       const decayed = (energy.current[index] ?? 0) * Math.exp(-STRING_DECAY_PER_SECOND * delta);
       const value = decayed < 0.002 ? 0 : decayed;
       energy.current[index] = value;
-      const amplitude = MAX_STRING_AMPLITUDE * Math.max(value, level * 0.35);
-      if (amplitude > 0) active = true;
+      const energyLevel = Math.max(value, level * 0.35);
+      if (energyLevel > 0) active = true;
+      // Reduced motion: strings never move; only their glow follows the signal.
+      const amplitude = reducedMotion ? 0 : MAX_STRING_AMPLITUDE * energyLevel;
       const attribute = line.geometry.getAttribute("position");
       if (!(attribute instanceof BufferAttribute)) return;
       const positions = attribute.array as Float32Array;
@@ -157,7 +159,7 @@ function Strings({ signal, palette }: { signal: PlaybackSignal; palette: Palette
         positions[s * 3] = (rest[s * 3] ?? 0) + amplitude * Math.sin(Math.PI * u) * wave;
       }
       attribute.needsUpdate = true;
-      (line.material as LineBasicMaterial).opacity = 0.6 + 0.4 * Math.min(1, amplitude * 60);
+      (line.material as LineBasicMaterial).opacity = 0.6 + 0.4 * Math.min(1, energyLevel * 1.5);
     });
     if (active) {
       settled.current = false;
@@ -177,7 +179,7 @@ function Strings({ signal, palette }: { signal: PlaybackSignal; palette: Palette
   );
 }
 
-function Headstock({ signal, palette, anchors }: GuitarPartProps) {
+function Headstock({ signal, palette, anchors, reducedMotion }: GuitarPartProps) {
   const pegs = useRef<Group>(null);
   const ring = useRef<Group>(null);
   const ringMaterial = useRef<MeshBasicMaterial>(null);
@@ -187,8 +189,8 @@ function Headstock({ signal, palette, anchors }: GuitarPartProps) {
 
   useFrame((_, rawDelta) => {
     const delta = Math.min(rawDelta, FRAME_DELTA_CAP);
-    const level = signal.level;
-    if (pegs.current && signal.playing) {
+    const level = reducedMotion ? 0 : signal.level;
+    if (pegs.current && signal.playing && !reducedMotion) {
       for (const peg of pegs.current.children) peg.rotation.y += delta * 0.6;
     }
     if (ring.current) ring.current.scale.setScalar(1 + level * 0.5);
@@ -267,7 +269,7 @@ function Neck({ palette, anchors, litFret }: GuitarPartProps & { litFret: number
   );
 }
 
-function Body({ signal, palette, anchors }: GuitarPartProps) {
+function Body({ signal, palette, anchors, reducedMotion }: GuitarPartProps) {
   const body = useRef<Group>(null);
   const pickupMaterials = useRef<Array<MeshStandardMaterial | null>>([]);
   const [geometry] = useState(createBodyGeometry);
@@ -276,7 +278,7 @@ function Body({ signal, palette, anchors }: GuitarPartProps) {
   useEffect(() => () => geometry.dispose(), [geometry]);
 
   useFrame(() => {
-    const level = signal.level;
+    const level = reducedMotion ? 0 : signal.level;
     if (body.current) body.current.scale.setScalar(1 + 0.02 * level);
     for (const material of pickupMaterials.current) {
       if (material) material.emissiveIntensity = level * 1.6;
@@ -326,30 +328,56 @@ function Body({ signal, palette, anchors }: GuitarPartProps) {
   );
 }
 
-type GuitarPartProps = { signal: PlaybackSignal; palette: Palette; anchors: GuitarAnchors };
+type GuitarPartProps = {
+  signal: PlaybackSignal;
+  palette: Palette;
+  anchors: GuitarAnchors;
+  reducedMotion: boolean;
+};
+type GuitarStringsProps = { signal: PlaybackSignal; palette: Palette; reducedMotion: boolean };
 
 export function Guitar({
   signal,
   palette,
   litFret,
+  reducedMotion,
   anchors = proceduralAnchors,
 }: {
   signal: PlaybackSignal;
   palette: Palette;
   litFret: number;
+  reducedMotion: boolean;
   anchors?: GuitarAnchors;
 }) {
+  const parts = { signal, palette, anchors, reducedMotion };
   return (
     <group>
-      <Body signal={signal} palette={palette} anchors={anchors} />
-      <Neck signal={signal} palette={palette} anchors={anchors} litFret={litFret} />
-      <Headstock signal={signal} palette={palette} anchors={anchors} />
-      <Strings signal={signal} palette={palette} />
+      <Body {...parts} />
+      <Neck {...parts} litFret={litFret} />
+      <Headstock {...parts} />
+      <Strings signal={signal} palette={palette} reducedMotion={reducedMotion} />
     </group>
   );
 }
 
-function CameraRig({ route, position }: { route: readonly StopId[]; position: number }) {
+/** Camera goal for the stage: reduced motion pins the hero pose and ignores scroll. */
+export function stagePose(
+  route: readonly StopId[],
+  position: number,
+  reducedMotion: boolean,
+): CameraPose {
+  return reducedMotion ? CAMERA_POSES.hero : sampleCamera(route, position);
+}
+
+function CameraRig({
+  route,
+  position,
+  reducedMotion,
+}: {
+  route: readonly StopId[];
+  position: number;
+  reducedMotion: boolean;
+}) {
   const invalidate = useThree((state) => state.invalidate);
   const lookAt = useRef(new Vector3(...CAMERA_POSES.hero.target));
   const goalPosition = useRef(new Vector3());
@@ -357,14 +385,15 @@ function CameraRig({ route, position }: { route: readonly StopId[]; position: nu
 
   useEffect(() => {
     invalidate();
-  }, [route, position, invalidate]);
+  }, [route, position, reducedMotion, invalidate]);
 
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, FRAME_DELTA_CAP);
-    const pose = sampleCamera(route, position);
+    const pose = stagePose(route, position, reducedMotion);
     goalPosition.current.set(...pose.position);
     goalTarget.current.set(...pose.target);
-    const k = 1 - Math.exp(-delta * 6);
+    // Reduced motion snaps straight to the pose instead of easing (no scrub).
+    const k = reducedMotion ? 1 : 1 - Math.exp(-delta * 6);
     state.camera.position.lerp(goalPosition.current, k);
     lookAt.current.lerp(goalTarget.current, k);
     state.camera.lookAt(lookAt.current);
@@ -392,6 +421,7 @@ export type GuitarCanvasProps = {
   position: number;
   litFret: number;
   active: boolean;
+  reducedMotion: boolean;
   onContextLost: () => void;
 };
 
@@ -401,16 +431,29 @@ export function GuitarCanvas({
   position,
   litFret,
   active,
+  reducedMotion,
   onContextLost,
 }: GuitarCanvasProps) {
   const [palette] = useState(readPalette);
+  const detachContextLost = useRef<(() => void) | null>(null);
+
+  // R3F forces a context loss on the old canvas after unmount; that must not
+  // be reported as a real loss, so the listener goes away with the component.
+  useEffect(() => {
+    return () => {
+      detachContextLost.current?.();
+      detachContextLost.current = null;
+    };
+  }, []);
+
   const playing = useSyncExternalStore(
     signal.subscribe,
     () => signal.playing,
     () => false,
   );
   // Render on demand while idle, continuously while playing, never while hidden.
-  const frameloop = !active ? "never" : playing ? "always" : "demand";
+  // Reduced motion stays on demand: the strings request frames while they glow.
+  const frameloop = !active ? "never" : playing && !reducedMotion ? "always" : "demand";
 
   return (
     <Canvas
@@ -420,7 +463,11 @@ export function GuitarCanvas({
       gl={{ antialias: true, powerPreference: "low-power" }}
       fallback={null}
       onCreated={({ gl }) => {
-        gl.domElement.addEventListener("webglcontextlost", onContextLost, { once: true });
+        const element = gl.domElement;
+        detachContextLost.current?.();
+        element.addEventListener("webglcontextlost", onContextLost);
+        detachContextLost.current = () =>
+          element.removeEventListener("webglcontextlost", onContextLost);
       }}
     >
       <color attach="background" args={[palette.bg]} />
@@ -428,9 +475,9 @@ export function GuitarCanvas({
       <ambientLight color={palette.text} intensity={0.12} />
       <directionalLight color={palette.text} position={[3, 4, 5]} intensity={1.3} />
       <directionalLight color={palette.text} position={[-4, 2, -4]} intensity={0.9} />
-      <Invalidator deps={[active, litFret]} />
-      <CameraRig route={route} position={position} />
-      <Guitar signal={signal} palette={palette} litFret={litFret} />
+      <Invalidator deps={[active, litFret, reducedMotion]} />
+      <CameraRig route={route} position={position} reducedMotion={reducedMotion} />
+      <Guitar signal={signal} palette={palette} litFret={litFret} reducedMotion={reducedMotion} />
     </Canvas>
   );
 }

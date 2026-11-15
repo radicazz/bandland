@@ -1,18 +1,34 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import React, { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const fiberMock = vi.hoisted(() => ({ throwOnRender: false }));
+
+// Mimics the parts of R3F's <Canvas> the stage relies on: onCreated fires once
+// after mount, render errors are rethrown, and unmount forces a context loss on
+// the old canvas asynchronously (R3F calls gl.forceContextLoss() after a delay).
 vi.mock("@react-three/fiber", () => ({
   Canvas: ({ onCreated }: { onCreated?: (state: { gl: { domElement: HTMLElement } }) => void }) => {
+    if (fiberMock.throwOnRender) throw new Error("renderer failed");
     const ref = React.useRef<HTMLDivElement>(null);
     React.useEffect(() => {
-      if (ref.current) onCreated?.({ gl: { domElement: ref.current } });
-    }, [onCreated]);
+      const element = ref.current;
+      if (element) onCreated?.({ gl: { domElement: element } });
+      return () => {
+        if (element) setTimeout(() => element.dispatchEvent(new Event("webglcontextlost")), 0);
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- onCreated runs once, like R3F
+    }, []);
     return React.createElement("div", { "data-testid": "r3f-canvas", ref });
   },
   useFrame: vi.fn(),
   useThree: vi.fn(),
 }));
+
+const flush = () =>
+  act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
 
 function stubMatchMedia(reduced: boolean) {
   const listeners = new Set<() => void>();
@@ -54,12 +70,14 @@ async function renderStage() {
 }
 
 afterEach(() => {
+  cleanup();
+  fiberMock.throwOnRender = false;
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
 
 describe("GuitarStage", () => {
-  it('renders a poster <img alt=""> with aria-hidden wrapper and no canvas when matchMedia(prefers-reduced-motion) matches', async () => {
+  it("under prefers-reduced-motion renders the canvas pinned to the hero pose above the aria-hidden poster", async () => {
     stubMatchMedia(true);
     stubWebGL(true);
     const { container } = await renderStage();
@@ -68,10 +86,8 @@ describe("GuitarStage", () => {
     expect(img).toHaveAttribute("alt", "");
     expect(img?.getAttribute("src")).toContain("guitar-poster.jpg");
     expect(img?.closest("[aria-hidden='true']")).not.toBeNull();
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 20));
-    });
-    expect(screen.queryByTestId("r3f-canvas")).toBeNull();
+    const canvas = await screen.findByTestId("r3f-canvas");
+    expect(canvas.closest("[data-motion]")).toHaveAttribute("data-motion", "reduced");
   });
 
   it("renders the poster fallback when WebGL is unavailable", async () => {
@@ -79,21 +95,72 @@ describe("GuitarStage", () => {
     stubWebGL(false);
     const { container } = await renderStage();
     expect(container.querySelector("img[alt='']")).not.toBeNull();
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 20));
-    });
+    await flush();
     expect(screen.queryByTestId("r3f-canvas")).toBeNull();
   });
 
-  it("mounts the canvas above the poster when WebGL works and motion is allowed, and unmounts it when reduced motion turns on", async () => {
+  it("toggles reduced motion on then off at runtime and ends with the canvas mounted and scrubbing", async () => {
     const media = stubMatchMedia(false);
     stubWebGL(true);
     const { container } = await renderStage();
-    expect(await screen.findByTestId("r3f-canvas")).toBeInTheDocument();
-    expect(container.querySelector("img[alt='']")).not.toBeNull();
+    const canvas = await screen.findByTestId("r3f-canvas");
+    expect(canvas.closest("[data-motion]")).toHaveAttribute("data-motion", "full");
     act(() => media.set(true));
+    expect(screen.getByTestId("r3f-canvas").closest("[data-motion]")).toHaveAttribute(
+      "data-motion",
+      "reduced",
+    );
+    act(() => media.set(false));
+    await flush();
+    expect(screen.getByTestId("r3f-canvas").closest("[data-motion]")).toHaveAttribute(
+      "data-motion",
+      "full",
+    );
+    expect(container.querySelector("img[alt='']")).not.toBeNull();
+  });
+
+  it("falls back to the poster when the canvas throws", async () => {
+    stubMatchMedia(false);
+    stubWebGL(true);
+    fiberMock.throwOnRender = true;
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { container } = await renderStage();
+    await flush();
     expect(screen.queryByTestId("r3f-canvas")).toBeNull();
     expect(container.querySelector("img[alt='']")).not.toBeNull();
+  });
+});
+
+describe("GuitarCanvas", () => {
+  it("ignores the forced context loss R3F fires after unmount", async () => {
+    vi.resetModules();
+    const { GuitarCanvas } = await import("./Guitar");
+    const { createSimulatedPlayback } = await import("./playback");
+    const onContextLost = vi.fn();
+    const { unmount } = render(
+      <GuitarCanvas
+        signal={createSimulatedPlayback()}
+        route={["hero", "outro"]}
+        position={0}
+        litFret={0}
+        active
+        reducedMotion={false}
+        onContextLost={onContextLost}
+      />,
+    );
+    const canvas = screen.getByTestId("r3f-canvas");
+    unmount();
+    await flush();
+    canvas.dispatchEvent(new Event("webglcontextlost"));
+    expect(onContextLost).not.toHaveBeenCalled();
+  });
+
+  it("stagePose pins the hero pose under reduced motion and scrubs otherwise", async () => {
+    const { stagePose } = await import("./Guitar");
+    const { CAMERA_POSES, sampleCamera } = await import("./journey");
+    const route = ["hero", "release", "neck", "outro"] as const;
+    expect(stagePose(route, 2, true)).toEqual(CAMERA_POSES.hero);
+    expect(stagePose(route, 1.5, false)).toEqual(sampleCamera(route, 1.5));
   });
 });
 

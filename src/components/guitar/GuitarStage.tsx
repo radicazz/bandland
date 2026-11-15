@@ -2,7 +2,15 @@
 
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import {
+  Component,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
 import type { StopId } from "./journey";
 import { usePlayback } from "./PlaybackProvider";
 import { useScrollProgress } from "./useScrollProgress";
@@ -36,12 +44,38 @@ function getWebGLSupport(): boolean {
   if (webglSupport === undefined) {
     try {
       const probe = document.createElement("canvas");
-      webglSupport = Boolean(probe.getContext("webgl2") ?? probe.getContext("webgl"));
+      const context = probe.getContext("webgl2") ?? probe.getContext("webgl");
+      webglSupport = Boolean(context);
+      // Release the probe context right away instead of waiting for GC.
+      context?.getExtension?.("WEBGL_lose_context")?.loseContext();
     } catch {
       webglSupport = false;
     }
   }
   return webglSupport;
+}
+
+/**
+ * Renderer errors rethrown by <Canvas> and failed chunk loads land here; the
+ * stage then drops back to the poster for the rest of the page's life.
+ */
+class CanvasBoundary extends Component<
+  { children: ReactNode; onError: () => void },
+  { failed: boolean }
+> {
+  override state = { failed: false };
+
+  static getDerivedStateFromError(): { failed: boolean } {
+    return { failed: true };
+  }
+
+  override componentDidCatch(): void {
+    this.props.onError();
+  }
+
+  override render(): ReactNode {
+    return this.state.failed ? null : this.props.children;
+  }
 }
 
 const noopSubscribe = () => () => {};
@@ -56,6 +90,7 @@ export function GuitarStage({ route, litFret }: { route: readonly StopId[]; litF
   const documentVisible = useSyncExternalStore(subscribeVisibility, getDocumentVisible, serverTrue);
   const [onScreen, setOnScreen] = useState(true);
   const [contextLost, setContextLost] = useState(false);
+  const [canvasFailed, setCanvasFailed] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const position = useScrollProgress(route);
 
@@ -71,8 +106,10 @@ export function GuitarStage({ route, litFret }: { route: readonly StopId[]; litF
   }, []);
 
   const handleContextLost = useCallback(() => setContextLost(true), []);
+  const handleCanvasError = useCallback(() => setCanvasFailed(true), []);
 
-  const showCanvas = webgl && !reducedMotion && !contextLost;
+  // Reduced motion keeps the canvas but pins it to the hero pose (see Guitar.tsx).
+  const showCanvas = webgl && !contextLost && !canvasFailed;
 
   return (
     <div
@@ -90,15 +127,18 @@ export function GuitarStage({ route, litFret }: { route: readonly StopId[]; litF
         className="object-contain"
       />
       {showCanvas ? (
-        <div className="absolute inset-0">
-          <GuitarCanvas
-            signal={signal}
-            route={route}
-            position={position}
-            litFret={litFret}
-            active={documentVisible && onScreen}
-            onContextLost={handleContextLost}
-          />
+        <div className="absolute inset-0" data-motion={reducedMotion ? "reduced" : "full"}>
+          <CanvasBoundary onError={handleCanvasError}>
+            <GuitarCanvas
+              signal={signal}
+              route={route}
+              position={position}
+              litFret={litFret}
+              active={documentVisible && onScreen}
+              reducedMotion={reducedMotion}
+              onContextLost={handleContextLost}
+            />
+          </CanvasBoundary>
         </div>
       ) : null}
     </div>
