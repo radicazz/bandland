@@ -40,9 +40,13 @@ Rules:
 
 ## Current Features
 
-- Home is a scroll journey around a pinned procedural 3D guitar (`src/components/home/HomeJourney.tsx`): hero (wordmark, tagline, Play) → headstock (latest release + Spotify embed) → neck (upcoming shows, one fret each; the fret of the row in view lights red) → body (merch) → outro (links). Admin widget order/visibility drives the neck/body stops (the release stop is always second, right after the hero, whenever its widget is enabled, regardless of widget order); empty merch skips the body stop. The widget `width` setting is still stored and editable in admin but no longer affects `/` (the journey is a single column)
+- Home is a scroll journey over a full-screen pinned procedural 3D guitar (`src/components/home/HomeJourney.tsx`); the sections scroll over the stage, which starts under the header. Phones: the guitar is centred behind the text and dims (scrim driven by scroll position) once the reader leaves the hero. md+: the text is a left column and the render is shifted right by `STAGE_SHIFT` (`guitar/journey.ts`), mirrored by the CSS backdrop and the poster. Stops: hero (wordmark, tagline, Play) → headstock (latest release + Spotify embed) → neck (upcoming shows, one fret each; the fret of the row in view lights red) → body (merch) → outro (links). Admin widget order/visibility drives the neck/body stops (the release stop is always second, right after the hero, whenever its widget is enabled, regardless of widget order); empty merch skips the body stop. The widget `width` setting is still stored and editable in admin but no longer affects `/` (the journey is a single column)
 - Play button drives a simulated playback signal (no audio yet; `src/components/guitar/playback.ts` is the swap point for a Web Audio driver)
-- Static poster `public/guitar-poster.jpg` (hero pose) shows first and stays as the fallback without WebGL; reduced motion pins the camera to the hero pose
+- The guitar is a procedural piano-black offset electric (clearcoat body, rounded neck, 21 fret wires, six-in-line headstock with the wordmark) lit by a softbox environment baked once with `PMREMGenerator` (no drei) plus a key and two rim lights. Red appears only for live state: the lit fret, and while playing the pickups, plucked strings and a warm under-light
+- The canvas is transparent; the stage backdrop (light pool, floor glow, vignette, grain; red floor spill under `[data-playing]`) is CSS (`.guitar-stage` in `globals.css`) so the poster and the canvas share it
+- Transparent portrait poster `public/guitar-poster.webp` (hero pose, rendered narrower than any phone so `object-contain` always fits it by height) shows first, fades out once the canvas draws its first frame, and stays as the fallback without WebGL; reduced motion pins the camera to the hero pose. Re-render it from the hero pose whenever the model or lighting changes
+- Stops carry numbered kickers and `#stop-{id}` anchors; site navigation lives only in the header
+- The header has no bar: it fades from the background (`.site-header` in `globals.css`), with Shows/Merch and the ENG/AFR toggle on the right on desktop and a menu on mobile; socials live in the footer and mobile menu
 - `public/slideshow/` images are no longer shown on the home page but are still the OG/Twitter images via `src/config/embed.ts`
 - Shows + Merch pages read JSON documents from a private Vercel Blob store
 - Admin panel at `/admin` for managing shows, merch, and site settings (home widget order/visibility, latest release, footer, socials)
@@ -135,10 +139,10 @@ Location: `src/config/site.ts`
 ## Component Architecture
 
 - `Container` — max-w-6xl wrapper with padding
-- `SiteHeader` — nav + locale toggle + socials
+- `SiteHeader` — wordmark, nav + locale toggle (mobile menu adds socials)
 - `SiteFooter` — copyright + tagline
 - `home/HomeJourney` — server component; renders the journey sections as HTML beside the sticky stage
-- `home/JourneyStage` — client; maps the show row on the reading line to a lit fret
+- `home/JourneyStage` — client; owns the scroll position (camera + scrim) and maps the show row on the reading line to a lit fret
 - `guitar/GuitarStage` — client; poster + lazy (`next/dynamic`, `ssr: false`) canvas with WebGL/context-loss/error fallbacks
 - `guitar/Guitar` — r3f scene (procedural body, neck, frets, strings, headstock) and camera rig
 - `guitar/guitarModel` (named anchors, GLB swap point), `guitar/journey` (route + camera poses), `guitar/useScrollProgress`, `guitar/playback` + `PlaybackProvider`, `guitar/PlayButton`
@@ -189,7 +193,7 @@ SEO:
 - Static generation where possible
 - Optimize images (next/image)
 - Edge runtime for OG/Twitter images
-- The three.js canvas is a separate chunk loaded only on `/`, after first paint and only when WebGL is available (~240 KB gzip); the poster is the LCP image. It renders on demand when idle, continuously only while playing, and stops when hidden/off-screen; DPR capped at 2
+- The three.js canvas is a separate chunk loaded only on `/`, after first paint and only when WebGL is available (~247 KB gzip); the poster is the LCP image. It renders on demand when idle, continuously only while playing, and stops when hidden/off-screen; DPR capped at 2
 
 ## Development Workflow
 
