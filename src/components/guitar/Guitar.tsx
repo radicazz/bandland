@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import {
   AdditiveBlending,
   BoxGeometry,
@@ -91,6 +91,54 @@ const FRAME_DELTA_CAP = 1 / 30;
 const HEADSTOCK_FACE_Z = NECK_FRONT_Z - 0.02;
 const PLAY_LIGHT_INTENSITY = 6;
 
+// Scroll liveliness. Velocity is in route stops per second.
+/** Strings shiver with scroll speed: low strings more than high ones. */
+const STRUM_SHAPE = [1, 0.85, 0.72, 0.6, 0.5, 0.42] as const;
+const STRUM_PER_VELOCITY = 0.55;
+const STRUM_MAX = 0.6;
+/** The guitar yaws against the scroll direction and springs back with one overshoot. */
+const SWAY_YAW_PER_VELOCITY = 0.32;
+const SWAY_YAW_MAX = 0.36;
+const SWAY_ROLL_PER_VELOCITY = 0.05;
+const SWAY_ROLL_MAX = 0.04;
+const SWAY_STIFFNESS = 34;
+const SWAY_DAMPING = 4.6; // zeta ~0.4: a visible wobble after the reader stops
+/** Camera follows its pose on a slightly underdamped spring instead of a plain ease. */
+const CAMERA_STIFFNESS = 38;
+const CAMERA_DAMPING = 10; // zeta ~0.8: a small settle past the pose
+/** A plucked string (the lit fret changing) rings at this energy. */
+const FRET_PLUCK_ENERGY = 0.9;
+
+/** Scroll motion shared inside the scene: CameraRig writes it, the sway rig and strings read it. */
+type SceneMotion = { readonly velocity: number; setVelocity(value: number): void };
+
+function createSceneMotion(): SceneMotion {
+  let velocity = 0;
+  return {
+    get velocity() {
+      return velocity;
+    },
+    setVelocity(value: number) {
+      velocity = Math.abs(value) < 1e-3 ? 0 : value;
+    },
+  };
+}
+
+const clamp = (value: number, limit: number) => Math.min(Math.max(value, -limit), limit);
+
+/** One semi-implicit Euler step of a damped spring; returns the new [value, velocity]. */
+function springStep(
+  value: number,
+  velocity: number,
+  goal: number,
+  stiffness: number,
+  damping: number,
+  dt: number,
+): [number, number] {
+  const next = velocity + ((goal - value) * stiffness - velocity * damping) * dt;
+  return [value + next * dt, next];
+}
+
 function clampLitFret(litFret: number, fretCount: number): number | null {
   if (Number.isNaN(litFret) || litFret < 0) return null;
   return Math.min(Math.round(litFret), fretCount - 1);
@@ -127,74 +175,97 @@ function roundedRect(width: number, height: number, radius: number): Shape {
   return shape;
 }
 
-// Offset-waist solid body, authored around (0, bodyCenterY). The longer horn
-// sits on the bass side (-x); the neck pocket is the flat run at the top.
+// Telecaster slab, authored around (0, bodyCenterY). The rounded upper bout
+// sits on the bass side (-x); the single cutaway and its short horn sit on the
+// treble side (+x). The neck pocket is the flat run across the top.
 const BODY_OUTLINE: ReadonlyArray<readonly [number, number]> = [
-  [0.16, 1.1],
-  [0.36, 1.06],
-  [0.52, 1.2],
-  [0.68, 1.27],
-  [0.83, 1.13],
-  [0.88, 0.84],
-  [0.88, 0.46],
-  [0.74, 0.08],
-  [0.8, -0.32],
-  [1.0, -0.76],
-  [1.01, -1.18],
-  [0.82, -1.47],
-  [0.36, -1.62],
-  [-0.16, -1.63],
-  [-0.66, -1.53],
-  [-0.98, -1.26],
-  [-1.08, -0.86],
-  [-0.96, -0.42],
-  [-0.8, -0.02],
-  [-0.88, 0.4],
-  [-0.92, 0.86],
-  [-0.86, 1.3],
-  [-0.68, 1.55],
-  [-0.5, 1.5],
-  [-0.38, 1.26],
-  [-0.16, 1.1],
+  [0.15, 1.1],
+  [0.16, 0.8],
+  [0.22, 0.62],
+  [0.36, 0.56],
+  [0.52, 0.6],
+  [0.66, 0.72],
+  [0.76, 0.88],
+  [0.85, 0.98],
+  [0.95, 0.96],
+  [1.02, 0.82],
+  [1.05, 0.55],
+  [1.03, 0.25],
+  [1.06, -0.1],
+  [1.14, -0.5],
+  [1.18, -0.85],
+  [1.15, -1.2],
+  [1.02, -1.45],
+  [0.75, -1.6],
+  [0.35, -1.66],
+  [0, -1.67],
+  [-0.35, -1.66],
+  [-0.75, -1.6],
+  [-1.02, -1.45],
+  [-1.15, -1.2],
+  [-1.18, -0.85],
+  [-1.14, -0.5],
+  [-1.06, -0.1],
+  [-1.03, 0.25],
+  [-1.05, 0.6],
+  [-1.04, 0.92],
+  [-0.94, 1.17],
+  [-0.74, 1.3],
+  [-0.48, 1.32],
+  [-0.28, 1.25],
+  [-0.15, 1.12],
 ];
 
+// One-piece HH guard: hugs the cutaway, wraps both humbuckers and stops short
+// of the bridge plate and the control plate.
 const PICKGUARD_OUTLINE: ReadonlyArray<readonly [number, number]> = [
-  [0.2, 1.06],
-  [0.44, 0.96],
-  [0.54, 0.68],
-  [0.47, 0.34],
-  [0.38, 0.04],
-  [0.42, -0.34],
-  [0.36, -0.6],
-  [0.08, -0.68],
-  [-0.34, -0.84],
-  [-0.7, -0.94],
-  [-0.88, -0.74],
-  [-0.82, -0.34],
-  [-0.66, 0.0],
-  [-0.72, 0.42],
-  [-0.74, 0.86],
-  [-0.62, 1.1],
-  [-0.38, 1.08],
+  [0.15, 0.6],
+  [0.3, 0.5],
+  [0.5, 0.52],
+  [0.64, 0.6],
+  [0.72, 0.45],
+  [0.66, 0.1],
+  [0.56, -0.2],
+  [0.42, -0.42],
+  [0.36, -0.68],
+  [0.1, -0.74],
+  [-0.2, -0.74],
+  [-0.4, -0.68],
+  [-0.56, -0.45],
+  [-0.72, -0.1],
+  [-0.84, 0.3],
+  [-0.88, 0.75],
+  [-0.8, 1.05],
+  [-0.6, 1.17],
+  [-0.36, 1.16],
+  [-0.2, 1.08],
+  [-0.15, 1.04],
 ];
 
-// Six-in-line headstock, authored from the nut (y = 0) upward; tuners on the bass side.
+// Telecaster headstock, authored from the nut (y = 0) upward: tuners in a line
+// on the bass side, the treble edge widening toward a rounded tip.
 const HEADSTOCK_OUTLINE: ReadonlyArray<readonly [number, number]> = [
   [0.105, -0.06],
-  [0.11, 0.18],
-  [0.13, 0.4],
-  [0.2, 0.58],
-  [0.235, 0.76],
-  [0.19, 0.92],
-  [0.07, 0.99],
-  [-0.06, 1.01],
-  [-0.15, 0.95],
-  [-0.175, 0.75],
-  [-0.165, 0.4],
-  [-0.14, 0.15],
+  [0.11, 0.14],
+  [0.135, 0.36],
+  [0.175, 0.58],
+  [0.205, 0.78],
+  [0.205, 0.92],
+  [0.17, 1.02],
+  [0.09, 1.07],
+  [-0.02, 1.08],
+  [-0.11, 1.06],
+  [-0.165, 1.0],
+  [-0.17, 0.86],
+  [-0.155, 0.55],
+  [-0.135, 0.28],
+  [-0.115, 0.08],
   [-0.105, -0.06],
   [0, -0.08],
 ];
+
+// Control plate on the lower treble bout, angled along the body edge.
+const CONTROL_PLATE = { x: 0.8, y: -0.92, angle: -0.3, length: 0.86, width: 0.22 } as const;
 
 const BODY_BEVEL = 0.06;
 
@@ -386,9 +457,11 @@ function createStrings(palette: Palette): GuitarString[] {
   });
 }
 
-function Strings({ signal, palette, reducedMotion }: GuitarStringsProps) {
+function Strings({ signal, palette, reducedMotion, motion, litFret }: GuitarStringsProps) {
   const [strings] = useState(() => createStrings(palette));
+  // Plucks (playback beats, the lit fret) glow red; scroll shivers only move the string.
   const energy = useRef<number[]>(Array.from({ length: D.stringCount }, () => 0));
+  const shiver = useRef<number[]>(Array.from({ length: D.stringCount }, () => 0));
   const plucks = useRef(0);
   const settled = useRef(true);
   const invalidate = useThree((state) => state.invalidate);
@@ -406,6 +479,15 @@ function Strings({ signal, palette, reducedMotion }: GuitarStringsProps) {
     });
   }, [signal, invalidate]);
 
+  // Each time a new show row lights its fret, that fret's string is plucked.
+  useEffect(() => {
+    const lit = clampLitFret(litFret, Number.POSITIVE_INFINITY);
+    if (lit === null) return;
+    const index = lit % D.stringCount;
+    energy.current[index] = Math.max(energy.current[index] ?? 0, FRET_PLUCK_ENERGY);
+    invalidate();
+  }, [litFret, invalidate]);
+
   useEffect(() => {
     return () => {
       for (const { mesh, material } of strings) {
@@ -420,14 +502,24 @@ function Strings({ signal, palette, reducedMotion }: GuitarStringsProps) {
     const level = signal.level;
     const time = state.clock.elapsedTime;
     let active = level > 0;
+    const decay = Math.exp(-STRING_DECAY_PER_SECOND * delta);
+    const strum = reducedMotion
+      ? 0
+      : Math.min(Math.abs(motion.velocity) * STRUM_PER_VELOCITY, STRUM_MAX);
     strings.forEach(({ mesh, rest, along, frequency, material }, index) => {
-      const decayed = (energy.current[index] ?? 0) * Math.exp(-STRING_DECAY_PER_SECOND * delta);
+      const decayed = (energy.current[index] ?? 0) * decay;
       const value = decayed < 0.002 ? 0 : decayed;
       energy.current[index] = value;
+      const shook = Math.max(
+        (shiver.current[index] ?? 0) * decay,
+        strum * (STRUM_SHAPE[index] ?? 0.5),
+      );
+      shiver.current[index] = shook < 0.002 ? 0 : shook;
       const energyLevel = Math.max(value, level * 0.35);
-      if (energyLevel > 0) active = true;
+      const movement = Math.max(energyLevel, shiver.current[index] ?? 0);
+      if (movement > 0) active = true;
       // Reduced motion: strings never move; only their glow follows the signal.
-      const amplitude = reducedMotion ? 0 : MAX_STRING_AMPLITUDE * energyLevel;
+      const amplitude = reducedMotion ? 0 : MAX_STRING_AMPLITUDE * movement;
       const attribute = mesh.geometry.getAttribute("position");
       if (!(attribute instanceof BufferAttribute)) return;
       const positions = attribute.array as Float32Array;
@@ -481,6 +573,7 @@ function Headstock({ palette, materials }: { palette: Palette; materials: Materi
       shaft: new CylinderGeometry(0.009, 0.009, 0.07, 10).rotateZ(Math.PI / 2),
       button: new SphereGeometry(1, 20, 12),
       nut: new BoxGeometry(D.neckWidthAtNut, 0.025, 0.03),
+      tree: new CylinderGeometry(0.018, 0.018, 0.012, 16).rotateX(Math.PI / 2),
     };
   });
 
@@ -488,6 +581,12 @@ function Headstock({ palette, materials }: { palette: Palette; materials: Materi
     <group>
       <mesh geometry={geometry.plate} material={materials.gloss} />
       <HeadstockLogo palette={palette} />
+      {/* Round string tree holding the B and high E strings down. */}
+      <mesh
+        geometry={geometry.tree}
+        material={materials.chrome}
+        position={[-0.016, D.nutY + 0.42, STRING_Z + 0.008]}
+      />
       <mesh
         geometry={geometry.nut}
         material={materials.bone}
@@ -568,11 +667,8 @@ function HeadstockLogo({ palette }: { palette: Palette }) {
 
   if (!texture) return null;
   return (
-    <mesh
-      position={[0.115, D.nutY + 0.66, HEADSTOCK_FACE_Z + 0.001]}
-      rotation={[0, 0, Math.PI / 2]}
-    >
-      <planeGeometry args={[0.42, 0.105]} />
+    <mesh position={[0.085, D.nutY + 0.7, HEADSTOCK_FACE_Z + 0.001]} rotation={[0, 0, Math.PI / 2]}>
+      <planeGeometry args={[0.42, 0.1]} />
       <meshStandardMaterial
         color={palette.textMuted}
         alphaMap={texture}
@@ -723,23 +819,43 @@ function Body({
       bevelSegments: 2,
     });
     guard.translate(0, 0, BODY_FRONT_Z);
-    const pickup = new ExtrudeGeometry(roundedRect(0.44, 0.13, 0.05), {
+    const humbucker = new ExtrudeGeometry(roundedRect(0.5, 0.26, 0.035), {
       depth: 0.03,
       bevelEnabled: true,
       bevelThickness: 0.008,
       bevelSize: 0.008,
       bevelSegments: 3,
     });
+    const bridgePlate = new ExtrudeGeometry(roundedRect(0.6, 0.32, 0.03), {
+      depth: 0.008,
+      bevelEnabled: true,
+      bevelThickness: 0.004,
+      bevelSize: 0.004,
+      bevelSegments: 2,
+    });
+    const controlPlate = new ExtrudeGeometry(
+      roundedRect(CONTROL_PLATE.width, CONTROL_PLATE.length, CONTROL_PLATE.width / 2),
+      {
+        depth: 0.006,
+        bevelEnabled: true,
+        bevelThickness: 0.003,
+        bevelSize: 0.003,
+        bevelSegments: 2,
+      },
+    );
     return {
       shell,
       guard,
-      pickup,
-      pole: new CircleGeometry(0.012, 16),
-      bridgeBlock: new BoxGeometry(0.44, 0.15, 0.05),
-      saddle: new BoxGeometry(0.04, 0.07, 0.03),
-      knob: new CylinderGeometry(0.056, 0.06, 0.06, 32).rotateX(Math.PI / 2),
-      knobCap: new CircleGeometry(0.036, 32),
-      switchTip: new SphereGeometry(0.02, 16, 10),
+      humbucker,
+      pole: new CircleGeometry(0.014, 16),
+      bridgePlate,
+      bridgeLip: new BoxGeometry(0.6, 0.02, 0.05),
+      saddle: new BoxGeometry(0.055, 0.13, 0.075),
+      controlPlate,
+      knob: new CylinderGeometry(0.056, 0.056, 0.07, 32).rotateX(Math.PI / 2),
+      dome: new SphereGeometry(1, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2).rotateX(Math.PI / 2),
+      lever: new CylinderGeometry(0.008, 0.008, 0.08, 8).rotateX(Math.PI / 2),
+      leverTip: new CylinderGeometry(0.018, 0.018, 0.045, 16).rotateX(Math.PI / 2),
     };
   });
   const pickupMaterials = useRef<Array<MeshStandardMaterial | null>>([]);
@@ -755,64 +871,77 @@ function Body({
 
   const localY = (y: number) => y - D.bodyCenterY;
   const pickups = [D.neckPickupY, D.bridgePickupY];
-  const bodyTop = BODY_FRONT_Z + 0.004;
+  const guardTop = BODY_FRONT_Z + 0.004;
+  const bridgeY = localY(BRIDGE_Y);
 
   return (
     <group ref={body} position={[0, D.bodyCenterY, 0]}>
       <mesh geometry={geometry.shell} material={materials.gloss} />
       <mesh geometry={geometry.guard} material={materials.pickguard} />
       {pickups.map((y, pickupIndex) => (
-        <group key={y} position={[0, localY(y), bodyTop]}>
-          <mesh geometry={geometry.pickup}>
+        <group key={y} position={[0, localY(y), guardTop]}>
+          <mesh geometry={geometry.humbucker}>
             <meshStandardMaterial
               ref={(material: MeshStandardMaterial | null) => {
                 pickupMaterials.current[pickupIndex] = material;
               }}
-              color={palette.surface2}
-              roughness={0.4}
+              color={palette.bg}
+              roughness={0.35}
               emissive={palette.highlight}
               emissiveIntensity={0}
             />
           </mesh>
-          {Array.from({ length: D.stringCount }, (_, index) => (
-            <mesh
-              key={index}
-              geometry={geometry.pole}
-              material={materials.chrome}
-              position={[stringX(index, y), 0, 0.0385]}
-            />
-          ))}
+          {[-0.065, 0.065].flatMap((row) =>
+            Array.from({ length: D.stringCount }, (_, index) => (
+              <mesh
+                key={`${row}-${index}`}
+                geometry={geometry.pole}
+                material={materials.chrome}
+                position={[stringX(index, y), row, 0.0385]}
+              />
+            )),
+          )}
         </group>
       ))}
-      <group position={[0, localY(BRIDGE_Y), 0]}>
+      {/* Hardtail bridge: flat plate, raised back lip, six block saddles. */}
+      <group position={[0, bridgeY, BODY_FRONT_Z]}>
+        <mesh geometry={geometry.bridgePlate} material={materials.chrome} position={[0, -0.1, 0]} />
         <mesh
-          geometry={geometry.bridgeBlock}
+          geometry={geometry.bridgeLip}
           material={materials.chrome}
-          position={[0, 0, BODY_FRONT_Z + 0.025]}
+          position={[0, -0.25, 0.025]}
         />
         {Array.from({ length: D.stringCount }, (_, index) => (
           <mesh
             key={index}
             geometry={geometry.saddle}
             material={materials.chrome}
-            position={[stringX(index, BRIDGE_Y), 0.01, STRING_Z - 0.03]}
+            position={[stringX(index, BRIDGE_Y), 0, 0.012 + 0.0375]}
           />
         ))}
       </group>
-      {[
-        [0.7, -0.95],
-        [0.84, -0.6],
-      ].map(([x = 0, y = 0]) => (
-        <group key={`${x}`} position={[x, y, bodyTop + 0.03]}>
-          <mesh geometry={geometry.knob} material={materials.knob} />
-          <mesh geometry={geometry.knobCap} material={materials.chrome} position={[0, 0, 0.031]} />
+      {/* Angled control plate: selector lever on top, then volume and tone. */}
+      <group
+        position={[CONTROL_PLATE.x, CONTROL_PLATE.y, BODY_FRONT_Z]}
+        rotation={[0, 0, CONTROL_PLATE.angle]}
+      >
+        <mesh geometry={geometry.controlPlate} material={materials.chrome} />
+        <group position={[0, 0.3, 0.01]} rotation={[0.35, 0, 0]}>
+          <mesh geometry={geometry.lever} material={materials.chrome} position={[0, 0, 0.04]} />
+          <mesh geometry={geometry.leverTip} material={materials.knob} position={[0, 0, 0.085]} />
         </group>
-      ))}
-      <mesh
-        geometry={geometry.switchTip}
-        material={materials.bone}
-        position={[0.62, 0.62, bodyTop + 0.02]}
-      />
+        {[0.02, -0.26].map((y) => (
+          <group key={y} position={[0, y, 0.01]}>
+            <mesh geometry={geometry.knob} material={materials.chrome} position={[0, 0, 0.035]} />
+            <mesh
+              geometry={geometry.dome}
+              material={materials.chrome}
+              position={[0, 0, 0.07]}
+              scale={[0.056, 0.056, 0.02]}
+            />
+          </group>
+        ))}
+      </group>
       {/* Play state: a warm under-light that only exists while the signal is live. */}
       <pointLight
         ref={playLight}
@@ -825,29 +954,98 @@ function Body({
   );
 }
 
-type GuitarStringsProps = { signal: PlaybackSignal; palette: Palette; reducedMotion: boolean };
+type GuitarStringsProps = {
+  signal: PlaybackSignal;
+  palette: Palette;
+  reducedMotion: boolean;
+  motion: SceneMotion;
+  litFret: number;
+};
+
+/** Turns the whole guitar a little against the scroll, then lets it spring back. */
+function SwayRig({
+  motion,
+  reducedMotion,
+  children,
+}: {
+  motion: SceneMotion;
+  reducedMotion: boolean;
+  children: ReactNode;
+}) {
+  const group = useRef<Group>(null);
+  const sway = useRef({ yaw: 0, yawVelocity: 0, roll: 0, rollVelocity: 0 });
+
+  useFrame((state, rawDelta) => {
+    const element = group.current;
+    if (!element) return;
+    const s = sway.current;
+    if (reducedMotion) {
+      if (s.yaw !== 0 || s.roll !== 0) {
+        sway.current = { yaw: 0, yawVelocity: 0, roll: 0, rollVelocity: 0 };
+        element.rotation.set(0, 0, 0);
+      }
+      return;
+    }
+    const delta = Math.min(rawDelta, FRAME_DELTA_CAP);
+    const yawGoal = clamp(motion.velocity * SWAY_YAW_PER_VELOCITY, SWAY_YAW_MAX);
+    const rollGoal = clamp(-motion.velocity * SWAY_ROLL_PER_VELOCITY, SWAY_ROLL_MAX);
+    [s.yaw, s.yawVelocity] = springStep(
+      s.yaw,
+      s.yawVelocity,
+      yawGoal,
+      SWAY_STIFFNESS,
+      SWAY_DAMPING,
+      delta,
+    );
+    [s.roll, s.rollVelocity] = springStep(
+      s.roll,
+      s.rollVelocity,
+      rollGoal,
+      SWAY_STIFFNESS,
+      SWAY_DAMPING,
+      delta,
+    );
+    element.rotation.set(0, s.yaw, s.roll);
+    const settled =
+      Math.abs(s.yaw - yawGoal) < 1e-4 &&
+      Math.abs(s.roll - rollGoal) < 1e-4 &&
+      Math.abs(s.yawVelocity) < 1e-4 &&
+      Math.abs(s.rollVelocity) < 1e-4;
+    if (!settled) state.invalidate();
+  });
+
+  return <group ref={group}>{children}</group>;
+}
 
 export function Guitar({
   signal,
   palette,
   litFret,
   reducedMotion,
+  motion,
   anchors = proceduralAnchors,
 }: {
   signal: PlaybackSignal;
   palette: Palette;
   litFret: number;
   reducedMotion: boolean;
+  motion: SceneMotion;
   anchors?: GuitarAnchors;
 }) {
   const materials = useDisposables(() => createMaterials(palette));
   return (
-    <group>
+    <SwayRig motion={motion} reducedMotion={reducedMotion}>
       <Body signal={signal} palette={palette} materials={materials} reducedMotion={reducedMotion} />
       <Neck palette={palette} materials={materials} anchors={anchors} litFret={litFret} />
       <Headstock palette={palette} materials={materials} />
-      <Strings signal={signal} palette={palette} reducedMotion={reducedMotion} />
-    </group>
+      <Strings
+        signal={signal}
+        palette={palette}
+        reducedMotion={reducedMotion}
+        motion={motion}
+        litFret={clampLitFret(litFret, anchors.fretCount) ?? -1}
+      />
+    </SwayRig>
   );
 }
 
@@ -879,18 +1077,23 @@ function CameraRig({
   position,
   reducedMotion,
   litFret,
+  motion,
   anchors = proceduralAnchors,
 }: {
   route: readonly StopId[];
   position: number;
   reducedMotion: boolean;
   litFret: number;
+  motion: SceneMotion;
   anchors?: GuitarAnchors;
 }) {
   const invalidate = useThree((state) => state.invalidate);
   const lookAt = useRef(new Vector3(...CAMERA_POSES.hero.target));
   const goalPosition = useRef(new Vector3());
   const goalTarget = useRef(new Vector3());
+  const cameraVelocity = useRef(new Vector3());
+  const lookAtVelocity = useRef(new Vector3());
+  const lastPosition = useRef<number | null>(null);
 
   useEffect(() => {
     invalidate();
@@ -904,18 +1107,52 @@ function CameraRig({
     const pose = stagePose(route, position, reducedMotion, fretY);
     goalPosition.current.set(...pose.position);
     goalTarget.current.set(...pose.target);
-    // Reduced motion snaps straight to the pose instead of easing (no scrub).
-    const k = reducedMotion ? 1 : 1 - Math.exp(-delta * 6);
-    state.camera.position.lerp(goalPosition.current, k);
-    lookAt.current.lerp(goalTarget.current, k);
+
+    // Scroll speed in stops per second, smoothed; the sway rig and strings read it.
+    const previous = lastPosition.current;
+    lastPosition.current = position;
+    const raw =
+      reducedMotion || previous === null ? 0 : (position - previous) / Math.max(delta, 1 / 240);
+    motion.setVelocity(motion.velocity + (raw - motion.velocity) * (1 - Math.exp(-delta * 8)));
+
+    const camera = state.camera.position;
+    if (reducedMotion) {
+      // Reduced motion snaps straight to the pose instead of easing (no scrub).
+      camera.copy(goalPosition.current);
+      lookAt.current.copy(goalTarget.current);
+      cameraVelocity.current.set(0, 0, 0);
+      lookAtVelocity.current.set(0, 0, 0);
+    } else {
+      // Two half steps keep the spring stable at the 30 fps delta cap.
+      for (let step = 0; step < 2; step += 1) {
+        springVector(camera, cameraVelocity.current, goalPosition.current, delta / 2);
+        springVector(lookAt.current, lookAtVelocity.current, goalTarget.current, delta / 2);
+      }
+    }
     state.camera.lookAt(lookAt.current);
     const moving =
-      state.camera.position.distanceToSquared(goalPosition.current) > 1e-6 ||
-      lookAt.current.distanceToSquared(goalTarget.current) > 1e-6;
+      camera.distanceToSquared(goalPosition.current) > 1e-6 ||
+      lookAt.current.distanceToSquared(goalTarget.current) > 1e-6 ||
+      cameraVelocity.current.lengthSq() > 1e-6 ||
+      lookAtVelocity.current.lengthSq() > 1e-6 ||
+      motion.velocity !== 0;
     if (moving) state.invalidate();
   });
 
   return null;
+}
+
+function springVector(value: Vector3, velocity: Vector3, goal: Vector3, dt: number) {
+  for (const axis of ["x", "y", "z"] as const) {
+    [value[axis], velocity[axis]] = springStep(
+      value[axis],
+      velocity[axis],
+      goal[axis],
+      CAMERA_STIFFNESS,
+      CAMERA_DAMPING,
+      dt,
+    );
+  }
 }
 
 /** Slides the render sideways (an off-axis projection) without moving the camera. */
@@ -977,6 +1214,7 @@ export function GuitarCanvas({
   onReady,
 }: GuitarCanvasProps) {
   const [palette] = useState(readPalette);
+  const [motion] = useState(createSceneMotion);
   const detachContextLost = useRef<(() => void) | null>(null);
 
   // R3F forces a context loss on the old canvas after unmount; that must not
@@ -1026,8 +1264,15 @@ export function GuitarCanvas({
         position={position}
         reducedMotion={reducedMotion}
         litFret={litFret}
+        motion={motion}
       />
-      <Guitar signal={signal} palette={palette} litFret={litFret} reducedMotion={reducedMotion} />
+      <Guitar
+        signal={signal}
+        palette={palette}
+        litFret={litFret}
+        reducedMotion={reducedMotion}
+        motion={motion}
+      />
       <ViewShift />
       <FirstFrame onReady={onReady} />
     </Canvas>

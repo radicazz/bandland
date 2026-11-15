@@ -7,14 +7,14 @@ import type { Vec3 } from "./journey";
  */
 export type GuitarAnchors = {
   headstock: Vec3;
-  /** Body focal point (the neck pickup on the procedural electric). */
+  /** Body focal point (the neck humbucker on the procedural Telecaster). */
   soundHole: Vec3;
   fretCount: number;
   fretPosition(index: number): Vec3; // clamps index to [0, fretCount-1]
 };
 
-// Shared dimensions for the procedural geometry (scene units). The body outline
-// is authored around `bodyCenterY`; the neck joins it near fret 16.
+// Shared dimensions for the procedural Telecaster (scene units, ~13.5 cm each).
+// The body outline is authored around `bodyCenterY`; the neck joins it near fret 16.
 export const GUITAR_DIMENSIONS = {
   bodyCenterY: -1.8,
   bodyDepth: 0.22,
@@ -22,14 +22,14 @@ export const GUITAR_DIMENSIONS = {
   fretboardThickness: 0.02,
   neckWidthAtNut: 0.21,
   neckWidthAtEnd: 0.28,
-  neckBottomY: -1.25, // end of the fretboard, just past the last fret
+  neckBottomY: -1.3, // end of the fretboard, just past the last fret
   nutY: 2.2,
-  headstockLength: 1.02,
+  headstockLength: 1.08,
   scaleLength: 4.8, // nut to bridge; fret 12 sits at half of it
   stringCount: 6,
-  totalFrets: 21, // fret wires drawn on the neck
-  neckPickupY: -1.52,
-  bridgePickupY: -2.32,
+  totalFrets: 22, // fret wires drawn on the neck
+  neckPickupY: -1.52, // humbucker centres
+  bridgePickupY: -2.3,
 } as const;
 
 // Frets 1..12 map to show rows and can light up; the rest are decoration.

@@ -24,6 +24,9 @@ export const CAMERA_POSES: Record<StopId, CameraPose> = {
   outro: { position: [2.8, 0.1, 12.2], target: [0, -0.1, 0] },
 };
 
+/** Peak sideways and outward camera offset halfway between two stops. */
+export const TRANSITION_ARC = { side: 0.9, out: 1.4 } as const;
+
 const WIDGET_STOP: Partial<Record<WidgetSetting["id"], StopId>> = {
   nextShow: "neck",
   merch: "body",
@@ -61,5 +64,12 @@ export function sampleCamera(route: readonly StopId[], position: number): Camera
   if (toId === undefined || p === index) return from;
   const to = CAMERA_POSES[toId];
   const t = smoothstep(p - index);
-  return { position: lerp(from.position, to.position, t), target: lerp(from.target, to.target, t) };
+  const eye = lerp(from.position, to.position, t);
+  // Between stops the camera swings out and to the side instead of dollying in a
+  // straight line, alternating sides so consecutive moves do not repeat.
+  const swing = Math.sin(Math.PI * t);
+  const side = index % 2 === 0 ? 1 : -1;
+  eye[0] += TRANSITION_ARC.side * side * swing;
+  eye[2] += TRANSITION_ARC.out * swing;
+  return { position: eye, target: lerp(from.target, to.target, t) };
 }
