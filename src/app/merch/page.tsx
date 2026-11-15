@@ -18,7 +18,6 @@ export default async function MerchPage() {
   return (
     <PageSection>
       <PageIntro
-        label={labels.merch.label}
         title={labels.merch.title}
         description={labels.merch.introPrefix + labels.merch.introSuffix}
       />

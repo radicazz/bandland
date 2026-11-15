@@ -7,6 +7,7 @@ import { site } from "@/config/site";
 type SiteFooterProps = {
   tagline: string;
   bookingLabel: string;
+  newTabLabel?: string;
   contactEmail?: string;
   socials?: readonly SocialLink[];
 };
@@ -14,6 +15,7 @@ type SiteFooterProps = {
 export function SiteFooter({
   tagline,
   bookingLabel,
+  newTabLabel = "opens in a new tab",
   contactEmail = site.contactEmail,
   socials,
 }: SiteFooterProps) {
@@ -25,13 +27,17 @@ export function SiteFooter({
           <p className="mt-2 text-base text-text-muted">{tagline}</p>
           <a
             href={`mailto:${contactEmail}`}
-            className="mt-4 inline-flex min-h-11 items-center text-base font-semibold text-text underline decoration-highlight decoration-2 underline-offset-4 hover:text-highlight"
+            className="mt-4 inline-flex min-h-11 items-center text-base font-semibold text-text underline decoration-text-dim decoration-1 underline-offset-4 hover:text-highlight"
           >
             {bookingLabel}
           </a>
         </div>
         <div className="flex flex-col gap-4 sm:items-end">
-          <SocialLinks className="sm:justify-end" {...(socials ? { socials } : {})} />
+          <SocialLinks
+            className="sm:justify-end"
+            newTabLabel={newTabLabel}
+            {...(socials ? { socials } : {})}
+          />
           <p className="flex flex-wrap items-center gap-x-4 text-sm text-text-dim">
             <span>
               © {new Date().getFullYear()} {site.name}

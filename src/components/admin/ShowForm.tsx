@@ -162,7 +162,7 @@ export function ShowForm({
       {state.message ? (
         <p
           role="alert"
-          className="rounded-xl border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight lg:col-span-2"
+          className="rounded-card border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight lg:col-span-2"
         >
           {state.message}
         </p>
@@ -171,7 +171,7 @@ export function ShowForm({
       {initialValues?.id ? <input type="hidden" name="id" value={initialValues.id} /> : null}
 
       <div className="grid min-w-0 gap-5 sm:gap-6">
-        <fieldset className="grid gap-4 rounded-2xl border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
+        <fieldset className="grid gap-4 rounded-card border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
           <legend className="mb-2 px-1 text-xs text-text-dim">Show Date & Time</legend>
 
           <label className="text-sm font-medium text-text-muted">
@@ -207,7 +207,7 @@ export function ShowForm({
           <p className="text-xs text-text-dim sm:col-span-2">Timezone: SAST (UTC+02:00)</p>
         </fieldset>
 
-        <fieldset className="rounded-2xl border border-border/60 bg-bg/30 p-4 sm:p-5">
+        <fieldset className="rounded-card border border-border/60 bg-bg/30 p-4 sm:p-5">
           <legend className="px-1 text-xs text-text-dim">Show Status</legend>
           <div className="mt-3 flex items-start gap-3">
             <input
@@ -271,7 +271,7 @@ export function ShowForm({
           </p>
         </label>
 
-        <fieldset className="grid gap-4 rounded-2xl border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
+        <fieldset className="grid gap-4 rounded-card border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
           <legend className="px-1 text-xs text-text-dim">Ticket Pricing</legend>
 
           <label className="text-sm font-medium text-text-muted">

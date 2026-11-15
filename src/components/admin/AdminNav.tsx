@@ -41,7 +41,7 @@ export function AdminNav() {
                 <Link
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex min-h-11 items-center rounded-lg border px-4 py-2 text-base font-medium transition-colors ${
+                  className={`inline-flex min-h-11 items-center rounded-control border px-4 py-2 text-base font-medium transition-colors ${
                     isActive
                       ? "border-highlight bg-highlight/10 text-highlight"
                       : "border-border bg-bg/40 text-text-muted hover:border-text-dim hover:text-text"

@@ -20,6 +20,6 @@ describe("SiteFooter", () => {
       "href",
       "mailto:hello@example.com",
     );
-    expect(screen.getByRole("link", { name: "Instagram" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /^Instagram/ })).toBeInTheDocument();
   });
 });

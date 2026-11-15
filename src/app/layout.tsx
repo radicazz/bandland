@@ -107,6 +107,7 @@ export default async function RootLayout({
           <SiteFooter
             tagline={settings.footer.tagline ?? labels.footer.tagline}
             bookingLabel={labels.footer.booking}
+            newTabLabel={labels.common.opensInNewTab}
             contactEmail={settings.footer.contactEmail}
             socials={settings.socials}
           />

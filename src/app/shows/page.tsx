@@ -79,22 +79,21 @@ export default async function ShowsPage() {
   return (
     <PageSection>
       <PageIntro
-        label={labels.shows.label}
         title={labels.shows.title}
         description={labels.shows.introPrefix + labels.shows.introSuffix}
       />
       {hasSplitPricing ? (
-        <div className="mt-8 grid gap-3 rounded-xl border border-border bg-surface p-5 text-base text-text-muted sm:max-w-2xl">
+        <div className="mt-8 grid gap-3 rounded-card border border-border bg-surface p-5 text-base text-text-muted sm:max-w-2xl">
           <p className="font-semibold text-text">{labels.shows.ticketPriceGuideTitle}</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <span className="inline-flex items-center gap-2">
-              <span className="text-highlight" aria-hidden="true">
+              <span className="text-text-dim" aria-hidden="true">
                 <OnlinePriceIcon />
               </span>
               <span>{labels.shows.ticketPriceGuideOnline}</span>
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="text-highlight" aria-hidden="true">
+              <span className="text-text-dim" aria-hidden="true">
                 <DoorPriceIcon />
               </span>
               <span>{labels.shows.ticketPriceGuideDoor}</span>

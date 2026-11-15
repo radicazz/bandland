@@ -24,7 +24,7 @@ describe("MerchCard", () => {
     expect(screen.getByText(item.price)).toBeInTheDocument();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: `Bekyk: ${item.name} (opens in a new tab)` }),
+      screen.getByRole("link", { name: `Koop: ${item.name} (opens in a new tab)` }),
     ).toHaveAttribute("href", item.href);
   });
 
@@ -38,7 +38,7 @@ describe("MerchCard", () => {
     fireEvent.error(screen.getByRole("img", { name: item.name }));
     expect(screen.getByRole("img", { name: item.name })).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: `View: ${item.name} (opens in a new tab)` }),
+      screen.getByRole("link", { name: `Buy: ${item.name} (opens in a new tab)` }),
     ).toHaveAttribute("href", item.href);
   });
 

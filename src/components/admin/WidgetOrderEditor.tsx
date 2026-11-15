@@ -48,7 +48,7 @@ export function WidgetOrderEditor({ initialWidgets }: WidgetOrderEditorProps) {
           return (
             <li
               key={widget.id}
-              className={`rounded-xl border border-border bg-bg/60 p-4 ${
+              className={`rounded-card border border-border bg-bg/60 p-4 ${
                 widget.enabled ? "" : "opacity-80"
               }`}
             >
@@ -66,7 +66,7 @@ export function WidgetOrderEditor({ initialWidgets }: WidgetOrderEditorProps) {
                     onClick={() => move(index, -1)}
                     disabled={index === 0}
                     aria-label={`Move ${name} up`}
-                    className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface text-text hover:border-text-dim disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-11 w-11 items-center justify-center rounded-control border border-border bg-surface text-text hover:border-text-dim disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <span aria-hidden>↑</span>
                   </button>
@@ -75,7 +75,7 @@ export function WidgetOrderEditor({ initialWidgets }: WidgetOrderEditorProps) {
                     onClick={() => move(index, 1)}
                     disabled={index === widgets.length - 1}
                     aria-label={`Move ${name} down`}
-                    className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-surface text-text hover:border-text-dim disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-11 w-11 items-center justify-center rounded-control border border-border bg-surface text-text hover:border-text-dim disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <span aria-hidden>↓</span>
                   </button>
@@ -100,7 +100,7 @@ export function WidgetOrderEditor({ initialWidgets }: WidgetOrderEditorProps) {
                         width: event.target.value === "full" ? "full" : "half",
                       })
                     }
-                    className="min-h-11 rounded-lg border border-border bg-bg px-3 text-base text-text"
+                    className="min-h-11 rounded-control border border-border bg-bg px-3 text-base text-text"
                   >
                     <option value="half">Half (side by side)</option>
                     <option value="full">Full width</option>

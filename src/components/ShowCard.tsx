@@ -74,7 +74,7 @@ export function ShowCard({
 
   return (
     <article
-      className={`rounded-2xl border p-5 sm:p-6 ${
+      className={`rounded-card border p-5 sm:p-6 ${
         isNext ? "border-highlight/70 bg-surface-2" : "border-border bg-surface"
       }`}
     >
@@ -82,11 +82,11 @@ export function ShowCard({
         {dateBlock ? (
           <div
             aria-hidden="true"
-            className={`flex h-20 w-16 shrink-0 flex-col items-center justify-center rounded-xl border text-center sm:h-24 sm:w-20 ${
+            className={`flex h-20 w-16 shrink-0 flex-col items-center justify-center rounded-card border text-center sm:h-24 sm:w-20 ${
               isPast ? "border-border text-text-muted" : "border-border bg-bg text-text"
             }`}
           >
-            <span className="text-sm font-semibold uppercase leading-none text-highlight">
+            <span className="text-sm font-semibold uppercase leading-none text-text-muted">
               {dateBlock.month}
             </span>
             <span className="mt-1 text-3xl font-bold tabular-nums leading-none sm:text-4xl">
@@ -116,7 +116,7 @@ export function ShowCard({
             <div className="mt-3 grid gap-1.5 text-base">
               {show.priceOnline ? (
                 <p className="inline-flex items-start gap-2 break-words text-text">
-                  <span className="mt-1 text-highlight" aria-hidden="true">
+                  <span className="mt-1 text-text-dim" aria-hidden="true">
                     <OnlinePriceIcon />
                   </span>
                   <span>
@@ -127,7 +127,7 @@ export function ShowCard({
               ) : null}
               {show.priceDoor ? (
                 <p className="inline-flex items-start gap-2 break-words text-text">
-                  <span className="mt-1 text-highlight" aria-hidden="true">
+                  <span className="mt-1 text-text-dim" aria-hidden="true">
                     <DoorPriceIcon />
                   </span>
                   <span>
@@ -144,7 +144,7 @@ export function ShowCard({
       </div>
 
       {show.imageUrl ? (
-        <div className="mx-auto mt-5 aspect-[2/3] w-full max-w-64 overflow-hidden rounded-xl border border-border bg-bg sm:mx-0">
+        <div className="mx-auto mt-5 aspect-[2/3] w-full max-w-64 overflow-hidden rounded-card border border-border bg-bg sm:mx-0">
           <ContentImage
             src={show.imageUrl}
             alt={`${show.venue} show poster`}

@@ -31,7 +31,7 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <fieldset className="grid gap-5 rounded-2xl border border-border bg-surface p-4 sm:p-6">
+    <fieldset className="grid gap-5 rounded-card border border-border bg-surface p-4 sm:p-6">
       <legend className="px-2 text-lg font-semibold text-text">{title}</legend>
       {description ? <p className="-mt-2 text-sm text-text-muted">{description}</p> : null}
       {children}
@@ -67,7 +67,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
       {state.message ? (
         <p
           role="alert"
-          className="rounded-xl border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight"
+          className="rounded-card border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight"
         >
           {state.message}
         </p>
@@ -213,7 +213,7 @@ export function SettingsForm({ action, settings }: SettingsFormProps) {
         })}
       </Section>
 
-      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 rounded-xl border border-border bg-surface p-3 shadow-2xl sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 rounded-card border border-border bg-surface p-3 shadow-2xl sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
         <button
           type="submit"
           disabled={isPending}

@@ -41,7 +41,7 @@ export function MerchCard({
           <p className="mb-2 text-sm font-semibold text-highlight">{badgeLabel}</p>
         ) : null}
         <h2 className="break-words text-xl font-bold leading-snug text-text">{item.name}</h2>
-        <p className="mt-1 break-words text-lg font-semibold tabular-nums text-highlight">
+        <p className="mt-1 break-words text-lg font-semibold tabular-nums text-text">
           {item.price}
         </p>
         {item.description ? (

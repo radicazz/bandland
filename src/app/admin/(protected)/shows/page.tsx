@@ -39,7 +39,7 @@ export default async function AdminShowsPage({
       <AdminNotice value={saved} entity="Show" />
 
       {shows.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-border/70 bg-bg/60 p-6 text-sm text-text-muted">
+        <div className="mt-6 rounded-card border border-border/70 bg-bg/60 p-6 text-sm text-text-muted">
           No shows yet. Add the first one to get started.
         </div>
       ) : (

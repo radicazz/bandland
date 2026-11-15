@@ -22,7 +22,7 @@ export default async function AdminMerchEditPage({ params }: AdminMerchEditPageP
   }
 
   return (
-    <section className="rounded-2xl border border-border/70 bg-surface/70 p-4 sm:p-6">
+    <section className="rounded-card border border-border/70 bg-surface/70 p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p className="text-xs text-text-dim">Merch</p>

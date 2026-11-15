@@ -32,7 +32,7 @@ export default async function AdminMerchPage({
       <AdminNotice value={saved} entity="Merch item" />
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-2xl border border-border/70 bg-bg/60 p-6 text-sm text-text-muted">
+        <div className="mt-6 rounded-card border border-border/70 bg-bg/60 p-6 text-sm text-text-muted">
           No merch items yet. Add the first one to get started.
         </div>
       ) : (

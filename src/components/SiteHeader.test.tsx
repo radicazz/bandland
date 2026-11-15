@@ -38,22 +38,22 @@ describe("SiteHeader", () => {
     const homeLink = screen
       .getAllByText(translations.en.nav.home)
       .map((element) => element.closest("a"))
-      .find((link) => link?.getAttribute("tabindex") === "-1") as HTMLAnchorElement;
+      .find((link) => link?.closest("[aria-hidden]")) as HTMLAnchorElement;
 
     expect(menuButton).toHaveAttribute("aria-expanded", "false");
-    expect(homeLink).toHaveAttribute("tabindex", "-1");
+    expect(homeLink.closest("[inert]")).not.toBeNull();
 
     fireEvent.click(menuButton);
 
     expect(menuButton).toHaveAttribute("aria-expanded", "true");
     expect(menuButton).toHaveAccessibleName(/close menu/i);
-    expect(homeLink).toHaveAttribute("tabindex", "0");
+    expect(homeLink.closest("[inert]")).toBeNull();
     expect(document.body.style.overflow).toBe("hidden");
 
     homeLink.focus();
     fireEvent.keyDown(document, { key: "Escape" });
     expect(menuButton).toHaveAttribute("aria-expanded", "false");
-    expect(homeLink).toHaveAttribute("tabindex", "-1");
+    expect(homeLink.closest("[inert]")).not.toBeNull();
     expect(menuButton).toHaveFocus();
 
     fireEvent.click(menuButton);

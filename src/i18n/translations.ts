@@ -16,8 +16,6 @@ export type Translations = {
     merch: string;
     live: string;
     shows: string;
-    gallery: string;
-    instagram: string;
     language: string;
     socials: string;
   };
@@ -45,7 +43,6 @@ export type Translations = {
     };
   };
   shows: {
-    label: string;
     title: string;
     upcomingTitle: string;
     pastTitle: string;
@@ -66,7 +63,6 @@ export type Translations = {
     showOlder: string;
   };
   merch: {
-    label: string;
     title: string;
     introPrefix: string;
     introSuffix: string;
@@ -74,12 +70,6 @@ export type Translations = {
     view: string;
     badgeNew: string;
     badgeSoldOut: string;
-  };
-  gallery: {
-    label: string;
-    title: string;
-    intro: string;
-    follow: string;
   };
   footer: {
     tagline: string;
@@ -114,15 +104,13 @@ export const translations: Record<Locale, Translations> = {
       merch: "Merch",
       live: "Live",
       shows: "Shows",
-      gallery: "Gallery",
-      instagram: "Instagram",
       language: "Language",
       socials: "Socials",
     },
     home: {
       pinned: "Pinned",
       latestReleaseTitle: "Newest release",
-      latestReleaseDescription: "Listen to the newest drop.",
+      latestReleaseDescription: "Out now.",
       latestReleaseCta: "Listen",
       nextShowLabel: "Next show",
       nextShowFallbackTitle: "No upcoming shows",
@@ -144,7 +132,6 @@ export const translations: Record<Locale, Translations> = {
       },
     },
     shows: {
-      label: "Live",
       title: "Shows",
       upcomingTitle: "Upcoming",
       pastTitle: "Past dates",
@@ -157,8 +144,7 @@ export const translations: Record<Locale, Translations> = {
       ticketPriceGuideTitle: "Ticket Price Guide",
       ticketPriceGuideOnline: "Online price",
       ticketPriceGuideDoor: "At-door price",
-      ticketPriceGuideFallbackNote:
-        "Shows may list one or both prices. If only a general price is available, it is shown without icons.",
+      ticketPriceGuideFallbackNote: "Prices are per show. Online and door prices can differ.",
       onlinePriceLabel: "Online",
       doorPriceLabel: "Door",
       nextShowBadge: "Next show",
@@ -166,20 +152,13 @@ export const translations: Record<Locale, Translations> = {
       showOlder: "Show older shows ({count})",
     },
     merch: {
-      label: "Store",
       title: "Merch",
-      introPrefix: "Featured items and store links.",
+      introPrefix: "Merch from the band. Orders go through the store.",
       introSuffix: "",
       empty: "Storefront coming soon.",
-      view: "View",
+      view: "Buy",
       badgeNew: "New",
       badgeSoldOut: "Sold out",
-    },
-    gallery: {
-      label: "Gallery",
-      title: "Instagram",
-      intro: "Latest posts and behind-the-scenes moments. Instagram embeds landing soon.",
-      follow: "Follow on Instagram",
     },
     footer: {
       tagline: "Loud guitars. Afrikaans lyrics. Skollie spirit.",
@@ -221,15 +200,13 @@ export const translations: Record<Locale, Translations> = {
       merch: "Merch",
       live: "Live",
       shows: "Vertonings",
-      gallery: "Galerie",
-      instagram: "Instagram",
       language: "Taal",
       socials: "Sosiaal",
     },
     home: {
       pinned: "Vasgepen",
       latestReleaseTitle: "Nuutste vrystelling",
-      latestReleaseDescription: "Luister na die nuutste vrystelling.",
+      latestReleaseDescription: "Nou beskikbaar.",
       latestReleaseCta: "Luister",
       nextShowLabel: "Volgende vertoning",
       nextShowFallbackTitle: "Geen komende vertonings",
@@ -251,7 +228,6 @@ export const translations: Record<Locale, Translations> = {
       },
     },
     shows: {
-      label: "Live",
       title: "Vertonings",
       upcomingTitle: "Komende",
       pastTitle: "Verlede datums",
@@ -265,7 +241,7 @@ export const translations: Record<Locale, Translations> = {
       ticketPriceGuideOnline: "Aanlyn prys",
       ticketPriceGuideDoor: "By-die-deur prys",
       ticketPriceGuideFallbackNote:
-        "Vertonings kan een of albei pryse wys. As net 'n algemene prys beskikbaar is, word dit sonder ikone gewys.",
+        "Pryse verskil per vertoning. Aanlyn- en deurpryse kan verskil.",
       onlinePriceLabel: "Aanlyn",
       doorPriceLabel: "Deur",
       nextShowBadge: "Volgende vertoning",
@@ -273,20 +249,13 @@ export const translations: Record<Locale, Translations> = {
       showOlder: "Wys ouer vertonings ({count})",
     },
     merch: {
-      label: "Winkel",
       title: "Merch",
-      introPrefix: "Uitgeligte items en winkel-skakels.",
+      introPrefix: "Merch van die orkes. Bestellings gaan deur die winkel.",
       introSuffix: "",
       empty: "Winkelblad kom binnekort.",
-      view: "Bekyk",
+      view: "Koop",
       badgeNew: "Nuut",
       badgeSoldOut: "Uitverkoop",
-    },
-    gallery: {
-      label: "Galerie",
-      title: "Instagram",
-      intro: "Nuutste plasings en agter-die-skerms oomblikke. Instagram-inbeddings kom binnekort.",
-      follow: "Volg op Instagram",
     },
     footer: {
       tagline: "Harde kitare. Afrikaanse lirieke. Skollie-gees.",

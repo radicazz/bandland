@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Container } from "@/components/Container";
 import { site } from "@/config/site";
-import { getSocialLinks, socialIcons, type SocialLink } from "@/components/SocialLinks";
+import { getSocialLinks, type SocialLink } from "@/components/SocialLinks";
 import type { Locale, Translations } from "@/i18n/translations";
 import { LOCALE_COOKIE } from "@/i18n/translations";
 
@@ -28,7 +28,6 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
-  const menuTabIndex = isMenuOpen ? 0 : -1;
 
   const closeMenu = ({ returnFocus = false }: { returnFocus?: boolean } = {}) => {
     setIsMenuOpen(false);
@@ -171,7 +170,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
                 alt=""
                 width={32}
                 height={32}
-                className="h-9 w-9 shrink-0 rounded-md border border-border bg-surface p-0.5"
+                className="h-9 w-9 shrink-0 rounded-control border border-border bg-surface p-0.5"
               />
               <span className="truncate">{site.name}</span>
             </Link>
@@ -194,13 +193,12 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
                 <nav
                   aria-label={labels.nav.explore}
                   aria-hidden={!isMenuOpen}
-                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto rounded-2xl border border-border bg-surface p-4 shadow-2xl"
+                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto rounded-card border border-border bg-surface p-4 shadow-2xl"
                 >
                   <div className="flex justify-end">
                     <button
                       type="button"
-                      className="min-h-11 rounded-lg px-3 text-base font-medium text-text-muted hover:text-text"
-                      tabIndex={menuTabIndex}
+                      className="min-h-11 rounded-control px-3 text-base font-medium text-text-muted hover:text-text"
                       onClick={() => closeMenu({ returnFocus: true })}
                     >
                       {labels.common.closeMenu}
@@ -220,12 +218,11 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
                           <Link
                             href={href}
                             aria-current={isActive ? "page" : undefined}
-                            className={`flex min-h-14 items-center justify-between rounded-xl px-4 text-2xl font-semibold transition-colors ${
+                            className={`flex min-h-14 items-center justify-between rounded-card px-4 text-2xl font-semibold transition-colors ${
                               isActive
                                 ? "bg-surface-2 text-text"
                                 : "text-text-muted hover:bg-surface-2 hover:text-text"
                             }`}
-                            tabIndex={menuTabIndex}
                             onClick={() => closeMenu()}
                           >
                             {label}
@@ -242,24 +239,20 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
                       <p className="px-4 text-sm font-semibold text-text-dim">
                         {labels.nav.socials}
                       </p>
-                      <ul className="mt-3 flex flex-wrap gap-2 px-4">
-                        {socialLinks.map((social) => {
-                          const Icon = socialIcons[social.label as keyof typeof socialIcons];
-                          return (
-                            <li key={social.label}>
-                              <a
-                                className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-surface-2 text-text transition-colors hover:border-text-dim"
-                                href={social.href ?? undefined}
-                                target="_blank"
-                                rel="noreferrer"
-                                tabIndex={menuTabIndex}
-                                aria-label={social.label}
-                              >
-                                <Icon className="h-5 w-5" aria-hidden="true" />
-                              </a>
-                            </li>
-                          );
-                        })}
+                      <ul className="mt-2 flex flex-wrap gap-x-5 px-4">
+                        {socialLinks.map((social) => (
+                          <li key={social.label}>
+                            <a
+                              className="inline-flex min-h-11 items-center text-lg font-medium text-text-muted hover:text-text"
+                              href={social.href ?? undefined}
+                              target="_blank"
+                              rel="noreferrer"
+                              aria-label={`${social.label} (${labels.common.opensInNewTab})`}
+                            >
+                              {social.label}
+                            </a>
+                          </li>
+                        ))}
                       </ul>
                     </div>
                   ) : null}
@@ -269,7 +262,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
           </div>
           <div
             aria-hidden="true"
-            className={`fixed inset-0 top-16 z-10 bg-bg/90 backdrop-blur-sm transition-opacity duration-200 lg:hidden ${
+            className={`fixed inset-0 top-16 z-10 bg-bg/95 transition-opacity duration-200 lg:hidden ${
               isMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
             }`}
           />
@@ -310,13 +303,13 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
               <div
                 role="group"
                 aria-label={labels.nav.language}
-                className="flex shrink-0 items-center gap-0.5 rounded-lg border border-border bg-surface p-0.5 text-sm font-semibold text-text-muted"
+                className="flex shrink-0 items-center gap-0.5 rounded-control border border-border bg-surface p-0.5 text-sm font-semibold text-text-muted"
               >
                 <button
                   type="button"
                   aria-pressed={locale === "en"}
                   onClick={() => setLocale("en")}
-                  className={`min-h-10 min-w-11 rounded-md px-2.5 py-1 transition-colors ${
+                  className={`min-h-10 min-w-11 rounded-control px-2.5 py-1 transition-colors ${
                     locale === "en" ? "bg-text text-bg" : "text-text-muted hover:text-text"
                   }`}
                 >
@@ -326,7 +319,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
                   type="button"
                   aria-pressed={locale === "af"}
                   onClick={() => setLocale("af")}
-                  className={`min-h-10 min-w-11 rounded-md px-2.5 py-1 transition-colors ${
+                  className={`min-h-10 min-w-11 rounded-control px-2.5 py-1 transition-colors ${
                     locale === "af" ? "bg-text text-bg" : "text-text-muted hover:text-text"
                   }`}
                 >
@@ -334,23 +327,20 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
                 </button>
               </div>
               {socialLinks.length ? (
-                <ul className="hidden items-center gap-2 text-text-dim lg:flex">
-                  {socialLinks.map((social) => {
-                    const Icon = socialIcons[social.label as keyof typeof socialIcons];
-                    return (
-                      <li key={social.label}>
-                        <a
-                          href={social.href ?? undefined}
-                          className="flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-surface transition-colors hover:border-text-dim hover:text-text"
-                          target="_blank"
-                          rel="noreferrer"
-                          aria-label={social.label}
-                        >
-                          <Icon className="h-4 w-4" aria-hidden="true" />
-                        </a>
-                      </li>
-                    );
-                  })}
+                <ul className="hidden items-center gap-4 xl:flex">
+                  {socialLinks.map((social) => (
+                    <li key={social.label}>
+                      <a
+                        href={social.href ?? undefined}
+                        className="inline-flex min-h-11 items-center text-sm font-medium text-text-muted transition-colors hover:text-text"
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`${social.label} (${labels.common.opensInNewTab})`}
+                      >
+                        {social.label}
+                      </a>
+                    </li>
+                  ))}
                 </ul>
               ) : null}
             </div>
@@ -362,7 +352,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
             aria-controls={menuId}
             aria-haspopup="dialog"
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            className={`flex h-11 w-11 items-center justify-center rounded-lg border bg-surface text-text transition-colors hover:border-text-dim lg:hidden ${
+            className={`flex h-11 w-11 items-center justify-center rounded-control border bg-surface text-text transition-colors hover:border-text-dim lg:hidden ${
               isMenuOpen ? "border-text-dim" : "border-border"
             }`}
           >

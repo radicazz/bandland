@@ -43,7 +43,7 @@ export function MerchForm({
       {state.message ? (
         <p
           role="alert"
-          className="rounded-xl border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight"
+          className="rounded-card border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight"
         >
           {state.message}
         </p>

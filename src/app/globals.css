@@ -23,6 +23,9 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-brand: var(--font-bandland-gothic);
+  /* Radius scale: controls (buttons, inputs, small tiles) and cards (panels, menus). Pills only for status. */
+  --radius-control: 0.5rem;
+  --radius-card: 1rem;
 }
 
 html,
@@ -66,10 +69,28 @@ body {
   background: color-mix(in srgb, var(--highlight) 30%, transparent);
 }
 
+@layer base {
+  a[href],
+  button:not(:disabled),
+  summary,
+  select,
+  label[for],
+  [role="button"]:not([aria-disabled="true"]),
+  [role="tab"],
+  [role="switch"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
 @layer components {
   .btn-primary,
   .btn-secondary {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-lg px-6 py-2.5 text-center text-base font-semibold transition-colors whitespace-normal;
+    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-control px-6 py-2.5 text-center text-base font-semibold transition-colors whitespace-normal;
   }
 
   .btn-primary {
@@ -94,11 +115,41 @@ body {
   }
 
   .panel {
-    @apply rounded-2xl border border-border bg-surface;
+    @apply rounded-card border border-border bg-surface;
   }
 
   .section-kicker {
-    @apply text-sm font-semibold text-highlight;
+    @apply text-sm font-semibold text-text-dim;
+  }
+
+  /* Identity motif: the ticket stub. A dashed perforation with side notches. */
+  .ticket {
+    @apply relative overflow-hidden;
+  }
+
+  .perforation {
+    @apply relative border-t-2 border-dashed border-border;
+  }
+
+  .perforation::before,
+  .perforation::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    transform: translateY(-50%);
+  }
+
+  .perforation::before {
+    left: -0.75rem;
+  }
+
+  .perforation::after {
+    right: -0.75rem;
   }
 
   .display-title {
