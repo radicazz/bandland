@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Fragment, type ReactNode } from "react";
 
+import { proceduralAnchors } from "@/components/guitar/guitarModel";
 import { buildRoute, type StopId } from "@/components/guitar/journey";
 import { PlaybackProvider } from "@/components/guitar/PlaybackProvider";
 import { PlayButton } from "@/components/guitar/PlayButton";
@@ -15,6 +16,7 @@ import { splitShowsByStatus } from "@/lib/shows";
 import { JourneyStage } from "./JourneyStage";
 
 const MERCH_PREVIEW_COUNT = 3;
+const NECK_ROWS_ID = "journey-neck-rows";
 
 type HomeJourneyProps = {
   labels: Translations;
@@ -52,7 +54,8 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
     enabled.has("nextShow") ? getShows() : Promise.resolve([]),
     enabled.has("merch") ? getMerchItems() : Promise.resolve([]),
   ]);
-  const upcoming = splitShowsByStatus(shows).upcoming;
+  // One show per fret; the "All shows" link covers the rest.
+  const upcoming = splitShowsByStatus(shows).upcoming.slice(0, proceduralAnchors.fretCount);
   const merchPreview = merch.slice(0, MERCH_PREVIEW_COUNT);
 
   // The rendered sections and the camera route come from the same list, so they
@@ -121,7 +124,7 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
           <h2 id="journey-neck" className="display-title mt-3 text-3xl sm:text-4xl">
             {journey.neckTitle}
           </h2>
-          <ol className="mt-8 grid gap-4 border-l border-border pl-4 sm:pl-6">
+          <ol id={NECK_ROWS_ID} className="mt-8 grid gap-4 border-l border-border pl-4 sm:pl-6">
             {upcoming.map((show, index) => (
               <li key={show.id} data-fret={index}>
                 <ShowCard
@@ -196,7 +199,7 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
       {/* -mt-16 slides the journey under the translucent sticky header, as the old hero did. */}
       <div className="relative mx-auto -mt-16 w-full max-w-6xl md:grid md:grid-cols-2 md:gap-10 md:px-6">
         <div className="sticky top-0 z-10 h-[45svh] md:order-2 md:h-svh">
-          <JourneyStage route={route} initialFret={upcoming.length > 0 ? 0 : -1} />
+          <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
         </div>
         <div className="relative px-4 sm:px-6 md:order-1 md:px-0">
           {route.map((stop) => (

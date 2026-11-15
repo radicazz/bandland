@@ -2,6 +2,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HomeJourney } from "./HomeJourney";
+import { proceduralAnchors } from "@/components/guitar/guitarModel";
 import type { MerchItem, Show, SiteSettings } from "@/content/schema";
 import { getDefaultSettings } from "@/content/settings-defaults";
 import { translations } from "@/i18n/translations";
@@ -130,7 +131,32 @@ describe("HomeJourney", () => {
       within(first).getByRole("link", { name: new RegExp(`^${labels.shows.tickets}`) }),
     ).toHaveAttribute("href", "https://tickets.example.com/mercury");
     expect(screen.queryByText("Old Show")).not.toBeInTheDocument();
-    expect(screen.getByTestId("guitar-stage")).toHaveAttribute("data-lit-fret", "0");
+    // Nothing is lit until a show row scrolls into view.
+    expect(screen.getByTestId("guitar-stage")).toHaveAttribute("data-lit-fret", "-1");
+  });
+
+  it("caps neck rows at the guitar's fret count", async () => {
+    const total = proceduralAnchors.fretCount + 3;
+    getShowsMock.mockResolvedValue(
+      Array.from({ length: total }, (_, index) =>
+        createShow({
+          id: `00000000-0000-4000-8000-${String(index).padStart(12, "0")}`,
+          date: `2099-06-${String(index + 1).padStart(2, "0")}T20:00:00+02:00`,
+          venue: `Venue ${index}`,
+        }),
+      ),
+    );
+    const { container } = await renderJourney();
+
+    const neck = container.querySelector<HTMLElement>('[data-stop="neck"]') as HTMLElement;
+    const items = within(neck).getAllByRole("listitem");
+    expect(items).toHaveLength(proceduralAnchors.fretCount);
+    expect(items.at(-1)).toHaveAttribute("data-fret", String(proceduralAnchors.fretCount - 1));
+    expect(screen.queryByText(`Venue ${proceduralAnchors.fretCount}`)).not.toBeInTheDocument();
+    expect(within(neck).getByRole("link", { name: labels.home.allShowsCta })).toHaveAttribute(
+      "href",
+      "/shows",
+    );
   });
 
   it("renders the existing fallback copy when there are no upcoming shows", async () => {
