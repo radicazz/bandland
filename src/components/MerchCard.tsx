@@ -56,7 +56,7 @@ export function MerchCard({
             aria-label={`${labels.view}: ${item.name} (${newTabLabel})`}
           >
             {labels.view}
-            <span aria-hidden>↗</span>
+            <span aria-hidden>{"\u2197\uFE0E"}</span>
           </a>
         </div>
       </div>

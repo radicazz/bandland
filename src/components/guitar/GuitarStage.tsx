@@ -13,7 +13,6 @@ import {
 } from "react";
 import type { StopId } from "./journey";
 import { usePlayback } from "./PlaybackProvider";
-import { useScrollProgress } from "./useScrollProgress";
 
 // The three.js scene is its own chunk, loaded only on the client after first paint.
 const GuitarCanvas = dynamic(() => import("./Guitar").then((mod) => mod.GuitarCanvas), {
@@ -82,7 +81,16 @@ const noopSubscribe = () => () => {};
 const serverTrue = () => true;
 const serverFalse = () => false;
 
-export function GuitarStage({ route, litFret }: { route: readonly StopId[]; litFret: number }) {
+export function GuitarStage({
+  route,
+  position,
+  litFret,
+}: {
+  route: readonly StopId[];
+  /** Scroll position along `route` in index units (see useScrollProgress). */
+  position: number;
+  litFret: number;
+}) {
   const signal = usePlayback();
   // Server snapshots pick the poster-only path so hydration always matches.
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, serverTrue);
@@ -91,10 +99,14 @@ export function GuitarStage({ route, litFret }: { route: readonly StopId[]; litF
   const [onScreen, setOnScreen] = useState(true);
   const [contextLost, setContextLost] = useState(false);
   const [canvasFailed, setCanvasFailed] = useState(false);
+  const [canvasReady, setCanvasReady] = useState(false);
+  const playing = useSyncExternalStore(
+    signal.subscribe,
+    () => signal.playing,
+    () => false,
+  );
   const wrapperRef = useRef<HTMLDivElement>(null);
-  // Reduced motion pins the camera to the hero pose, so scroll tracking is idle too.
   const showCanvas = webgl && !contextLost && !canvasFailed;
-  const position = useScrollProgress(route, showCanvas && !reducedMotion);
 
   useEffect(() => {
     const element = wrapperRef.current;
@@ -107,24 +119,36 @@ export function GuitarStage({ route, litFret }: { route: readonly StopId[]; litF
     return () => observer.disconnect();
   }, []);
 
-  const handleContextLost = useCallback(() => setContextLost(true), []);
-  const handleCanvasError = useCallback(() => setCanvasFailed(true), []);
+  const handleContextLost = useCallback(() => {
+    setCanvasReady(false);
+    setContextLost(true);
+  }, []);
+  const handleCanvasError = useCallback(() => {
+    setCanvasReady(false);
+    setCanvasFailed(true);
+  }, []);
+  const handleCanvasReady = useCallback(() => setCanvasReady(true), []);
+  // The canvas is transparent over the shared backdrop, so the poster steps aside
+  // once the first frame is up instead of double-exposing through it.
+  const posterHidden = showCanvas && canvasReady;
 
   // Reduced motion keeps the canvas but pins it to the hero pose (see Guitar.tsx).
   return (
     <div
       ref={wrapperRef}
       aria-hidden="true"
-      className="relative h-full w-full overflow-hidden bg-bg"
+      data-playing={playing ? "" : undefined}
+      className="guitar-stage relative h-full w-full overflow-hidden"
     >
       <Image
-        src="/guitar-poster.jpg"
+        src="/guitar-poster.webp"
         alt=""
         fill
-        sizes="(min-width: 768px) 50vw, 100vw"
+        sizes="100vw"
         loading="eager"
         fetchPriority="high"
-        className="object-contain"
+        // md+: same sideways shift as the canvas (STAGE_SHIFT in journey.ts).
+        className={`object-contain transition-opacity duration-300 md:translate-x-[20%] ${posterHidden ? "opacity-0" : "opacity-100"}`}
       />
       {showCanvas ? (
         <div className="absolute inset-0" data-motion={reducedMotion ? "reduced" : "full"}>
@@ -137,10 +161,12 @@ export function GuitarStage({ route, litFret }: { route: readonly StopId[]; litF
               active={documentVisible && onScreen}
               reducedMotion={reducedMotion}
               onContextLost={handleContextLost}
+              onReady={handleCanvasReady}
             />
           </CanvasBoundary>
         </div>
       ) : null}
+      <div className="guitar-stage-vignette pointer-events-none absolute inset-0" />
     </div>
   );
 }

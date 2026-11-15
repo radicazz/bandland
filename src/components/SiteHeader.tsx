@@ -156,21 +156,21 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
   }, [isMenuOpen, isMobileViewport]);
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-bg/90 backdrop-blur-md">
+    <header className="site-header sticky top-0 z-30">
       <Container className="relative">
-        <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 lg:grid-cols-[auto_1fr_auto] lg:gap-3">
+        <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 lg:gap-8">
           <div className="relative min-w-0" ref={menuRef}>
             <Link
               href="/"
               onClick={() => closeMenu()}
-              className="group flex min-h-11 min-w-0 items-center gap-3 font-brand text-2xl leading-none text-text transition-colors hover:text-highlight"
+              className="group flex min-h-11 min-w-0 items-center gap-2.5 self-start justify-self-start font-brand text-[1.75rem] leading-none text-text transition-colors hover:text-highlight"
             >
               <Image
                 src="/logos/schmat-rat.png"
                 alt=""
                 width={32}
                 height={32}
-                className="h-9 w-9 shrink-0 rounded-control border border-border bg-surface p-0.5"
+                className="h-9 w-9 shrink-0 rounded-control"
               />
               <span className="truncate">{site.name}</span>
             </Link>
@@ -268,26 +268,24 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
           />
           <nav
             aria-label={labels.nav.explore}
-            className="hidden items-center justify-center gap-1 lg:col-start-2 lg:row-start-1 lg:flex"
+            className="hidden items-center gap-6 lg:col-start-2 lg:row-start-1 lg:flex"
           >
             {(
               [
-                { href: "/", label: labels.nav.home },
                 { href: "/shows", label: labels.nav.shows },
                 { href: "/merch", label: labels.nav.merch },
               ] as const
             ).map((item) => {
-              const isActive =
-                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              const isActive = pathname.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   aria-current={isActive ? "page" : undefined}
-                  className={`min-h-11 border-b-2 px-4 py-2 text-base font-medium transition-colors ${
+                  className={`inline-flex min-h-11 items-center text-base font-semibold underline-offset-8 transition-colors ${
                     isActive
-                      ? "border-highlight text-text"
-                      : "border-transparent text-text-muted hover:text-text"
+                      ? "text-text underline decoration-highlight decoration-2"
+                      : "text-text-muted hover:text-text"
                   }`}
                 >
                   {item.label}
@@ -299,50 +297,36 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
             inert={isMenuOpen && isMobileViewport}
             className="justify-self-end lg:col-start-3 lg:row-start-1"
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <div
                 role="group"
                 aria-label={labels.nav.language}
-                className="flex shrink-0 items-center gap-0.5 rounded-control border border-border bg-surface p-0.5 text-sm font-semibold text-text-muted"
+                className="flex shrink-0 items-center text-sm font-semibold text-text-dim"
               >
                 <button
                   type="button"
                   aria-pressed={locale === "en"}
                   onClick={() => setLocale("en")}
-                  className={`min-h-10 min-w-11 rounded-control px-2.5 py-1 transition-colors ${
-                    locale === "en" ? "bg-text text-bg" : "text-text-muted hover:text-text"
+                  className={`min-h-11 min-w-11 px-1.5 transition-colors ${
+                    locale === "en" ? "text-text" : "text-text-dim hover:text-text"
                   }`}
                 >
                   ENG
                 </button>
+                <span aria-hidden className="text-border">
+                  /
+                </span>
                 <button
                   type="button"
                   aria-pressed={locale === "af"}
                   onClick={() => setLocale("af")}
-                  className={`min-h-10 min-w-11 rounded-control px-2.5 py-1 transition-colors ${
-                    locale === "af" ? "bg-text text-bg" : "text-text-muted hover:text-text"
+                  className={`min-h-11 min-w-11 px-1.5 transition-colors ${
+                    locale === "af" ? "text-text" : "text-text-dim hover:text-text"
                   }`}
                 >
                   AFR
                 </button>
               </div>
-              {socialLinks.length ? (
-                <ul className="hidden items-center gap-4 xl:flex">
-                  {socialLinks.map((social) => (
-                    <li key={social.label}>
-                      <a
-                        href={social.href ?? undefined}
-                        className="inline-flex min-h-11 items-center text-sm font-medium text-text-muted transition-colors hover:text-text"
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={`${social.label} (${labels.common.opensInNewTab})`}
-                      >
-                        {social.label}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
             </div>
           </div>
           <button
@@ -352,9 +336,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
             aria-controls={menuId}
             aria-haspopup="dialog"
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            className={`flex h-11 w-11 items-center justify-center rounded-control border bg-surface text-text transition-colors hover:border-text-dim lg:hidden ${
-              isMenuOpen ? "border-text-dim" : "border-border"
-            }`}
+            className="-mr-2 flex h-11 w-11 items-center justify-center rounded-control text-text transition-colors hover:text-highlight lg:hidden"
           >
             <span className="sr-only">
               {isMenuOpen ? labels.common.closeMenu : labels.common.openMenu}

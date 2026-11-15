@@ -8,12 +8,16 @@ const fiberMock = vi.hoisted(() => ({ throwOnRender: false }));
 // after mount, render errors are rethrown, and unmount forces a context loss on
 // the old canvas asynchronously (R3F calls gl.forceContextLoss() after a delay).
 vi.mock("@react-three/fiber", () => ({
-  Canvas: ({ onCreated }: { onCreated?: (state: { gl: { domElement: HTMLElement } }) => void }) => {
+  Canvas: ({
+    onCreated,
+  }: {
+    onCreated?: (state: { gl: { domElement: HTMLElement }; scene: object }) => void;
+  }) => {
     if (fiberMock.throwOnRender) throw new Error("renderer failed");
     const ref = React.useRef<HTMLDivElement>(null);
     React.useEffect(() => {
       const element = ref.current;
-      if (element) onCreated?.({ gl: { domElement: element } });
+      if (element) onCreated?.({ gl: { domElement: element }, scene: {} });
       return () => {
         if (element) setTimeout(() => element.dispatchEvent(new Event("webglcontextlost")), 0);
       };
@@ -64,7 +68,7 @@ async function renderStage() {
   const { PlaybackProvider } = await import("./PlaybackProvider");
   return render(
     <PlaybackProvider>
-      <GuitarStage route={["hero", "release", "neck", "body", "outro"]} litFret={0} />
+      <GuitarStage route={["hero", "release", "neck", "body", "outro"]} position={0} litFret={0} />
     </PlaybackProvider>,
   );
 }
@@ -84,7 +88,7 @@ describe("GuitarStage", () => {
     const img = container.querySelector("img");
     expect(img).not.toBeNull();
     expect(img).toHaveAttribute("alt", "");
-    expect(img?.getAttribute("src")).toContain("guitar-poster.jpg");
+    expect(img?.getAttribute("src")).toContain("guitar-poster.webp");
     expect(img?.closest("[aria-hidden='true']")).not.toBeNull();
     const canvas = await screen.findByTestId("r3f-canvas");
     expect(canvas.closest("[data-motion]")).toHaveAttribute("data-motion", "reduced");
@@ -177,38 +181,6 @@ describe("GuitarCanvas", () => {
     expect(stagePose(route, 1, false, fretY)).toEqual(sampleCamera(route, 1));
     expect(stagePose(route, 2, true, fretY)).toEqual(CAMERA_POSES.hero);
     expect(stagePose(route, 2, false, null)).toEqual(sampleCamera(route, 2));
-  });
-});
-
-describe("GuitarStage scroll tracking", () => {
-  it("runs scroll tracking only while a full-motion canvas is shown", async () => {
-    const raf = vi.spyOn(window, "requestAnimationFrame");
-
-    stubMatchMedia(false);
-    stubWebGL(false);
-    await renderStage();
-    await flush();
-    expect(raf).not.toHaveBeenCalled();
-    cleanup();
-
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
-    const rafReduced = vi.spyOn(window, "requestAnimationFrame");
-    stubMatchMedia(true);
-    stubWebGL(true);
-    await renderStage();
-    await flush();
-    expect(rafReduced).not.toHaveBeenCalled();
-    cleanup();
-
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
-    const rafFull = vi.spyOn(window, "requestAnimationFrame");
-    stubMatchMedia(false);
-    stubWebGL(true);
-    await renderStage();
-    await screen.findByTestId("r3f-canvas");
-    expect(rafFull).toHaveBeenCalled();
   });
 });
 

@@ -176,7 +176,7 @@ export function ShowCard({
                 aria-label={`${labels.tickets}: ${show.venue} (${newTabLabel})`}
               >
                 {labels.tickets}
-                <span aria-hidden>↗</span>
+                <span aria-hidden>{"\u2197\uFE0E"}</span>
               </a>
             )
           ) : null}

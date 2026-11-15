@@ -18,12 +18,13 @@ import { JourneyStage } from "./JourneyStage";
 const MERCH_PREVIEW_COUNT = 3;
 const NECK_ROWS_ID = "journey-neck-rows";
 
-// On phones the opaque stage is pinned under the 4rem header and covers the top
-// 45svh of the viewport; keep focus/scroll-into-view targets below it. On md+ the
-// stage sits beside the text, so only the header needs clearing.
-const SCROLL_CLEAR = "scroll-mt-[calc(4rem+45svh+1rem)] md:scroll-mt-20";
+// The stage is a full-screen backdrop, so only the sticky header needs clearing.
+const SCROLL_CLEAR = "scroll-mt-20";
 const INTERACTIVE_SCROLL_CLEAR =
-  "[&_a]:scroll-mt-[calc(4rem+45svh+1rem)] [&_button]:scroll-mt-[calc(4rem+45svh+1rem)] [&_iframe]:scroll-mt-[calc(4rem+45svh+1rem)] md:[&_a]:scroll-mt-20 md:[&_button]:scroll-mt-20 md:[&_iframe]:scroll-mt-20";
+  "[&_a]:scroll-mt-20 [&_button]:scroll-mt-20 [&_iframe]:scroll-mt-20";
+
+const stopAnchor = (stop: StopId) => `stop-${stop}`;
+const stopNumber = (index: number) => String(index + 1).padStart(2, "0");
 
 type HomeJourneyProps = {
   labels: Translations;
@@ -44,14 +45,28 @@ function Stop({
 }) {
   return (
     <section
+      id={stopAnchor(id)}
       data-stop={id}
       aria-labelledby={labelledBy}
-      className={`flex min-h-[70svh] flex-col md:min-h-svh ${SCROLL_CLEAR} ${className}`}
+      className={`stop-reveal relative flex min-h-svh flex-col ${SCROLL_CLEAR} ${className}`}
     >
       {children}
     </section>
   );
 }
+
+/** Stop number + fret-wire rule + label, e.g. "02 —— Newest release". */
+function Kicker({ number, children }: { number: string; children: ReactNode }) {
+  return (
+    <p className="flex items-center gap-3 text-sm font-semibold tabular-nums">
+      <span className="text-highlight">{number}</span>
+      <span aria-hidden className="h-px w-8 bg-border" />
+      <span className="text-text-dim">{children}</span>
+    </p>
+  );
+}
+
+const STOP_TITLE = "display-title mt-3 text-4xl sm:text-5xl lg:text-6xl";
 
 export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps) {
   const enabled = new Set(
@@ -72,41 +87,56 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
     (stop) => stop !== "body" || merchPreview.length > 0,
   );
   const journey = labels.home.journey;
+  const number = (stop: StopId) => stopNumber(route.indexOf(stop));
 
   const sections: Record<StopId, () => ReactNode> = {
     hero: () => (
       <Stop
         id="hero"
         labelledBy="journey-hero"
-        // Mobile: start right under the pinned stage so the Play button is above the fold.
-        className="pt-8 pb-16 md:justify-center md:py-16"
+        // Phones: the guitar fills the screen, so the copy sits at the bottom like a poster.
+        className="justify-end pt-24 pb-14 md:justify-center md:py-24"
       >
         <h1
           id="journey-hero"
-          className="font-brand text-[clamp(4rem,19vw,9.5rem)] leading-[0.9] text-text md:text-[clamp(4rem,10vw,8rem)]"
+          className="-ml-1 font-brand text-[clamp(4.5rem,24vw,9rem)] leading-[0.85] text-text md:text-[clamp(6rem,11vw,11rem)]"
         >
           {site.name}
         </h1>
         <p className="mt-4 max-w-xl text-lg leading-8 text-text sm:text-xl">
           {settings.hero.tagline ?? labels.meta.description}
         </p>
-        <div className="mt-8 flex flex-col items-start gap-3">
+        {route.includes("release") ? (
+          <a
+            href={`#${stopAnchor("release")}`}
+            className="group mt-6 inline-flex max-w-xl items-center gap-3 self-start text-base text-text-muted"
+          >
+            <span aria-hidden className="h-px w-8 bg-highlight" />
+            <span>
+              {labels.home.latestReleaseTitle}:{" "}
+              <span className="font-semibold text-text underline decoration-border underline-offset-4 transition-colors group-hover:decoration-highlight">
+                {settings.release.title}
+              </span>
+            </span>
+          </a>
+        ) : null}
+        <div className="mt-10 flex flex-col items-start gap-3">
           <PlayButton labels={journey} />
-          <p className="text-base text-text-muted">{journey.playHint}</p>
+          <p className="text-sm text-text-dim">{journey.playHint}</p>
         </div>
       </Stop>
     ),
     release: () => (
       <Stop id="release" labelledBy="journey-release">
-        <p className="section-kicker">{labels.home.latestReleaseTitle}</p>
-        <h2 id="journey-release" className="display-title mt-3 text-3xl sm:text-4xl">
+        <Kicker number={number("release")}>{labels.home.latestReleaseTitle}</Kicker>
+        <h2 id="journey-release" className={STOP_TITLE}>
           {settings.release.title}
         </h2>
         <p className="mt-2 text-lg text-text-muted">
           {settings.release.description ?? labels.home.latestReleaseDescription}
         </p>
         {settings.release.embedUrl ? (
-          <div className="mt-6 overflow-hidden rounded-card bg-bg">
+          <div className="mt-6 overflow-hidden rounded-card border border-border bg-surface p-2">
             <iframe
               title={`${labels.home.latestReleaseTitle}: ${settings.release.title}`}
               src={settings.release.embedUrl}
@@ -114,7 +144,7 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
               height="152"
               loading="lazy"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              className="block w-full"
+              className="block w-full rounded-control"
             />
           </div>
         ) : null}
@@ -126,15 +156,15 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
           className="btn-primary mt-6 self-start"
         >
           {labels.home.latestReleaseCta}
-          <span aria-hidden>↗</span>
+          <span aria-hidden>{"\u2197\uFE0E"}</span>
         </a>
       </Stop>
     ),
     neck: () =>
       upcoming.length > 0 ? (
         <Stop id="neck" labelledBy="journey-neck">
-          <p className="section-kicker">{labels.home.nextShowLabel}</p>
-          <h2 id="journey-neck" className="display-title mt-3 text-3xl sm:text-4xl">
+          <Kicker number={number("neck")}>{labels.home.nextShowLabel}</Kicker>
+          <h2 id="journey-neck" className={STOP_TITLE}>
             {journey.neckTitle}
           </h2>
           <ol id={NECK_ROWS_ID} className="mt-8 grid gap-4 border-l border-border pl-4 sm:pl-6">
@@ -156,8 +186,8 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
         </Stop>
       ) : (
         <Stop id="neck" labelledBy="journey-neck">
-          <p className="section-kicker">{labels.home.nextShowLabel}</p>
-          <h2 id="journey-neck" className="display-title mt-3 text-3xl sm:text-4xl">
+          <Kicker number={number("neck")}>{labels.home.nextShowLabel}</Kicker>
+          <h2 id="journey-neck" className={STOP_TITLE}>
             {labels.home.nextShowFallbackTitle}
           </h2>
           <p className="mt-4 text-lg leading-8 text-text-muted">
@@ -170,8 +200,8 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
       ),
     body: () => (
       <Stop id="body" labelledBy="journey-body">
-        <p className="section-kicker">{labels.nav.merch}</p>
-        <h2 id="journey-body" className="display-title mt-3 text-3xl sm:text-4xl">
+        <Kicker number={number("body")}>{labels.nav.merch}</Kicker>
+        <h2 id="journey-body" className={STOP_TITLE}>
           {journey.bodyTitle}
         </h2>
         <ul className="mt-8 grid gap-6 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
@@ -192,7 +222,8 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
     ),
     outro: () => (
       <Stop id="outro" labelledBy="journey-outro">
-        <h2 id="journey-outro" className="display-title text-3xl sm:text-4xl">
+        <Kicker number={number("outro")}>{journey.outroKicker}</Kicker>
+        <h2 id="journey-outro" className={STOP_TITLE}>
           {journey.outroTitle}
         </h2>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -209,15 +240,24 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
 
   return (
     <PlaybackProvider>
-      <div className="relative mx-auto w-full max-w-6xl md:grid md:grid-cols-2 md:gap-10 md:px-6">
-        {/* Pinned just below the 4rem sticky header so the header never covers the guitar. */}
-        <div className="sticky top-16 z-10 h-[45svh] md:order-2 md:h-[calc(100svh-4rem)]">
+      {/* Starts under the translucent sticky header so the stage runs edge to edge. */}
+      <div className="relative -mt-16">
+        {/*
+          Full-screen backdrop pinned for the whole journey; the negative margin
+          lets the sections scroll over it instead of after it. lvh keeps the
+          canvas size steady while mobile browser bars slide in and out.
+        */}
+        <div className="sticky top-0 -mb-[100lvh] h-lvh">
           <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
         </div>
-        <div className={`relative px-4 sm:px-6 md:order-1 md:px-0 ${INTERACTIVE_SCROLL_CLEAR}`}>
-          {route.map((stop) => (
-            <Fragment key={stop}>{sections[stop]()}</Fragment>
-          ))}
+        <div
+          className={`relative mx-auto w-full max-w-6xl px-4 sm:px-6 ${INTERACTIVE_SCROLL_CLEAR}`}
+        >
+          <div className="md:w-1/2 md:pr-6 lg:pr-10">
+            {route.map((stop) => (
+              <Fragment key={stop}>{sections[stop]()}</Fragment>
+            ))}
+          </div>
         </div>
       </div>
     </PlaybackProvider>

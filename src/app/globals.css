@@ -152,8 +152,128 @@ body {
     right: -0.75rem;
   }
 
+  /*
+   * Guitar stage: one bare bulb over a dark floor. Painted in CSS so the WebGL
+   * canvas (transparent) and the poster fallback share the same backdrop.
+   */
+  .guitar-stage {
+    /* Horizontal centre of the guitar; md+ follows STAGE_SHIFT (journey.ts). */
+    --stage-x: 50%;
+    isolation: isolate;
+    background:
+      radial-gradient(
+        ellipse 55% 42% at var(--stage-x) 40%,
+        color-mix(in srgb, var(--text) 7%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 30% 10% at var(--stage-x) 93%,
+        color-mix(in srgb, var(--text) 5%, transparent),
+        transparent
+      ),
+      var(--bg);
+  }
+
+  @media (min-width: 768px) {
+    .guitar-stage {
+      --stage-x: 70%;
+    }
+  }
+
+  /* Warm floor spill that only exists while Play is on. */
+  .guitar-stage::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      ellipse 40% 16% at var(--stage-x) 92%,
+      color-mix(in srgb, var(--highlight) 18%, transparent),
+      transparent
+    );
+    opacity: 0;
+    transition: opacity 600ms ease;
+  }
+
+  .guitar-stage[data-playing]::before {
+    opacity: 1;
+  }
+
+  .guitar-stage-vignette {
+    background: radial-gradient(ellipse at var(--stage-x) 45%, transparent 50%, var(--bg) 100%);
+  }
+
+  /* Film grain: grayscale noise only, no hue of its own. */
+  .guitar-stage-vignette::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /*
+   * Journey scrim over the stage. Phones: a floor of solid background under the
+   * poster-style hero copy. md+: darkens the text column side only.
+   */
+  .journey-scrim {
+    background: linear-gradient(
+      to top,
+      var(--bg) 12%,
+      color-mix(in srgb, var(--bg) 60%, transparent) 40%,
+      transparent 65%
+    );
+  }
+
+  @media (min-width: 768px) {
+    .journey-scrim {
+      background: linear-gradient(
+        to right,
+        var(--bg) 0%,
+        color-mix(in srgb, var(--bg) 75%, transparent) 30%,
+        transparent 55%
+      );
+    }
+  }
+
+  /* Header: fades into the page instead of sitting on a bar. */
+  .site-header {
+    background: linear-gradient(
+      to bottom,
+      var(--bg) 0%,
+      color-mix(in srgb, var(--bg) 85%, transparent) 60%,
+      transparent 100%
+    );
+  }
+
   .display-title {
     @apply break-words font-sans font-bold leading-[1.05] tracking-tight text-text;
+  }
+}
+
+/*
+ * Journey stops settle in as they scroll into view. Scroll-linked only (never
+ * time-based), skipped where unsupported and under reduced motion.
+ */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .stop-reveal > * {
+      animation: stop-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}
+
+@keyframes stop-reveal {
+  from {
+    opacity: 0.3;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 

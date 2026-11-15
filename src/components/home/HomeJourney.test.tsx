@@ -210,16 +210,15 @@ describe("HomeJourney", () => {
     expect(screen.getByText(labels.home.nextShowFallbackTitle)).toBeInTheDocument();
   });
 
-  it("keeps focus targets clear of the pinned mobile stage with scroll margins", async () => {
+  it("keeps focus targets clear of the sticky header with scroll margins", async () => {
     getMerchItemsMock.mockResolvedValue([createMerch({})]);
     const { container } = await renderJourney();
     const section = container.querySelector("[data-stop='release']");
-    expect(section?.className).toContain("scroll-mt-[calc(4rem+45svh");
-    expect(section?.className).toContain("md:scroll-mt-20");
-    const column = section?.parentElement;
-    expect(column?.className).toContain("[&_a]:scroll-mt-[calc(4rem+45svh");
-    expect(column?.className).toContain("[&_button]:scroll-mt-");
-    expect(column?.className).toContain("md:[&_a]:scroll-mt-20");
+    expect(section?.className).toContain("scroll-mt-20");
+    // section → text column → padded container carrying the interactive margins
+    const column = section?.parentElement?.parentElement;
+    expect(column?.className).toContain("[&_button]:scroll-mt-20");
+    expect(column?.className).toContain("[&_iframe]:scroll-mt-20");
   });
 
   it("renders merch items in the body section", async () => {

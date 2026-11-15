@@ -3,27 +3,52 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
+  AdditiveBlending,
+  BoxGeometry,
   BufferAttribute,
-  BufferGeometry,
+  CanvasTexture,
+  CatmullRomCurve3,
+  CircleGeometry,
   Color,
+  CylinderGeometry,
+  DoubleSide,
   ExtrudeGeometry,
-  Line,
-  LineBasicMaterial,
   type Group,
-  type MeshBasicMaterial,
-  type MeshStandardMaterial,
+  Mesh,
+  MeshBasicMaterial,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
+  PlaneGeometry,
+  PMREMGenerator,
+  type PointLight,
+  Quaternion,
+  Scene,
   Shape,
+  SphereGeometry,
+  Vector2,
   Vector3,
+  type WebGLRenderer,
 } from "three";
 import {
   BODY_FRONT_Z,
   BRIDGE_Y,
+  FRETBOARD_BACK_Z,
   GUITAR_DIMENSIONS as D,
+  fretY,
   NECK_FRONT_Z,
+  neckWidthAt,
   proceduralAnchors,
   type GuitarAnchors,
 } from "./guitarModel";
-import { CAMERA_POSES, sampleCamera, type CameraPose, type StopId } from "./journey";
+import { site } from "@/config/site";
+import {
+  CAMERA_POSES,
+  STAGE_SHIFT,
+  STAGE_SHIFT_MIN_WIDTH,
+  sampleCamera,
+  type CameraPose,
+  type StopId,
+} from "./journey";
 import type { PlaybackSignal } from "./playback";
 
 type Palette = {
@@ -32,6 +57,8 @@ type Palette = {
   surface2: Color;
   border: Color;
   text: Color;
+  textMuted: Color;
+  textDim: Color;
   highlight: Color;
 };
 
@@ -50,66 +77,317 @@ function readPalette(): Palette {
     surface2: token("--surface-2"),
     border: token("--border"),
     text: token("--text"),
+    textMuted: token("--text-muted"),
+    textDim: token("--text-dim"),
     highlight: token("--highlight"),
   };
 }
 
 const STRING_SEGMENTS = 48;
-const STRING_Z = NECK_FRONT_Z + 0.02;
+const STRING_Z = NECK_FRONT_Z + 0.025;
 const MAX_STRING_AMPLITUDE = 0.025;
 const STRING_DECAY_PER_SECOND = 3.5;
 const FRAME_DELTA_CAP = 1 / 30;
+const HEADSTOCK_FACE_Z = NECK_FRONT_Z - 0.02;
+const PLAY_LIGHT_INTENSITY = 6;
 
 function clampLitFret(litFret: number, fretCount: number): number | null {
   if (Number.isNaN(litFret) || litFret < 0) return null;
   return Math.min(Math.round(litFret), fretCount - 1);
 }
 
-function createBodyGeometry(): ExtrudeGeometry {
-  // Figure-eight outline centered on the body; lower bout wider than the upper.
-  const shape = new Shape();
-  shape.moveTo(0, -1.3);
-  shape.bezierCurveTo(0.6, -1.3, 0.95, -1.0, 0.95, -0.5);
-  shape.bezierCurveTo(0.95, -0.1, 0.6, 0.0, 0.6, 0.2);
-  shape.bezierCurveTo(0.6, 0.45, 0.78, 0.55, 0.75, 0.75);
-  shape.bezierCurveTo(0.72, 1.05, 0.35, 1.15, 0, 1.15);
-  shape.bezierCurveTo(-0.35, 1.15, -0.72, 1.05, -0.75, 0.75);
-  shape.bezierCurveTo(-0.78, 0.55, -0.6, 0.45, -0.6, 0.2);
-  shape.bezierCurveTo(-0.6, 0.0, -0.95, -0.1, -0.95, -0.5);
-  shape.bezierCurveTo(-0.95, -1.0, -0.6, -1.3, 0, -1.3);
-  return new ExtrudeGeometry(shape, {
-    depth: D.bodyDepth - 0.04,
-    bevelEnabled: true,
-    bevelThickness: 0.02,
-    bevelSize: 0.02,
-    bevelSegments: 3,
-    curveSegments: 32,
-  });
+/* ------------------------------------------------------------------------ */
+/* Geometry helpers                                                          */
+/* ------------------------------------------------------------------------ */
+
+/** A smooth closed outline through `points` (centripetal Catmull-Rom). */
+function smoothShape(points: ReadonlyArray<readonly [number, number]>, divisions = 160): Shape {
+  const curve = new CatmullRomCurve3(
+    points.map(([x, y]) => new Vector3(x, y, 0)),
+    true,
+    "centripetal",
+  );
+  return new Shape(curve.getSpacedPoints(divisions).map((p) => new Vector2(p.x, p.y)));
 }
 
-type GuitarString = { line: Line; rest: Float32Array; frequency: number };
+function roundedRect(width: number, height: number, radius: number): Shape {
+  const w = width / 2;
+  const h = height / 2;
+  const r = Math.min(radius, w, h);
+  const shape = new Shape();
+  shape.moveTo(-w + r, -h);
+  shape.lineTo(w - r, -h);
+  shape.quadraticCurveTo(w, -h, w, -h + r);
+  shape.lineTo(w, h - r);
+  shape.quadraticCurveTo(w, h, w - r, h);
+  shape.lineTo(-w + r, h);
+  shape.quadraticCurveTo(-w, h, -w, h - r);
+  shape.lineTo(-w, -h + r);
+  shape.quadraticCurveTo(-w, -h, -w + r, -h);
+  return shape;
+}
 
-function createStrings(color: Color): GuitarString[] {
+// Offset-waist solid body, authored around (0, bodyCenterY). The longer horn
+// sits on the bass side (-x); the neck pocket is the flat run at the top.
+const BODY_OUTLINE: ReadonlyArray<readonly [number, number]> = [
+  [0.16, 1.1],
+  [0.36, 1.06],
+  [0.52, 1.2],
+  [0.68, 1.27],
+  [0.83, 1.13],
+  [0.88, 0.84],
+  [0.88, 0.46],
+  [0.74, 0.08],
+  [0.8, -0.32],
+  [1.0, -0.76],
+  [1.01, -1.18],
+  [0.82, -1.47],
+  [0.36, -1.62],
+  [-0.16, -1.63],
+  [-0.66, -1.53],
+  [-0.98, -1.26],
+  [-1.08, -0.86],
+  [-0.96, -0.42],
+  [-0.8, -0.02],
+  [-0.88, 0.4],
+  [-0.92, 0.86],
+  [-0.86, 1.3],
+  [-0.68, 1.55],
+  [-0.5, 1.5],
+  [-0.38, 1.26],
+  [-0.16, 1.1],
+];
+
+const PICKGUARD_OUTLINE: ReadonlyArray<readonly [number, number]> = [
+  [0.2, 1.06],
+  [0.44, 0.96],
+  [0.54, 0.68],
+  [0.47, 0.34],
+  [0.38, 0.04],
+  [0.42, -0.34],
+  [0.36, -0.6],
+  [0.08, -0.68],
+  [-0.34, -0.84],
+  [-0.7, -0.94],
+  [-0.88, -0.74],
+  [-0.82, -0.34],
+  [-0.66, 0.0],
+  [-0.72, 0.42],
+  [-0.74, 0.86],
+  [-0.62, 1.1],
+  [-0.38, 1.08],
+];
+
+// Six-in-line headstock, authored from the nut (y = 0) upward; tuners on the bass side.
+const HEADSTOCK_OUTLINE: ReadonlyArray<readonly [number, number]> = [
+  [0.105, -0.06],
+  [0.11, 0.18],
+  [0.13, 0.4],
+  [0.2, 0.58],
+  [0.235, 0.76],
+  [0.19, 0.92],
+  [0.07, 0.99],
+  [-0.06, 1.01],
+  [-0.15, 0.95],
+  [-0.175, 0.75],
+  [-0.165, 0.4],
+  [-0.14, 0.15],
+  [-0.105, -0.06],
+  [0, -0.08],
+];
+
+const BODY_BEVEL = 0.06;
+
+/** String x at height y: strings fan out from the nut to the bridge. */
+function stringX(index: number, y: number): number {
+  const t = D.stringCount > 1 ? index / (D.stringCount - 1) : 0.5;
+  const nutX = -0.08 + t * 0.16;
+  const bridgeX = -0.11 + t * 0.22;
+  const u = (D.nutY - y) / D.scaleLength;
+  return nutX + (bridgeX - nutX) * u;
+}
+
+function postPosition(index: number): Vector3 {
+  // Low E (index 0) winds on the post nearest the nut, high E on the tip.
+  return new Vector3(-0.085, D.nutY + 0.22 + index * 0.125, HEADSTOCK_FACE_Z + 0.05);
+}
+
+/** A cylinder from `a` to `b`. */
+function segmentGeometry(a: Vector3, b: Vector3, radius: number): CylinderGeometry {
+  const direction = new Vector3().subVectors(b, a);
+  const geometry = new CylinderGeometry(radius, radius, direction.length(), 6, 1, true);
+  geometry.applyQuaternion(
+    new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), direction.normalize()),
+  );
+  const middle = new Vector3().addVectors(a, b).multiplyScalar(0.5);
+  geometry.translate(middle.x, middle.y, middle.z);
+  return geometry;
+}
+
+function glowTexture(): CanvasTexture {
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext("2d");
+  if (context) {
+    // Grayscale alpha falloff; the material tints it with --highlight.
+    const gradient = context.createRadialGradient(
+      size / 2,
+      size / 2,
+      0,
+      size / 2,
+      size / 2,
+      size / 2,
+    );
+    gradient.addColorStop(0, "rgba(255,255,255,1)");
+    gradient.addColorStop(0.4, "rgba(255,255,255,0.35)");
+    gradient.addColorStop(1, "rgba(255,255,255,0)");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, size, size);
+  }
+  return new CanvasTexture(canvas);
+}
+
+type Disposable = { dispose(): void };
+
+/** Creates three.js resources once (single or arrays of them) and disposes them on unmount. */
+function useDisposables<T extends Record<string, Disposable | readonly Disposable[]>>(
+  factory: () => T,
+): T {
+  const [resources] = useState(factory);
+  useEffect(
+    () => () => {
+      for (const resource of Object.values(resources)) {
+        for (const item of Array.isArray(resource) ? resource : [resource]) item.dispose();
+      }
+    },
+    [resources],
+  );
+  return resources;
+}
+
+function createMaterials(palette: Palette) {
+  return {
+    // Piano-black gloss: defined by the environment reflections, not by albedo.
+    gloss: new MeshPhysicalMaterial({
+      color: palette.surface,
+      roughness: 0.35,
+      metalness: 0,
+      clearcoat: 1,
+      clearcoatRoughness: 0.06,
+    }),
+    satin: new MeshStandardMaterial({ color: palette.surface2, roughness: 0.55, metalness: 0 }),
+    fretboard: new MeshStandardMaterial({ color: palette.bg, roughness: 0.7, metalness: 0 }),
+    pickguard: new MeshStandardMaterial({ color: palette.surface2, roughness: 0.25, metalness: 0 }),
+    chrome: new MeshStandardMaterial({ color: palette.textMuted, roughness: 0.22, metalness: 1 }),
+    inlay: new MeshStandardMaterial({ color: palette.textMuted, roughness: 0.3, metalness: 0 }),
+    bone: new MeshStandardMaterial({ color: palette.textMuted, roughness: 0.45, metalness: 0 }),
+    knob: new MeshStandardMaterial({ color: palette.surface2, roughness: 0.3, metalness: 0.2 }),
+    litFret: new MeshStandardMaterial({
+      color: palette.highlight,
+      emissive: palette.highlight,
+      emissiveIntensity: 2.2,
+      roughness: 0.3,
+      metalness: 0.5,
+    }),
+  };
+}
+
+type Materials = ReturnType<typeof createMaterials>;
+
+/* ------------------------------------------------------------------------ */
+/* Scene parts                                                               */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * Bakes a tiny softbox "studio" into a PMREM environment once. The gloss
+ * finish is read almost entirely from these reflections.
+ */
+function StudioEnvironment({ palette }: { palette: Palette }) {
+  const gl = useThree((state) => state.gl);
+  const studio = useDisposables(() => bakeStudio(gl, palette));
+  return <primitive attach="environment" object={studio.target.texture} />;
+}
+
+function bakeStudio(gl: WebGLRenderer, palette: Palette) {
+  const studio = new Scene();
+  const geometry = new PlaneGeometry(1, 1);
+  const boxes: Array<{
+    size: [number, number];
+    at: [number, number, number];
+    power: number;
+    tilt?: number;
+  }> = [
+    { size: [1, 8], at: [-5, 1, 4], power: 3 },
+    // Narrow diagonal strip in front: the gloss streak across the body face.
+    { size: [0.7, 10], at: [2.4, 0.8, 7.6], power: 1.4, tilt: 0.5 },
+    { size: [0.6, 8], at: [5, 0, 2], power: 3.5 },
+    { size: [4, 4], at: [0, 7, 2], power: 1.6 },
+    { size: [6, 6], at: [0, 0, -6], power: 0.3 },
+  ];
+  const materials = boxes.map(({ size, at, power, tilt = 0 }) => {
+    const material = new MeshBasicMaterial({
+      color: palette.text.clone().multiplyScalar(power),
+      side: DoubleSide,
+      toneMapped: false,
+    });
+    const panel = new Mesh(geometry, material);
+    panel.scale.set(size[0], size[1], 1);
+    panel.position.set(...at);
+    panel.lookAt(0, 0, 0);
+    panel.rotateZ(tilt);
+    studio.add(panel);
+    return material;
+  });
+  const generator = new PMREMGenerator(gl);
+  const target = generator.fromScene(studio, 0.03);
+  // The softbox scene is only needed for the bake.
+  geometry.dispose();
+  for (const material of materials) material.dispose();
+  return { target, generator };
+}
+
+type GuitarString = {
+  mesh: Mesh;
+  rest: Float32Array;
+  along: Float32Array; // 0 at the nut, 1 at the bridge, per vertex
+  frequency: number;
+  material: MeshStandardMaterial;
+};
+
+function createStrings(palette: Palette): GuitarString[] {
   return Array.from({ length: D.stringCount }, (_, index) => {
-    const t = D.stringCount > 1 ? index / (D.stringCount - 1) : 0.5;
-    const nutX = -0.08 + t * 0.16;
-    const bridgeX = -0.15 + t * 0.3;
-    const rest = new Float32Array((STRING_SEGMENTS + 1) * 3);
-    for (let s = 0; s <= STRING_SEGMENTS; s += 1) {
-      const u = s / STRING_SEGMENTS;
-      rest[s * 3] = nutX + (bridgeX - nutX) * u;
-      rest[s * 3 + 1] = D.nutY + (BRIDGE_Y - D.nutY) * u;
-      rest[s * 3 + 2] = STRING_Z;
+    const radius = 0.0095 - index * 0.001;
+    const geometry = new CylinderGeometry(radius, radius, 1, 6, STRING_SEGMENTS, true);
+    const position = geometry.getAttribute("position") as BufferAttribute;
+    const along = new Float32Array(position.count);
+    for (let v = 0; v < position.count; v += 1) {
+      const u = 0.5 - position.getY(v); // cylinder spans y in [-0.5, 0.5]
+      along[v] = u;
+      const y = D.nutY - D.scaleLength * u;
+      position.setXYZ(v, position.getX(v) + stringX(index, y), y, position.getZ(v) + STRING_Z);
     }
-    const geometry = new BufferGeometry();
-    geometry.setAttribute("position", new BufferAttribute(rest.slice(), 3));
-    const material = new LineBasicMaterial({ color, transparent: true, opacity: 0.6 });
-    return { line: new Line(geometry, material), rest, frequency: 34 - index * 3 };
+    geometry.computeVertexNormals();
+    const material = new MeshStandardMaterial({
+      color: palette.textMuted,
+      roughness: 0.3,
+      metalness: 1,
+      emissive: palette.highlight,
+      emissiveIntensity: 0,
+    });
+    return {
+      mesh: new Mesh(geometry, material),
+      rest: (position.array as Float32Array).slice(),
+      along,
+      frequency: 34 - index * 3,
+      material,
+    };
   });
 }
 
 function Strings({ signal, palette, reducedMotion }: GuitarStringsProps) {
-  const [strings] = useState(() => createStrings(palette.text));
+  const [strings] = useState(() => createStrings(palette));
   const energy = useRef<number[]>(Array.from({ length: D.stringCount }, () => 0));
   const plucks = useRef(0);
   const settled = useRef(true);
@@ -130,9 +408,9 @@ function Strings({ signal, palette, reducedMotion }: GuitarStringsProps) {
 
   useEffect(() => {
     return () => {
-      for (const { line } of strings) {
-        line.geometry.dispose();
-        (line.material as LineBasicMaterial).dispose();
+      for (const { mesh, material } of strings) {
+        mesh.geometry.dispose();
+        material.dispose();
       }
     };
   }, [strings]);
@@ -142,7 +420,7 @@ function Strings({ signal, palette, reducedMotion }: GuitarStringsProps) {
     const level = signal.level;
     const time = state.clock.elapsedTime;
     let active = level > 0;
-    strings.forEach(({ line, rest, frequency }, index) => {
+    strings.forEach(({ mesh, rest, along, frequency, material }, index) => {
       const decayed = (energy.current[index] ?? 0) * Math.exp(-STRING_DECAY_PER_SECOND * delta);
       const value = decayed < 0.002 ? 0 : decayed;
       energy.current[index] = value;
@@ -150,16 +428,16 @@ function Strings({ signal, palette, reducedMotion }: GuitarStringsProps) {
       if (energyLevel > 0) active = true;
       // Reduced motion: strings never move; only their glow follows the signal.
       const amplitude = reducedMotion ? 0 : MAX_STRING_AMPLITUDE * energyLevel;
-      const attribute = line.geometry.getAttribute("position");
+      const attribute = mesh.geometry.getAttribute("position");
       if (!(attribute instanceof BufferAttribute)) return;
       const positions = attribute.array as Float32Array;
       const wave = Math.sin(time * frequency);
-      for (let s = 0; s <= STRING_SEGMENTS; s += 1) {
-        const u = s / STRING_SEGMENTS;
-        positions[s * 3] = (rest[s * 3] ?? 0) + amplitude * Math.sin(Math.PI * u) * wave;
+      for (let v = 0; v < along.length; v += 1) {
+        const u = along[v] ?? 0;
+        positions[v * 3] = (rest[v * 3] ?? 0) + amplitude * Math.sin(Math.PI * u) * wave;
       }
       attribute.needsUpdate = true;
-      (line.material as LineBasicMaterial).opacity = 0.6 + 0.4 * Math.min(1, energyLevel * 1.5);
+      material.emissiveIntensity = Math.min(1, energyLevel * 1.5);
     });
     if (active) {
       settled.current = false;
@@ -172,168 +450,381 @@ function Strings({ signal, palette, reducedMotion }: GuitarStringsProps) {
 
   return (
     <>
-      {strings.map(({ line }, index) => (
-        <primitive key={index} object={line} />
+      {strings.map(({ mesh }, index) => (
+        <primitive key={index} object={mesh} />
       ))}
     </>
   );
 }
 
-function Headstock({ signal, palette, anchors, reducedMotion }: GuitarPartProps) {
-  const pegs = useRef<Group>(null);
-  const ring = useRef<Group>(null);
-  const ringMaterial = useRef<MeshBasicMaterial>(null);
-  const height = D.headstockTopY - D.nutY;
-  const centerY = D.nutY + height / 2;
-  const pegYs = [0.2, 0.42, 0.64].map((offset) => D.nutY + offset);
-
-  useFrame((_, rawDelta) => {
-    const delta = Math.min(rawDelta, FRAME_DELTA_CAP);
-    const level = reducedMotion ? 0 : signal.level;
-    if (pegs.current && signal.playing && !reducedMotion) {
-      for (const peg of pegs.current.children) peg.rotation.y += delta * 0.6;
-    }
-    if (ring.current) ring.current.scale.setScalar(1 + level * 0.5);
-    if (ringMaterial.current) ringMaterial.current.opacity = level * 0.8;
+function Headstock({ palette, materials }: { palette: Palette; materials: Materials }) {
+  const geometry = useDisposables(() => {
+    const thickness = 0.07;
+    const plate = new ExtrudeGeometry(smoothShape(HEADSTOCK_OUTLINE), {
+      depth: thickness - 0.02,
+      bevelEnabled: true,
+      bevelThickness: 0.01,
+      bevelSize: 0.01,
+      bevelSegments: 4,
+    });
+    // Front face at HEADSTOCK_FACE_Z.
+    plate.translate(0, D.nutY, HEADSTOCK_FACE_Z - (thickness - 0.01));
+    const runs = Array.from({ length: D.stringCount }, (_, index) => {
+      const from = new Vector3(stringX(index, D.nutY), D.nutY, STRING_Z);
+      return segmentGeometry(from, postPosition(index), 0.0095 - index * 0.001);
+    });
+    return {
+      plate,
+      runs,
+      post: new CylinderGeometry(0.016, 0.016, 0.07, 16).rotateX(Math.PI / 2),
+      bushing: new CylinderGeometry(0.03, 0.032, 0.012, 24).rotateX(Math.PI / 2),
+      shaft: new CylinderGeometry(0.009, 0.009, 0.07, 10).rotateZ(Math.PI / 2),
+      button: new SphereGeometry(1, 20, 12),
+      nut: new BoxGeometry(D.neckWidthAtNut, 0.025, 0.03),
+    };
   });
 
   return (
     <group>
-      <mesh position={[0, centerY, NECK_FRONT_Z - 0.04]}>
-        <boxGeometry args={[D.headstockWidth, height, 0.08]} />
-        <meshStandardMaterial color={palette.surface2} roughness={0.8} metalness={0.1} />
-      </mesh>
-      <mesh position={[0, D.nutY, NECK_FRONT_Z + 0.005]}>
-        <boxGeometry args={[D.neckWidth, 0.03, 0.03]} />
-        <meshStandardMaterial color={palette.border} roughness={0.6} />
-      </mesh>
-      <group ref={pegs}>
-        {pegYs.flatMap((y) =>
-          [-1, 1].map((side) => (
-            <mesh
-              key={`${side}-${y}`}
-              position={[side * (D.headstockWidth / 2 + 0.07), y, NECK_FRONT_Z - 0.04]}
-              rotation={[0, 0, Math.PI / 2]}
-            >
-              <cylinderGeometry args={[0.03, 0.03, 0.14, 12]} />
-              <meshStandardMaterial color={palette.border} roughness={0.4} metalness={0.6} />
-            </mesh>
-          )),
-        )}
-      </group>
-      <group
-        ref={ring}
-        position={[anchors.headstock[0], anchors.headstock[1], anchors.headstock[2] + 0.01]}
-      >
-        <mesh>
-          <ringGeometry args={[0.3, 0.32, 64]} />
-          <meshBasicMaterial
-            ref={ringMaterial}
-            color={palette.highlight}
-            transparent
-            opacity={0}
-            depthWrite={false}
-          />
-        </mesh>
-      </group>
-    </group>
-  );
-}
-
-function Neck({ palette, anchors, litFret }: GuitarPartProps & { litFret: number }) {
-  const lit = clampLitFret(litFret, anchors.fretCount);
-  const height = D.nutY - D.neckBottomY;
-  return (
-    <group>
-      <mesh position={[0, D.neckBottomY + height / 2, BODY_FRONT_Z + D.neckDepth / 2]}>
-        <boxGeometry args={[D.neckWidth, height, D.neckDepth]} />
-        <meshStandardMaterial color={palette.surface2} roughness={0.85} metalness={0.05} />
-      </mesh>
-      {Array.from({ length: anchors.fretCount }, (_, index) => {
-        const [x, y, z] = anchors.fretPosition(index);
-        const isLit = index === lit;
+      <mesh geometry={geometry.plate} material={materials.gloss} />
+      <HeadstockLogo palette={palette} />
+      <mesh
+        geometry={geometry.nut}
+        material={materials.bone}
+        position={[0, D.nutY, NECK_FRONT_Z + 0.005]}
+      />
+      {geometry.runs.map((run, index) => {
+        const post = postPosition(index);
+        const backZ = HEADSTOCK_FACE_Z - 0.06;
         return (
-          <mesh key={index} position={[x, y, z + 0.006]}>
-            <boxGeometry args={[D.neckWidth, 0.014, 0.012]} />
-            <meshStandardMaterial
-              color={isLit ? palette.highlight : palette.border}
-              emissive={palette.highlight}
-              emissiveIntensity={isLit ? 1.4 : 0}
-              roughness={0.4}
-              metalness={0.5}
+          <group key={index}>
+            <mesh geometry={run} material={materials.chrome} />
+            <mesh
+              geometry={geometry.post}
+              material={materials.chrome}
+              position={[post.x, post.y, HEADSTOCK_FACE_Z + 0.035]}
             />
-          </mesh>
+            <mesh
+              geometry={geometry.bushing}
+              material={materials.chrome}
+              position={[post.x, post.y, HEADSTOCK_FACE_Z + 0.006]}
+            />
+            <mesh
+              geometry={geometry.shaft}
+              material={materials.chrome}
+              position={[-0.2, post.y, backZ]}
+            />
+            <mesh
+              geometry={geometry.button}
+              material={materials.chrome}
+              position={[-0.255, post.y, backZ]}
+              scale={[0.042, 0.03, 0.013]}
+            />
+          </group>
         );
       })}
     </group>
   );
 }
 
-function Body({ signal, palette, anchors, reducedMotion }: GuitarPartProps) {
-  const body = useRef<Group>(null);
-  const pickupMaterials = useRef<Array<MeshStandardMaterial | null>>([]);
-  const [geometry] = useState(createBodyGeometry);
-  const pickupYs = [-1.75, -2.05];
+/**
+ * The wordmark silkscreened on the headstock, drawn with the brand blackletter
+ * once the web font is ready (the only place the 3D scene uses it).
+ */
+function HeadstockLogo({ palette }: { palette: Palette }) {
+  const [texture, setTexture] = useState<CanvasTexture | null>(null);
+  const invalidate = useThree((state) => state.invalidate);
 
-  useEffect(() => () => geometry.dispose(), [geometry]);
+  useEffect(() => {
+    let cancelled = false;
+    let created: CanvasTexture | null = null;
+    const family =
+      getComputedStyle(document.body).getPropertyValue("--font-bandland-gothic").trim() || "serif";
+    const font = `700 96px ${family}`;
+    const draw = () => {
+      if (cancelled) return;
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 128;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+      context.font = font;
+      // Read as an alpha mask only; the material tints it.
+      context.fillStyle = palette.text.getStyle();
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(site.name, 256, 70, 492);
+      created = new CanvasTexture(canvas);
+      created.anisotropy = 4;
+      setTexture(created);
+      invalidate();
+    };
+    document.fonts.load(font).then(draw, draw);
+    return () => {
+      cancelled = true;
+      created?.dispose();
+    };
+  }, [invalidate, palette]);
+
+  if (!texture) return null;
+  return (
+    <mesh
+      position={[0.115, D.nutY + 0.66, HEADSTOCK_FACE_Z + 0.001]}
+      rotation={[0, 0, Math.PI / 2]}
+    >
+      <planeGeometry args={[0.42, 0.105]} />
+      <meshStandardMaterial
+        color={palette.textMuted}
+        alphaMap={texture}
+        transparent
+        roughness={0.45}
+        depthWrite={false}
+      />
+    </mesh>
+  );
+}
+
+const INLAY_FRETS = [3, 5, 7, 9, 15, 17, 19, 21];
+
+function Neck({
+  palette,
+  materials,
+  anchors,
+  litFret,
+}: {
+  palette: Palette;
+  materials: Materials;
+  anchors: GuitarAnchors;
+  litFret: number;
+}) {
+  const lit = clampLitFret(litFret, anchors.fretCount);
+  const geometry = useDisposables(() => {
+    const height = D.nutY - D.neckBottomY;
+    const centerY = D.nutY - height / 2;
+    // Fretboard: a thin slab tapered per vertex from the nut to the body end.
+    const board = new BoxGeometry(1, height, D.fretboardThickness);
+    board.translate(0, centerY, FRETBOARD_BACK_Z + D.fretboardThickness / 2);
+    const position = board.getAttribute("position") as BufferAttribute;
+    for (let v = 0; v < position.count; v += 1) {
+      position.setX(v, position.getX(v) * neckWidthAt(position.getY(v)));
+    }
+    board.computeVertexNormals();
+    // Neck back: half a tapered cylinder, flattened to a C profile.
+    const back = new CylinderGeometry(
+      D.neckWidthAtNut / 2,
+      D.neckWidthAtEnd / 2,
+      height,
+      24,
+      1,
+      false,
+      Math.PI / 2,
+      Math.PI,
+    );
+    back.scale(1, 1, 0.85);
+    back.translate(0, centerY, FRETBOARD_BACK_Z);
+    return {
+      board,
+      back,
+      fret: new CylinderGeometry(0.007, 0.007, 1, 8).rotateZ(Math.PI / 2),
+      dot: new CircleGeometry(0.026, 24),
+      glow: new PlaneGeometry(1, 1),
+    };
+  });
+  const glow = useDisposables(() => {
+    const map = glowTexture();
+    return {
+      map,
+      material: new MeshBasicMaterial({
+        color: palette.highlight,
+        map,
+        transparent: true,
+        opacity: 0.6,
+        blending: AdditiveBlending,
+        depthWrite: false,
+        toneMapped: false,
+      }),
+    };
+  });
+
+  const inlayY = (fret: number) => (fretY(fret - 1) + fretY(fret)) / 2;
+  const litY = lit === null ? null : anchors.fretPosition(lit)[1];
+
+  return (
+    <group>
+      <mesh geometry={geometry.back} material={materials.satin} />
+      <mesh geometry={geometry.board} material={materials.fretboard} />
+      {Array.from({ length: D.totalFrets }, (_, index) => {
+        const y = fretY(index + 1);
+        return (
+          <mesh
+            key={index}
+            geometry={geometry.fret}
+            material={index === lit ? materials.litFret : materials.chrome}
+            position={[0, y, NECK_FRONT_Z + 0.002]}
+            scale={[neckWidthAt(y), 1, 1]}
+          />
+        );
+      })}
+      {INLAY_FRETS.map((fret) => (
+        <mesh
+          key={fret}
+          geometry={geometry.dot}
+          material={materials.inlay}
+          position={[0, inlayY(fret), NECK_FRONT_Z + 0.0005]}
+        />
+      ))}
+      {[-0.06, 0.06].map((x) => (
+        <mesh
+          key={x}
+          geometry={geometry.dot}
+          material={materials.inlay}
+          position={[x, inlayY(12), NECK_FRONT_Z + 0.0005]}
+        />
+      ))}
+      {litY === null ? null : (
+        <mesh
+          geometry={geometry.glow}
+          material={glow.material}
+          position={[0, litY, NECK_FRONT_Z + 0.012]}
+          scale={[neckWidthAt(litY) * 2.2, 0.2, 1]}
+        />
+      )}
+    </group>
+  );
+}
+
+function Body({
+  signal,
+  palette,
+  materials,
+  reducedMotion,
+}: {
+  signal: PlaybackSignal;
+  palette: Palette;
+  materials: Materials;
+  reducedMotion: boolean;
+}) {
+  const body = useRef<Group>(null);
+  const playLight = useRef<PointLight>(null);
+  const geometry = useDisposables(() => {
+    const shell = new ExtrudeGeometry(smoothShape(BODY_OUTLINE), {
+      depth: D.bodyDepth - BODY_BEVEL * 2,
+      bevelEnabled: true,
+      bevelThickness: BODY_BEVEL,
+      bevelSize: BODY_BEVEL,
+      bevelSegments: 8,
+    });
+    shell.translate(0, 0, BODY_BEVEL); // front face lands on BODY_FRONT_Z
+    const guard = new ExtrudeGeometry(smoothShape(PICKGUARD_OUTLINE), {
+      depth: 0.004,
+      bevelEnabled: true,
+      bevelThickness: 0.002,
+      bevelSize: 0.004,
+      bevelSegments: 2,
+    });
+    guard.translate(0, 0, BODY_FRONT_Z);
+    const pickup = new ExtrudeGeometry(roundedRect(0.44, 0.13, 0.05), {
+      depth: 0.03,
+      bevelEnabled: true,
+      bevelThickness: 0.008,
+      bevelSize: 0.008,
+      bevelSegments: 3,
+    });
+    return {
+      shell,
+      guard,
+      pickup,
+      pole: new CircleGeometry(0.012, 16),
+      bridgeBlock: new BoxGeometry(0.44, 0.15, 0.05),
+      saddle: new BoxGeometry(0.04, 0.07, 0.03),
+      knob: new CylinderGeometry(0.056, 0.06, 0.06, 32).rotateX(Math.PI / 2),
+      knobCap: new CircleGeometry(0.036, 32),
+      switchTip: new SphereGeometry(0.02, 16, 10),
+    };
+  });
+  const pickupMaterials = useRef<Array<MeshStandardMaterial | null>>([]);
 
   useFrame(() => {
     const level = reducedMotion ? 0 : signal.level;
     if (body.current) body.current.scale.setScalar(1 + 0.02 * level);
     for (const material of pickupMaterials.current) {
-      if (material) material.emissiveIntensity = level * 1.6;
+      if (material) material.emissiveIntensity = level * 0.8;
     }
+    if (playLight.current) playLight.current.intensity = PLAY_LIGHT_INTENSITY * level;
   });
+
+  const localY = (y: number) => y - D.bodyCenterY;
+  const pickups = [D.neckPickupY, D.bridgePickupY];
+  const bodyTop = BODY_FRONT_Z + 0.004;
 
   return (
     <group ref={body} position={[0, D.bodyCenterY, 0]}>
-      <mesh geometry={geometry} position={[0, 0, 0.02]}>
-        <meshStandardMaterial color={palette.surface} roughness={0.9} metalness={0.05} />
-      </mesh>
-      <group
-        position={[
-          anchors.soundHole[0],
-          anchors.soundHole[1] - D.bodyCenterY,
-          BODY_FRONT_Z + 0.003,
-        ]}
-      >
-        <mesh>
-          <circleGeometry args={[0.24, 48]} />
-          <meshBasicMaterial color={palette.bg} />
-        </mesh>
-        <mesh position={[0, 0, 0.001]}>
-          <ringGeometry args={[0.26, 0.3, 48]} />
-          <meshStandardMaterial color={palette.border} roughness={0.6} />
-        </mesh>
-      </group>
-      {pickupYs.map((y, index) => (
-        <mesh key={y} position={[0, y - D.bodyCenterY, BODY_FRONT_Z + 0.02]}>
-          <boxGeometry args={[0.62, 0.14, 0.04]} />
-          <meshStandardMaterial
-            ref={(material: MeshStandardMaterial | null) => {
-              pickupMaterials.current[index] = material;
-            }}
-            color={palette.surface2}
-            emissive={palette.highlight}
-            emissiveIntensity={0}
-            roughness={0.5}
-          />
-        </mesh>
+      <mesh geometry={geometry.shell} material={materials.gloss} />
+      <mesh geometry={geometry.guard} material={materials.pickguard} />
+      {pickups.map((y, pickupIndex) => (
+        <group key={y} position={[0, localY(y), bodyTop]}>
+          <mesh geometry={geometry.pickup}>
+            <meshStandardMaterial
+              ref={(material: MeshStandardMaterial | null) => {
+                pickupMaterials.current[pickupIndex] = material;
+              }}
+              color={palette.surface2}
+              roughness={0.4}
+              emissive={palette.highlight}
+              emissiveIntensity={0}
+            />
+          </mesh>
+          {Array.from({ length: D.stringCount }, (_, index) => (
+            <mesh
+              key={index}
+              geometry={geometry.pole}
+              material={materials.chrome}
+              position={[stringX(index, y), 0, 0.0385]}
+            />
+          ))}
+        </group>
       ))}
-      <mesh position={[0, BRIDGE_Y - D.bodyCenterY, BODY_FRONT_Z + 0.03]}>
-        <boxGeometry args={[0.5, 0.08, 0.06]} />
-        <meshStandardMaterial color={palette.surface2} roughness={0.7} />
-      </mesh>
+      <group position={[0, localY(BRIDGE_Y), 0]}>
+        <mesh
+          geometry={geometry.bridgeBlock}
+          material={materials.chrome}
+          position={[0, 0, BODY_FRONT_Z + 0.025]}
+        />
+        {Array.from({ length: D.stringCount }, (_, index) => (
+          <mesh
+            key={index}
+            geometry={geometry.saddle}
+            material={materials.chrome}
+            position={[stringX(index, BRIDGE_Y), 0.01, STRING_Z - 0.03]}
+          />
+        ))}
+      </group>
+      {[
+        [0.7, -0.95],
+        [0.84, -0.6],
+      ].map(([x = 0, y = 0]) => (
+        <group key={`${x}`} position={[x, y, bodyTop + 0.03]}>
+          <mesh geometry={geometry.knob} material={materials.knob} />
+          <mesh geometry={geometry.knobCap} material={materials.chrome} position={[0, 0, 0.031]} />
+        </group>
+      ))}
+      <mesh
+        geometry={geometry.switchTip}
+        material={materials.bone}
+        position={[0.62, 0.62, bodyTop + 0.02]}
+      />
+      {/* Play state: a warm under-light that only exists while the signal is live. */}
+      <pointLight
+        ref={playLight}
+        color={palette.highlight}
+        intensity={0}
+        distance={6}
+        position={[0, -1.9, 0.7]}
+      />
     </group>
   );
 }
 
-type GuitarPartProps = {
-  signal: PlaybackSignal;
-  palette: Palette;
-  anchors: GuitarAnchors;
-  reducedMotion: boolean;
-};
 type GuitarStringsProps = { signal: PlaybackSignal; palette: Palette; reducedMotion: boolean };
 
 export function Guitar({
@@ -349,12 +840,12 @@ export function Guitar({
   reducedMotion: boolean;
   anchors?: GuitarAnchors;
 }) {
-  const parts = { signal, palette, anchors, reducedMotion };
+  const materials = useDisposables(() => createMaterials(palette));
   return (
     <group>
-      <Body {...parts} />
-      <Neck {...parts} litFret={litFret} />
-      <Headstock {...parts} />
+      <Body signal={signal} palette={palette} materials={materials} reducedMotion={reducedMotion} />
+      <Neck palette={palette} materials={materials} anchors={anchors} litFret={litFret} />
+      <Headstock palette={palette} materials={materials} />
       <Strings signal={signal} palette={palette} reducedMotion={reducedMotion} />
     </group>
   );
@@ -427,12 +918,40 @@ function CameraRig({
   return null;
 }
 
+/** Slides the render sideways (an off-axis projection) without moving the camera. */
+function ViewShift() {
+  const camera = useThree((state) => state.camera);
+  const width = useThree((state) => state.size.width);
+  const height = useThree((state) => state.size.height);
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    if (width >= STAGE_SHIFT_MIN_WIDTH) {
+      camera.setViewOffset(width, height, -STAGE_SHIFT * width, 0, width, height);
+    } else {
+      camera.clearViewOffset();
+    }
+    invalidate();
+  }, [camera, width, height, invalidate]);
+  return null;
+}
+
 function Invalidator({ deps }: { deps: readonly unknown[] }) {
   const invalidate = useThree((state) => state.invalidate);
   const key = deps.map(String).join("|");
   useEffect(() => {
     invalidate();
   }, [key, invalidate]);
+  return null;
+}
+
+/** Reports once that a frame has been drawn, so the poster underneath can fade out. */
+function FirstFrame({ onReady }: { onReady?: (() => void) | undefined }) {
+  const reported = useRef(false);
+  useFrame(() => {
+    if (reported.current) return;
+    reported.current = true;
+    if (onReady) window.requestAnimationFrame(onReady);
+  });
   return null;
 }
 
@@ -444,6 +963,7 @@ export type GuitarCanvasProps = {
   active: boolean;
   reducedMotion: boolean;
   onContextLost: () => void;
+  onReady?: () => void;
 };
 
 export function GuitarCanvas({
@@ -454,6 +974,7 @@ export function GuitarCanvas({
   active,
   reducedMotion,
   onContextLost,
+  onReady,
 }: GuitarCanvasProps) {
   const [palette] = useState(readPalette);
   const detachContextLost = useRef<(() => void) | null>(null);
@@ -481,9 +1002,12 @@ export function GuitarCanvas({
       frameloop={frameloop}
       dpr={[1, 2]}
       camera={{ position: CAMERA_POSES.hero.position, fov: 35, near: 0.1, far: 40 }}
-      gl={{ antialias: true, powerPreference: "low-power" }}
+      // Transparent: the stage backdrop (light pool, floor, vignette) is CSS, shared with the poster.
+      gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}
       fallback={null}
-      onCreated={({ gl }) => {
+      onCreated={({ gl, scene }) => {
+        gl.toneMappingExposure = 1.15;
+        scene.environmentIntensity = 0.7;
         const element = gl.domElement;
         detachContextLost.current?.();
         element.addEventListener("webglcontextlost", onContextLost);
@@ -491,12 +1015,11 @@ export function GuitarCanvas({
           element.removeEventListener("webglcontextlost", onContextLost);
       }}
     >
-      <color attach="background" args={[palette.bg]} />
-      {/* Starts just past the hero distance so the wide shot stays legible. */}
-      <fog attach="fog" args={[palette.bg, 10, 22]} />
-      <ambientLight color={palette.text} intensity={0.12} />
-      <directionalLight color={palette.text} position={[3, 4, 5]} intensity={1.3} />
-      <directionalLight color={palette.text} position={[-4, 2, -4]} intensity={0.9} />
+      <StudioEnvironment palette={palette} />
+      {/* Key from the upper left, two rims from behind to trace the bevels. */}
+      <directionalLight color={palette.text} position={[-3.5, 5, 6]} intensity={1.6} />
+      <directionalLight color={palette.text} position={[4.5, 2, -3]} intensity={3.2} />
+      <directionalLight color={palette.text} position={[-4, -2, -3.5]} intensity={1.8} />
       <Invalidator deps={[active, litFret, reducedMotion]} />
       <CameraRig
         route={route}
@@ -505,6 +1028,8 @@ export function GuitarCanvas({
         litFret={litFret}
       />
       <Guitar signal={signal} palette={palette} litFret={litFret} reducedMotion={reducedMotion} />
+      <ViewShift />
+      <FirstFrame onReady={onReady} />
     </Canvas>
   );
 }

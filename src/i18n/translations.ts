@@ -40,6 +40,7 @@ export type Translations = {
       neckTitle: string;
       bodyTitle: string;
       outroTitle: string;
+      outroKicker: string;
     };
   };
   shows: {
@@ -129,6 +130,7 @@ export const translations: Record<Locale, Translations> = {
         neckTitle: "Up the neck",
         bodyTitle: "Into the body",
         outroTitle: "Hear it live",
+        outroKicker: "Encore",
       },
     },
     shows: {
@@ -225,6 +227,7 @@ export const translations: Record<Locale, Translations> = {
         neckTitle: "Teen die nek op",
         bodyTitle: "In die kitaarlyf",
         outroTitle: "Hoor dit regstreeks",
+        outroKicker: "Toegif",
       },
     },
     shows: {

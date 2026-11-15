@@ -31,17 +31,8 @@ export function computeRoutePosition(centers: number[], viewportCenter: number):
   return last.index;
 }
 
-// Matches Tailwind's `md` breakpoint, where the stage moves beside the text.
-const SIDE_BY_SIDE_QUERY = "(min-width: 768px)";
-// Below `md` the stage is pinned over the top ~half of the viewport, so text is
-// read in the area under it; this is roughly that area's middle.
-const STACKED_READING_LINE = 0.76;
-
-/** Fraction of the viewport height where the reader's eye sits on the text column. */
-export function readingLine(): number {
-  if (typeof window.matchMedia !== "function") return 0.5;
-  return window.matchMedia(SIDE_BY_SIDE_QUERY).matches ? 0.5 : STACKED_READING_LINE;
-}
+/** Fraction of the viewport height where the reader's eye sits (the stage is a full-screen backdrop). */
+export const READING_LINE = 0.5;
 
 function measure(route: readonly StopId[]): number {
   const centers = route.map((id) => {
@@ -50,7 +41,7 @@ function measure(route: readonly StopId[]): number {
     const rect = element.getBoundingClientRect();
     return rect.top + rect.height / 2;
   });
-  return computeRoutePosition(centers, window.innerHeight * readingLine());
+  return computeRoutePosition(centers, window.innerHeight * READING_LINE);
 }
 
 /** Current scroll position along `route`, in index units, read from `[data-stop]` elements. */

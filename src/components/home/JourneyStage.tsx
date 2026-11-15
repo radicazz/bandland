@@ -4,12 +4,11 @@ import { useEffect, useState } from "react";
 
 import { GuitarStage } from "@/components/guitar/GuitarStage";
 import type { StopId } from "@/components/guitar/journey";
-import { readingLine } from "@/components/guitar/useScrollProgress";
+import { READING_LINE, useScrollProgress } from "@/components/guitar/useScrollProgress";
 
 /**
  * Lights the fret of the show row (`[data-fret]` inside `#rowsId`) crossing the
- * reading line (viewport middle; on mobile, the middle of the area below the
- * stage); no fret is lit while no row is there. Out-of-range indices are
+ * reading line (viewport middle); no fret is lit while no row is there. Out-of-range indices are
  * clamped by the guitar itself. Re-observes when the row count changes.
  */
 export function JourneyStage({
@@ -21,6 +20,7 @@ export function JourneyStage({
   rowsId: string;
   rowCount: number;
 }) {
+  const position = useScrollProgress(route);
   const [litFret, setLitFret] = useState(-1);
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export function JourneyStage({
     const rows = container.querySelectorAll<HTMLElement>("[data-fret]");
     const visible = new Set<number>();
     // A 10%-tall band around the reading line.
-    const line = readingLine() * 100;
+    const line = READING_LINE * 100;
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -51,5 +51,19 @@ export function JourneyStage({
     };
   }, [rowsId, rowCount]);
 
-  return <GuitarStage route={route} litFret={litFret} />;
+  return (
+    <>
+      <GuitarStage route={route} position={position} litFret={litFret} />
+      {/*
+        Readability over the full-screen stage. Phones: the guitar sits right
+        under the text, so it dims as the reader leaves the hero. md+: the text
+        column is on the left, so only that side darkens.
+      */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-bg md:hidden"
+        style={{ opacity: 0.3 + 0.45 * Math.min(Math.max(position, 0), 1) }}
+      />
+      <div className="journey-scrim pointer-events-none absolute inset-0" />
+    </>
+  );
 }

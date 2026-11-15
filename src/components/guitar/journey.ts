@@ -4,15 +4,24 @@ export type StopId = "hero" | "release" | "neck" | "body" | "outro";
 export type Vec3 = [number, number, number];
 export type CameraPose = { position: Vec3; target: Vec3 };
 
-// Guitar stands upright along +y: headstock at the top, body at the bottom.
-// Hero/outro sit far enough back (fov 35) for the whole ~6-unit guitar to fit a
-// portrait stage; release leaves room for the pulse ring at full scale.
+// Guitar stands upright along +y: headstock at the top (~3.2), body at the
+// bottom (~-3.4). Hero/outro sit far enough back (fov 35) for the whole guitar to
+// fit a portrait stage, yawed to opposite sides so the bevels and depth read and
+// the end of the journey is not a repeat of its start.
+/**
+ * md+: the stage spans the viewport behind a left-hand text column, so the
+ * render is shifted right by this fraction of its width. The CSS backdrop and
+ * the poster (`.guitar-stage` in globals.css, GuitarStage) mirror it.
+ */
+export const STAGE_SHIFT = 0.2;
+export const STAGE_SHIFT_MIN_WIDTH = 768;
+
 export const CAMERA_POSES: Record<StopId, CameraPose> = {
-  hero: { position: [0, -0.4, 11.5], target: [0, 0.1, 0] },
-  release: { position: [0.4, 2.7, 3.2], target: [0, 2.62, 0] },
+  hero: { position: [-2.8, 0.1, 12.2], target: [0, -0.1, 0] },
+  release: { position: [0.9, 2.95, 2.6], target: [0.05, 2.7, 0.3] },
   neck: { position: [1.2, 1, 2.6], target: [0, 1, 0] },
-  body: { position: [0, -1.8, 5], target: [0, -1.6, 0] },
-  outro: { position: [0, -0.4, 11.5], target: [0, 0.1, 0] },
+  body: { position: [-1.4, -1.7, 5.6], target: [0, -1.85, 0.2] },
+  outro: { position: [2.8, 0.1, 12.2], target: [0, -0.1, 0] },
 };
 
 const WIDGET_STOP: Partial<Record<WidgetSetting["id"], StopId>> = {
