@@ -103,7 +103,7 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
         >
           {site.name}
         </h1>
-        <Reveal className="flex flex-col">
+        <div className="flex flex-col">
           <p className="mt-4 max-w-xl text-lg leading-8 text-text sm:text-xl">
             {settings.hero.tagline ?? labels.meta.description}
           </p>
@@ -125,7 +125,7 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
             <PlayButton labels={journey} />
             <p className="text-sm text-text-dim">{journey.playHint}</p>
           </div>
-        </Reveal>
+        </div>
       </Stop>
     ),
     release: () => (
