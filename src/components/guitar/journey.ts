@@ -48,28 +48,70 @@ function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
 }
 
-function lerp(a: Vec3, b: Vec3, t: number): Vec3 {
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+function lerpVec3(a: Vec3, b: Vec3, t: number): Vec3 {
+  return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+}
+
+type Segment = { index: number; from: StopId; to: StopId | undefined; t: number };
+
+/** Locates a fractional route position as a stop index plus progress toward the next stop. */
+function locateSegment(route: readonly StopId[], position: number): Segment | undefined {
+  const last = route.length - 1;
+  if (last < 0) return undefined;
+  const p = Math.min(Math.max(position, 0), last);
+  const index = Math.min(Math.floor(p), last);
+  const from = route[index];
+  if (from === undefined) return undefined;
+  return { index, from, to: route[index + 1], t: p - index };
 }
 
 export function sampleCamera(route: readonly StopId[], position: number): CameraPose {
-  const last = route.length - 1;
-  if (last < 0) return CAMERA_POSES.hero;
-  const p = Math.min(Math.max(position, 0), last);
-  const index = Math.min(Math.floor(p), last);
-  const fromId = route[index];
-  const toId = route[index + 1];
-  if (fromId === undefined) return CAMERA_POSES.hero;
-  const from = CAMERA_POSES[fromId];
-  if (toId === undefined || p === index) return from;
-  const to = CAMERA_POSES[toId];
-  const t = smoothstep(p - index);
-  const eye = lerp(from.position, to.position, t);
+  const segment = locateSegment(route, position);
+  if (!segment) return CAMERA_POSES.hero;
+  const from = CAMERA_POSES[segment.from];
+  if (segment.to === undefined || segment.t === 0) return from;
+  const to = CAMERA_POSES[segment.to];
+  const { index } = segment;
+  const t = smoothstep(segment.t);
+  const eye = lerpVec3(from.position, to.position, t);
   // Between stops the camera swings out and to the side instead of dollying in a
   // straight line, alternating sides so consecutive moves do not repeat.
   const swing = Math.sin(Math.PI * t);
   const side = index % 2 === 0 ? 1 : -1;
   eye[0] += TRANSITION_ARC.side * side * swing;
   eye[2] += TRANSITION_ARC.out * swing;
-  return { position: eye, target: lerp(from.target, to.target, t) };
+  return { position: eye, target: lerpVec3(from.target, to.target, t) };
+}
+
+export type LightPose = { x: number; y: number; size: number };
+
+/**
+ * Light pool per stop: x is percent of the stage relative to the guitar centre
+ * (0 = centre), y is percent from the top, size is the ellipse width in percent.
+ */
+export const LIGHT_POSES: Record<StopId, LightPose> = {
+  hero: { x: 0, y: 38, size: 55 },
+  release: { x: -4, y: 18, size: 38 },
+  neck: { x: 2, y: 40, size: 32 },
+  body: { x: 0, y: 62, size: 48 },
+  outro: { x: 0, y: 40, size: 60 },
+};
+
+/** Blends the light pool between stops with the same clamping and easing as sampleCamera. */
+export function sampleLight(route: readonly StopId[], position: number): LightPose {
+  const segment = locateSegment(route, position);
+  if (!segment) return LIGHT_POSES.hero;
+  const from = LIGHT_POSES[segment.from];
+  if (segment.to === undefined || segment.t === 0) return from;
+  const to = LIGHT_POSES[segment.to];
+  const t = smoothstep(segment.t);
+  return {
+    x: lerp(from.x, to.x, t),
+    y: lerp(from.y, to.y, t),
+    size: lerp(from.size, to.size, t),
+  };
 }
