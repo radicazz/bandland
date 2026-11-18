@@ -5,7 +5,7 @@ export type Vec3 = [number, number, number];
 export type CameraPose = { position: Vec3; target: Vec3 };
 
 // Guitar stands upright along +y: headstock at the top (~3.2), body at the
-// bottom (~-3.4). Hero/outro sit far enough back (fov 35) for the whole guitar to
+// bottom (~-3.6). Hero/outro sit far enough back (fov 35) for the whole guitar to
 // fit a portrait stage, yawed to opposite sides so the bevels and depth read and
 // the end of the journey is not a repeat of its start.
 /**
@@ -20,7 +20,7 @@ export const CAMERA_POSES: Record<StopId, CameraPose> = {
   hero: { position: [-2.8, 0.1, 12.2], target: [0, -0.1, 0] },
   release: { position: [0.9, 2.95, 2.6], target: [0.05, 2.7, 0.3] },
   neck: { position: [1.2, 1, 2.6], target: [0, 1, 0] },
-  body: { position: [-1.4, -1.7, 5.6], target: [0, -1.85, 0.2] },
+  body: { position: [-1.4, -1.8, 5.6], target: [0, -1.95, 0.2] },
   outro: { position: [2.8, 0.1, 12.2], target: [0, -0.1, 0] },
 };
 

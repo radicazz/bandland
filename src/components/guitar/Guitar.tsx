@@ -606,6 +606,8 @@ function HeadstockLogo({ palette }: { palette: Palette }) {
 }
 
 const INLAY_FRETS = [3, 5, 7, 9, 15, 17, 19, 21];
+// The 12th-fret pair sits a quarter of the board width either side of centre.
+const DOUBLE_DOT_OFFSET = neckWidthAt((fretY(11) + fretY(12)) / 2) * 0.25;
 
 function Neck({
   palette,
@@ -694,12 +696,12 @@ function Neck({
           position={[0, inlayY(fret), NECK_FRONT_Z + 0.0005]}
         />
       ))}
-      {[-0.06, 0.06].map((x) => (
+      {[-1, 1].map((side) => (
         <mesh
-          key={x}
+          key={side}
           geometry={geometry.dot}
           material={materials.inlay}
-          position={[x, inlayY(12), NECK_FRONT_Z + 0.0005]}
+          position={[side * DOUBLE_DOT_OFFSET, inlayY(12), NECK_FRONT_Z + 0.0005]}
         />
       ))}
       {litY === null ? null : (
