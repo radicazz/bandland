@@ -38,9 +38,18 @@ describe("PlayButton", () => {
       playing: false,
       status: "error" satisfies PlaybackStatus,
       level: 0,
+      volume: 0.8,
+      muted: false,
+      currentTime: 0,
+      duration: Number.NaN,
+      started: false,
       pluck: () => {},
       subscribe: () => () => {},
       toggle: () => {},
+      setVolume: () => {},
+      toggleMute: () => {},
+      seek: () => {},
+      readWaveform: () => false,
       dispose: () => {},
     };
     render(

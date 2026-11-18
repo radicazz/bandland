@@ -259,6 +259,44 @@ describe("PlaybackProvider", () => {
     hidden.mockRestore();
   });
 
+  it("PlaybackProvider forwards volume, seek and waveform to the driver", async () => {
+    vi.resetModules();
+    const { PlaybackProvider, usePlayback } = await import("./PlaybackProvider");
+    const { createSimulatedPlayback } = await import("./playback");
+    const driver = createSimulatedPlayback();
+    const setVolume = vi.spyOn(driver, "setVolume");
+    const seek = vi.spyOn(driver, "seek");
+    const readWaveform = vi.spyOn(driver, "readWaveform");
+    const toggleMute = vi.spyOn(driver, "toggleMute");
+    let signal: ReturnType<typeof usePlayback> | undefined;
+    function Probe() {
+      const current = usePlayback();
+      useEffect(() => {
+        signal = current;
+      }, [current]);
+      return null;
+    }
+    render(
+      <PlaybackProvider createDriver={() => driver}>
+        <Probe />
+      </PlaybackProvider>,
+    );
+    act(() => {
+      signal?.setVolume(0.25);
+      signal?.toggleMute();
+      signal?.seek(12);
+    });
+    const buffer = new Uint8Array(4);
+    expect(signal?.readWaveform(buffer)).toBe(false);
+    expect(setVolume).toHaveBeenCalledWith(0.25);
+    expect(toggleMute).toHaveBeenCalled();
+    expect(seek).toHaveBeenCalledWith(12);
+    expect(readWaveform).toHaveBeenCalledWith(buffer);
+    expect(signal?.volume).toBe(0.25);
+    expect(signal?.muted).toBe(true);
+    expect(Number.isNaN(signal?.duration)).toBe(true);
+  });
+
   it("usePlayback throws outside the provider", async () => {
     vi.resetModules();
     const { usePlayback } = await import("./PlaybackProvider");
