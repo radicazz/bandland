@@ -78,6 +78,12 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
   const visible = started && !dismissed && !pathname?.startsWith("/admin");
   const barRef = useRef<HTMLDivElement>(null);
 
+  // The bar is hidden on /admin, so playback must not carry on there unseen.
+  const onAdmin = Boolean(pathname?.startsWith("/admin"));
+  useEffect(() => {
+    if (onAdmin && signal.playing) signal.toggle();
+  }, [onAdmin, signal]);
+
   // Reserve the bar's height under the footer so it never covers the page end.
   useEffect(() => {
     const bar = barRef.current;
@@ -151,6 +157,7 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
             onChange={(event) => signal.seek(Number(event.currentTarget.value))}
             onKeyDown={(event) => {
               // The fine step suits dragging; arrow keys jump a useful distance.
+              if (event.altKey || event.metaKey || event.ctrlKey || event.shiftKey) return;
               const direction = SEEK_KEYS[event.key];
               if (direction === undefined) return;
               event.preventDefault();

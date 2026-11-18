@@ -129,6 +129,22 @@ describe("PlayerBar", () => {
     expect(seekSpy).toHaveBeenLastCalledWith(57);
   });
 
+  it("ignores arrow keys held with a modifier", () => {
+    const driver = createSimulatedPlayback();
+    const seekSpy = vi.fn();
+    const timed: PlaybackSignal = Object.create(driver, {
+      currentTime: { get: () => 62 },
+      duration: { get: () => 187 },
+      seek: { value: seekSpy },
+    });
+    const { play } = renderBar(() => timed);
+    play();
+    const seek = screen.getByRole("slider", { name: labels.seek });
+    const notPrevented = fireEvent.keyDown(seek, { key: "ArrowLeft", altKey: true });
+    expect(notPrevented).toBe(true);
+    expect(seekSpy).not.toHaveBeenCalled();
+  });
+
   it("close pauses playback and hides the bar; it reappears on the next play", () => {
     const { play, signal } = renderBar();
     play();
@@ -144,6 +160,19 @@ describe("PlayerBar", () => {
     const { play } = renderBar();
     play();
     expect(region()).toBeNull();
+  });
+
+  it("pauses playback when navigating to /admin", () => {
+    const { play, signal, rerender } = renderBar();
+    play();
+    expect(signal().playing).toBe(true);
+    navigation.pathname = "/admin";
+    rerender(
+      <PlaybackProvider createDriver={() => createSimulatedPlayback()}>
+        <PlayerBar labels={labels} />
+      </PlaybackProvider>,
+    );
+    expect(signal().playing).toBe(false);
   });
 
   it("reserves its height at the bottom of the page while shown", () => {
