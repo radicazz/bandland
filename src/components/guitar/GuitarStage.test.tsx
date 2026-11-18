@@ -63,13 +63,19 @@ function stubWebGL(available: boolean) {
     available ? {} : null) as unknown as HTMLCanvasElement["getContext"]);
 }
 
-async function renderStage() {
+async function renderStage(light = { x: 0, y: 38, size: 55 }, hazeShift = 0) {
   vi.resetModules();
   const { GuitarStage } = await import("./GuitarStage");
   const { PlaybackProvider } = await import("./PlaybackProvider");
   return render(
     <PlaybackProvider>
-      <GuitarStage route={["hero", "release", "neck", "body", "outro"]} position={0} litFret={0} />
+      <GuitarStage
+        route={["hero", "release", "neck", "body", "outro"]}
+        position={0}
+        litFret={0}
+        light={light}
+        hazeShift={hazeShift}
+      />
     </PlaybackProvider>,
   );
 }
@@ -138,6 +144,33 @@ describe("GuitarStage", () => {
     await flush();
     expect(screen.queryByTestId("r3f-canvas")).toBeNull();
     expect(container.querySelector("img[alt='']")).not.toBeNull();
+  });
+});
+
+describe("GuitarStage atmosphere", () => {
+  it("writes light variables from the light prop", async () => {
+    stubMatchMedia(false);
+    stubWebGL(false);
+    const { LIGHT_POSES } = await import("./journey");
+    const { container } = await renderStage(LIGHT_POSES.body, 3.5);
+    const stage = container.querySelector<HTMLElement>(".guitar-stage");
+    expect(stage).not.toBeNull();
+    expect(stage?.style.getPropertyValue("--light-x")).toBe("calc(var(--stage-x) + 0%)");
+    expect(stage?.style.getPropertyValue("--light-y")).toBe("62%");
+    expect(stage?.style.getPropertyValue("--light-size")).toBe("48%");
+    expect(stage?.style.getPropertyValue("--haze-shift")).toBe("3.5");
+  });
+
+  it("renders spotlight and haze layers as aria-hidden decoration", async () => {
+    stubMatchMedia(false);
+    stubWebGL(false);
+    const { container } = await renderStage();
+    for (const selector of [".guitar-stage-spot", ".guitar-stage-haze"]) {
+      const layer = container.querySelector(selector);
+      expect(layer).not.toBeNull();
+      expect(layer?.closest("[aria-hidden='true']")).not.toBeNull();
+      expect(layer?.textContent).toBe("");
+    }
   });
 });
 

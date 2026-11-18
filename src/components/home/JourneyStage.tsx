@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { GuitarStage } from "@/components/guitar/GuitarStage";
-import type { StopId } from "@/components/guitar/journey";
+import { sampleLight, type StopId } from "@/components/guitar/journey";
 import { READING_LINE, useScrollProgress } from "@/components/guitar/useScrollProgress";
 
 /**
@@ -53,7 +53,14 @@ export function JourneyStage({
 
   return (
     <>
-      <GuitarStage route={route} position={position} litFret={litFret} />
+      {/* The light and haze ride the same per-frame scroll position as the camera. */}
+      <GuitarStage
+        route={route}
+        position={position}
+        litFret={litFret}
+        light={sampleLight(route, position)}
+        hazeShift={position}
+      />
       {/*
         Readability over the full-screen stage. Phones: the guitar sits right
         under the text, so it dims as the reader leaves the hero. md+: the text

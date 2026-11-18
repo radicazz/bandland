@@ -153,17 +153,29 @@ body {
   }
 
   /*
-   * Guitar stage: one bare bulb over a dark floor. Painted in CSS so the WebGL
+   * Guitar stage: one overhead light in a dark room. Painted in CSS so the WebGL
    * canvas (transparent) and the poster fallback share the same backdrop.
+   * Layers, back to front: light pool + floor (element background), red floor
+   * spill (::before, playing only), spotlight cone, haze, poster/canvas,
+   * vignette + grain.
+   *
+   * --light-x/--light-y/--light-size: per-stop light pool (GuitarStage, from
+   * sampleLight in journey.ts). --pulse: playback envelope 0..1 (useStagePulse;
+   * stays 0 when idle or under reduced motion). --haze-shift: scroll position.
    */
   .guitar-stage {
     /* Horizontal centre of the guitar; md+ follows STAGE_SHIFT (journey.ts). */
     --stage-x: 50%;
+    --light-x: var(--stage-x);
+    --light-y: 38%;
+    --light-size: 55%;
+    --pulse: 0;
+    --haze-shift: 0;
     isolation: isolate;
     background:
       radial-gradient(
-        ellipse 55% 42% at var(--stage-x) 40%,
-        color-mix(in srgb, var(--text) 7%, transparent),
+        ellipse var(--light-size) calc(var(--light-size) * 0.76) at var(--light-x) var(--light-y),
+        color-mix(in srgb, var(--text) calc(7% + 6% * var(--pulse, 0)), transparent),
         transparent 70%
       ),
       radial-gradient(
@@ -180,7 +192,13 @@ body {
     }
   }
 
-  /* Warm floor spill that only exists while Play is on. */
+  @media (prefers-reduced-motion: reduce) {
+    .guitar-stage {
+      --haze-shift: 0 !important;
+    }
+  }
+
+  /* Warm floor spill that only exists while Play is on; breathes with --pulse. */
   .guitar-stage::before {
     content: "";
     position: absolute;
@@ -196,7 +214,45 @@ body {
   }
 
   .guitar-stage[data-playing]::before {
-    opacity: 1;
+    opacity: calc(0.6 + 0.4 * var(--pulse, 0));
+    /* Short enough to follow the beat; the slow fade-out stays on the rule above. */
+    transition-duration: 150ms;
+  }
+
+  /*
+   * Spotlight cone and haze share one mask: a narrow wedge whose apex sits above
+   * the top edge at --light-x, soft on both sides (masks read alpha only).
+   */
+  .guitar-stage-spot,
+  .guitar-stage-haze {
+    --cone: conic-gradient(
+      from 166deg at var(--light-x) -12%,
+      transparent 0deg,
+      color-mix(in srgb, var(--text) 35%, transparent) 6deg,
+      var(--text) 14deg,
+      color-mix(in srgb, var(--text) 35%, transparent) 22deg,
+      transparent 28deg
+    );
+    -webkit-mask-image: var(--cone);
+    mask-image: var(--cone);
+  }
+
+  .guitar-stage-spot {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--text) 9%, transparent),
+      transparent 75%
+    );
+    opacity: calc(0.6 + 0.4 * var(--pulse, 0));
+  }
+
+  /* Haze in the beam: grayscale fractal noise that moves only with scroll. */
+  .guitar-stage-haze {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23h)'/%3E%3C/svg%3E");
+    background-size: 900px 900px;
+    background-position: calc(var(--haze-shift, 0) * -120px) calc(var(--haze-shift, 0) * 60px);
+    mix-blend-mode: screen;
+    opacity: calc(0.08 + 0.06 * var(--pulse, 0));
   }
 
   .guitar-stage-vignette {
