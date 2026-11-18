@@ -16,12 +16,12 @@ export type GuitarAnchors = {
 // Shared dimensions for the procedural Telecaster (scene units, ~13.5 cm each).
 // The body outline is authored around `bodyCenterY`; the neck joins it near fret 16.
 export const GUITAR_DIMENSIONS = {
-  bodyCenterY: -1.8,
+  bodyCenterY: -2.155, // puts the neck pocket at fretY(16)
   bodyDepth: 0.22,
   neckLift: 0.06, // gap between the body top and the fretboard underside
   fretboardThickness: 0.02,
-  neckWidthAtNut: 0.21,
-  neckWidthAtEnd: 0.28,
+  neckWidthAtNut: 0.31, // ≈42 mm
+  neckWidthAtEnd: 0.41, // ≈56 mm at the heel
   neckBottomY: -1.3, // end of the fretboard, just past the last fret
   nutY: 2.2,
   headstockLength: 1.08,
