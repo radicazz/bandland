@@ -41,27 +41,39 @@ function topEdgeAt(outline: Outline, x: number): number {
 const STRINGS = Array.from({ length: D.stringCount }, (_, index) => index);
 
 describe("telecaster body", () => {
-  it("is ≈2.40 wide and ≈2.96 long", () => {
+  it("is ≈2.40 wide and ≈3.0 long", () => {
     const { minX, maxX, minY, maxY } = bounds(BODY_OUTLINE);
     expect(maxX - minX).toBeGreaterThanOrEqual(2.35);
     expect(maxX - minX).toBeLessThanOrEqual(2.45);
-    expect(maxY - minY).toBeGreaterThanOrEqual(2.9);
-    expect(maxY - minY).toBeLessThanOrEqual(3.02);
+    expect(maxY - minY).toBeGreaterThanOrEqual(2.95);
+    expect(maxY - minY).toBeLessThanOrEqual(3.1);
   });
 
-  it("has nearly parallel sides", () => {
-    const lower = BODY_OUTLINE.filter(([, y]) => y >= -1.1 && y <= -0.3);
+  it("pinches in at the waist and flares into the lower bout", () => {
+    const reach = (side: number, y0: number) =>
+      Math.max(
+        ...BODY_OUTLINE.filter(([x, y]) => Math.sign(x) === side && Math.abs(y - y0) < 0.08).map(
+          ([x]) => Math.abs(x),
+        ),
+      );
     for (const side of [-1, 1]) {
-      const reach = lower.filter(([x]) => Math.sign(x) === side).map(([x]) => Math.abs(x));
-      expect(reach.length).toBeGreaterThan(1);
-      expect(Math.max(...reach) - Math.min(...reach)).toBeLessThan(0.08);
+      const waist = reach(side, 0.4);
+      const lowerBout = reach(side, -0.6);
+      expect(lowerBout - waist).toBeGreaterThanOrEqual(0.2);
     }
   });
 
-  it("has a treble horn shorter than the bass shoulder", () => {
+  it("has a bass shoulder that reaches a little past the treble horn", () => {
     const horn = Math.max(...BODY_OUTLINE.filter(([x]) => x > 0.3).map(([, y]) => y));
     const shoulder = Math.max(...BODY_OUTLINE.filter(([x]) => x < -0.3).map(([, y]) => y));
-    expect(shoulder - horn).toBeGreaterThanOrEqual(0.2);
+    expect(shoulder).toBeGreaterThan(horn);
+    expect(shoulder - horn).toBeLessThan(0.2);
+  });
+
+  it("cuts away deeply beside the neck", () => {
+    // Below the horn tip, the treble edge next to the neck dips well under the pocket.
+    const cutaway = topEdgeAt(BODY_OUTLINE, 0.4);
+    expect(topEdgeAt(BODY_OUTLINE, 0) - cutaway).toBeGreaterThanOrEqual(0.3);
   });
 
   it("meets the fretboard near fret 16", () => {

@@ -857,17 +857,17 @@ function Body({
           />
         ))}
       </group>
-      {/* Angled control plate: selector lever on top, then volume and tone. */}
+      {/* Control plate: selector lever nearest the neck, then volume and tone. */}
       <group
         position={[CONTROL_PLATE.x, CONTROL_PLATE.y, BODY_FRONT_Z]}
         rotation={[0, 0, CONTROL_PLATE.angle]}
       >
         <mesh geometry={geometry.controlPlate} material={materials.chrome} />
-        <group position={[0, 0.3, 0.01]} rotation={[0.35, 0, 0]}>
+        <group position={[0, 0.4, 0.01]} rotation={[0.35, 0, 0]}>
           <mesh geometry={geometry.lever} material={materials.chrome} position={[0, 0, 0.04]} />
           <mesh geometry={geometry.leverTip} material={materials.knob} position={[0, 0, 0.085]} />
         </group>
-        {[0.02, -0.26].map((y) => (
+        {[-0.12, -0.4].map((y) => (
           <group key={y} position={[0, y, 0.01]}>
             <mesh geometry={geometry.knob} material={materials.chrome} position={[0, 0, 0.035]} />
             <mesh
