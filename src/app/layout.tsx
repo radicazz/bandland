@@ -4,6 +4,8 @@ import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { ErrorMessagesProvider } from "@/components/ErrorMessagesProvider";
+import { PlaybackProvider } from "@/components/guitar/PlaybackProvider";
+import { PlayerBar } from "@/components/player/PlayerBar";
 import { embed, getMetadataBase } from "@/config/embed";
 import { site } from "@/config/site";
 import { getSiteSettings } from "@/content/settings";
@@ -99,19 +101,23 @@ export default async function RootLayout({
         >
           {labels.common.skipToContent}
         </a>
-        <div className="flex min-h-dvh flex-col">
-          <SiteHeader locale={locale} labels={labels} socials={settings.socials} />
-          <main id="content" className="flex-1">
-            <ErrorMessagesProvider labels={labels.errors}>{children}</ErrorMessagesProvider>
-          </main>
-          <SiteFooter
-            tagline={settings.footer.tagline ?? labels.footer.tagline}
-            bookingLabel={labels.footer.booking}
-            newTabLabel={labels.common.opensInNewTab}
-            contactEmail={settings.footer.contactEmail}
-            socials={settings.socials}
-          />
-        </div>
+        {/* Playback lives here so the track keeps going across client navigation. */}
+        <PlaybackProvider>
+          <div className="flex min-h-dvh flex-col">
+            <SiteHeader locale={locale} labels={labels} socials={settings.socials} />
+            <main id="content" className="flex-1">
+              <ErrorMessagesProvider labels={labels.errors}>{children}</ErrorMessagesProvider>
+            </main>
+            <SiteFooter
+              tagline={settings.footer.tagline ?? labels.footer.tagline}
+              bookingLabel={labels.footer.booking}
+              newTabLabel={labels.common.opensInNewTab}
+              contactEmail={settings.footer.contactEmail}
+              socials={settings.socials}
+            />
+            <PlayerBar labels={labels.player} />
+          </div>
+        </PlaybackProvider>
       </body>
     </html>
   );

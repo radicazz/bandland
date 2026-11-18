@@ -87,6 +87,18 @@ export type Translations = {
     closeMenu: string;
     opensInNewTab: string;
   };
+  player: {
+    region: string;
+    play: string;
+    pause: string;
+    mute: string;
+    unmute: string;
+    volume: string;
+    seek: string;
+    close: string;
+    /** "{current}" and "{total}" are replaced with formatted times. */
+    position: string;
+  };
   errors: {
     general: { title: string; description: string };
     shows: { title: string; description: string };
@@ -180,6 +192,17 @@ export const translations: Record<Locale, Translations> = {
       openMenu: "Open menu",
       closeMenu: "Close menu",
       opensInNewTab: "opens in a new tab",
+    },
+    player: {
+      region: "Music player",
+      play: "Play",
+      pause: "Pause",
+      mute: "Mute",
+      unmute: "Unmute",
+      volume: "Volume",
+      seek: "Seek",
+      close: "Close player",
+      position: "{current} of {total}",
     },
     errors: {
       general: {
@@ -282,6 +305,17 @@ export const translations: Record<Locale, Translations> = {
       openMenu: "Maak kieslys oop",
       closeMenu: "Maak kieslys toe",
       opensInNewTab: "maak in 'n nuwe oortjie oop",
+    },
+    player: {
+      region: "Musiekspeler",
+      play: "Speel",
+      pause: "Pouse",
+      mute: "Demp",
+      unmute: "Ontdemp",
+      volume: "Volume",
+      seek: "Soek",
+      close: "Maak speler toe",
+      position: "{current} van {total}",
     },
     errors: {
       general: {

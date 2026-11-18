@@ -102,8 +102,9 @@ function createPlaybackHost(createDriver: DriverFactory): PlaybackHost {
 const PlaybackContext = createContext<PlaybackSignal | null>(null);
 
 /**
- * Owns the home page's playback. The track keeps playing in a background tab
- * (the canvas stops drawing on its own) and stops when the reader leaves `/`.
+ * Owns the site's playback. Rendered by the root layout, so the track keeps
+ * playing in a background tab (the canvas stops drawing on its own) and across
+ * client-side navigation; a full reload resets it.
  */
 export function PlaybackProvider({
   children,

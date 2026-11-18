@@ -1,6 +1,7 @@
 import { act, cleanup, render, screen } from "@testing-library/react";
 import React, { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { memoryStorage } from "@/test/memoryStorage";
 
 const fiberMock = vi.hoisted(() => ({ throwOnRender: false }));
 
@@ -72,6 +73,11 @@ async function renderStage() {
     </PlaybackProvider>,
   );
 }
+
+// The default driver reads the stored volume; keep Node's own localStorage out of it.
+beforeEach(() => {
+  vi.stubGlobal("localStorage", memoryStorage());
+});
 
 afterEach(() => {
   cleanup();
@@ -201,6 +207,10 @@ describe("GuitarStage context loss", () => {
 describe("PlaybackProvider", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    // jsdom does not implement media playback and logs each call.
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
   });
   afterEach(() => {
     vi.useRealTimers();

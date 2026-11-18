@@ -5,27 +5,9 @@ import {
   VOLUME_STORAGE_KEY,
   type PlaybackSignal,
 } from "./playback";
+import { memoryStorage } from "@/test/memoryStorage";
 
 const BEAT_MS = 500; // bpm 120
-
-// Node's experimental global localStorage shadows jsdom's, so tests bring their own.
-function memoryStorage(): Storage {
-  const data = new Map<string, string>();
-  return {
-    get length() {
-      return data.size;
-    },
-    clear: () => data.clear(),
-    getItem: (key) => data.get(key) ?? null,
-    key: (index) => [...data.keys()][index] ?? null,
-    removeItem: (key) => {
-      data.delete(key);
-    },
-    setItem: (key, value) => {
-      data.set(key, String(value));
-    },
-  };
-}
 
 describe("readStoredVolume", () => {
   beforeEach(() => {

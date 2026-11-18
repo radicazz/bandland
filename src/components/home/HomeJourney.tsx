@@ -3,7 +3,6 @@ import { Fragment, type ReactNode } from "react";
 
 import { proceduralAnchors } from "@/components/guitar/guitarModel";
 import { buildRoute, type StopId } from "@/components/guitar/journey";
-import { PlaybackProvider } from "@/components/guitar/PlaybackProvider";
 import { PlayButton } from "@/components/guitar/PlayButton";
 import { MerchCard } from "@/components/MerchCard";
 import { ShowCard } from "@/components/ShowCard";
@@ -238,28 +237,24 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
     ),
   };
 
+  // Starts under the translucent sticky header so the stage runs edge to edge.
   return (
-    <PlaybackProvider>
-      {/* Starts under the translucent sticky header so the stage runs edge to edge. */}
-      <div className="relative -mt-16">
-        {/*
-          Full-screen backdrop pinned for the whole journey; the negative margin
-          lets the sections scroll over it instead of after it. lvh keeps the
-          canvas size steady while mobile browser bars slide in and out.
-        */}
-        <div className="sticky top-0 -mb-[100lvh] h-lvh">
-          <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
-        </div>
-        <div
-          className={`relative mx-auto w-full max-w-6xl px-4 sm:px-6 ${INTERACTIVE_SCROLL_CLEAR}`}
-        >
-          <div className="md:w-1/2 md:pr-6 lg:pr-10">
-            {route.map((stop) => (
-              <Fragment key={stop}>{sections[stop]()}</Fragment>
-            ))}
-          </div>
+    <div className="relative -mt-16">
+      {/*
+        Full-screen backdrop pinned for the whole journey; the negative margin
+        lets the sections scroll over it instead of after it. lvh keeps the
+        canvas size steady while mobile browser bars slide in and out.
+      */}
+      <div className="sticky top-0 -mb-[100lvh] h-lvh">
+        <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
+      </div>
+      <div className={`relative mx-auto w-full max-w-6xl px-4 sm:px-6 ${INTERACTIVE_SCROLL_CLEAR}`}>
+        <div className="md:w-1/2 md:pr-6 lg:pr-10">
+          {route.map((stop) => (
+            <Fragment key={stop}>{sections[stop]()}</Fragment>
+          ))}
         </div>
       </div>
-    </PlaybackProvider>
+    </div>
   );
 }

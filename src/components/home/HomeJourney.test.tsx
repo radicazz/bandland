@@ -1,8 +1,11 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HomeJourney } from "./HomeJourney";
 import { proceduralAnchors } from "@/components/guitar/guitarModel";
+import { createSimulatedPlayback, type PlaybackSignal } from "@/components/guitar/playback";
+import { PlaybackProvider, usePlayback } from "@/components/guitar/PlaybackProvider";
 import type { MerchItem, Show, SiteSettings } from "@/content/schema";
 import { getDefaultSettings } from "@/content/settings-defaults";
 import { translations } from "@/i18n/translations";
@@ -29,6 +32,8 @@ const labels = translations.en;
 afterEach(() => {
   cleanup();
 });
+
+const simulated = () => createSimulatedPlayback();
 
 beforeEach(() => {
   getShowsMock.mockReset();
@@ -71,8 +76,13 @@ function withWidgets(enabled: Partial<Record<"nextShow" | "release" | "merch", b
   return settings;
 }
 
+// The root layout owns playback; the page renders inside it.
 async function renderJourney(settings: SiteSettings = getDefaultSettings()) {
-  return render(await HomeJourney({ labels, locale: "en", settings }));
+  return render(
+    <PlaybackProvider createDriver={simulated}>
+      {await HomeJourney({ labels, locale: "en", settings })}
+    </PlaybackProvider>,
+  );
 }
 
 function stops(container: HTMLElement): string[] {
@@ -272,5 +282,35 @@ describe("HomeJourney", () => {
       .getAllByRole("link")
       .map((link) => link.getAttribute("href"));
     expect(hrefs).toEqual(expect.arrayContaining(["/shows", "/merch"]));
+  });
+
+  it("keeps the live signal across a remount", async () => {
+    // Navigating away and back unmounts the page (and its JourneyStage) under
+    // the layout's single provider; playback must survive that.
+    let signal: PlaybackSignal | null = null;
+    function Probe() {
+      const current = usePlayback();
+      useEffect(() => {
+        signal = current;
+      }, [current]);
+      return null;
+    }
+    const page = await HomeJourney({ labels, locale: "en", settings: getDefaultSettings() });
+    const tree = (content: React.ReactNode) => (
+      <PlaybackProvider createDriver={simulated}>
+        <Probe />
+        {content}
+      </PlaybackProvider>
+    );
+    const { rerender } = render(tree(page));
+    fireEvent.click(screen.getByRole("button", { name: labels.home.journey.play }));
+
+    rerender(tree(null));
+    expect(screen.queryByTestId("guitar-stage")).toBeNull();
+    rerender(tree(page));
+
+    expect(screen.getByTestId("guitar-stage")).toBeInTheDocument();
+    expect((signal as PlaybackSignal | null)?.playing).toBe(true);
+    expect(screen.getByRole("button", { name: labels.home.journey.pause })).toBeInTheDocument();
   });
 });
