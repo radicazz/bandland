@@ -1,7 +1,38 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createSimulatedPlayback, type PlaybackSignal } from "./playback";
+import {
+  createSimulatedPlayback,
+  readStoredVolume,
+  VOLUME_STORAGE_KEY,
+  type PlaybackSignal,
+} from "./playback";
+import { memoryStorage } from "@/test/memoryStorage";
 
 const BEAT_MS = 500; // bpm 120
+
+describe("readStoredVolume", () => {
+  beforeEach(() => {
+    vi.stubGlobal("localStorage", memoryStorage());
+  });
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it("falls back to 0.8 for missing, malformed, out-of-range and throwing storage", () => {
+    const fallback = { volume: 0.8, muted: false };
+    expect(readStoredVolume()).toEqual(fallback);
+    window.localStorage.setItem(VOLUME_STORAGE_KEY, "abc");
+    expect(readStoredVolume()).toEqual(fallback);
+    window.localStorage.setItem(VOLUME_STORAGE_KEY, '{"volume":7}');
+    expect(readStoredVolume().volume).toBe(1);
+    window.localStorage.setItem(VOLUME_STORAGE_KEY, '{"volume":-1}');
+    expect(readStoredVolume().volume).toBe(0);
+    vi.spyOn(window.localStorage, "getItem").mockImplementation(() => {
+      throw new Error("blocked");
+    });
+    expect(readStoredVolume()).toEqual(fallback);
+  });
+});
 
 describe("createSimulatedPlayback", () => {
   let playback: PlaybackSignal | undefined;
@@ -64,6 +95,42 @@ describe("createSimulatedPlayback", () => {
     expect(listener.mock.calls.length).toBe(callsAfterPause);
   });
 
+  it("setVolume clamps and ignores NaN", () => {
+    playback = createSimulatedPlayback({ bpm: 120 });
+    expect(playback.volume).toBe(0.8);
+    playback.setVolume(3);
+    expect(playback.volume).toBe(1);
+    playback.setVolume(-2);
+    expect(playback.volume).toBe(0);
+    playback.setVolume(Number.NaN);
+    expect(playback.volume).toBe(0);
+  });
+
+  it("toggleMute flips muted and notifies", () => {
+    playback = createSimulatedPlayback({ bpm: 120 });
+    const listener = vi.fn();
+    playback.subscribe(listener);
+    playback.toggleMute();
+    expect(playback.muted).toBe(true);
+    expect(listener).toHaveBeenCalledTimes(1);
+    playback.setVolume(0.5);
+    expect(playback.muted).toBe(false);
+  });
+
+  it("started becomes true on first toggle and stays true after pause", () => {
+    playback = createSimulatedPlayback({ bpm: 120 });
+    expect(playback.started).toBe(false);
+    playback.toggle();
+    expect(playback.started).toBe(true);
+    playback.toggle();
+    expect(playback.started).toBe(true);
+  });
+
+  it("readWaveform returns false", () => {
+    playback = createSimulatedPlayback({ bpm: 120 });
+    expect(playback.readWaveform(new Uint8Array(8))).toBe(false);
+  });
+
   it("dispose() clears timers: advancing 10s after dispose triggers no listeners", () => {
     playback = createSimulatedPlayback({ bpm: 120 });
     const listener = vi.fn();
@@ -85,6 +152,9 @@ describe("createAudioPlayback", () => {
     preload = "";
     src = "";
     currentTime = 0;
+    volume = 1;
+    muted = false;
+    duration = Number.NaN;
     played = 0;
     private listeners = new Map<string, Listener[]>();
     constructor() {
@@ -110,6 +180,7 @@ describe("createAudioPlayback", () => {
     FakeAudio.failPlay = false;
     vi.stubGlobal("Audio", FakeAudio);
     vi.stubGlobal("AudioContext", undefined);
+    vi.stubGlobal("localStorage", memoryStorage());
     vi.useFakeTimers();
   });
 
@@ -171,5 +242,190 @@ describe("createAudioPlayback", () => {
     expect(playback.status).toBe("paused");
     expect(playback.playing).toBe(false);
     playback.dispose();
+  });
+
+  it("sends volume and mute to the element without Web Audio", async () => {
+    const { createAudioPlayback } = await import("./playback");
+    const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+    playback.toggle();
+    const audio = FakeAudio.instances[0];
+    playback.setVolume(0.5);
+    expect(audio?.volume).toBe(0.5);
+    playback.toggleMute();
+    expect(audio?.muted).toBe(true);
+    expect(playback.muted).toBe(true);
+    playback.dispose();
+  });
+
+  it("persists volume to localStorage", async () => {
+    const { createAudioPlayback } = await import("./playback");
+    const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+    playback.setVolume(0.3);
+    expect(JSON.parse(window.localStorage.getItem(VOLUME_STORAGE_KEY) ?? "null")).toEqual({
+      volume: 0.3,
+      muted: false,
+    });
+    playback.toggleMute();
+    expect(JSON.parse(window.localStorage.getItem(VOLUME_STORAGE_KEY) ?? "null")).toEqual({
+      volume: 0.3,
+      muted: true,
+    });
+    playback.dispose();
+  });
+
+  it("applies the stored volume when the element is created", async () => {
+    window.localStorage.setItem(VOLUME_STORAGE_KEY, '{"volume":0.4,"muted":true}');
+    const { createAudioPlayback } = await import("./playback");
+    const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+    playback.toggle();
+    expect(FakeAudio.instances[0]?.volume).toBe(0.4);
+    expect(FakeAudio.instances[0]?.muted).toBe(true);
+    playback.dispose();
+  });
+
+  it("seek is a no-op while duration is NaN and clamps once known", async () => {
+    const { createAudioPlayback } = await import("./playback");
+    const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+    playback.toggle();
+    const audio = FakeAudio.instances[0];
+    playback.seek(50);
+    expect(audio?.currentTime).toBe(0);
+    if (audio) audio.duration = 200;
+    audio?.emit("durationchange");
+    playback.seek(500);
+    expect(playback.currentTime).toBe(200);
+    playback.seek(-3);
+    expect(playback.currentTime).toBe(0);
+    playback.dispose();
+  });
+
+  it("timeupdate and durationchange notify subscribers", async () => {
+    const { createAudioPlayback } = await import("./playback");
+    const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+    playback.toggle();
+    const listener = vi.fn();
+    playback.subscribe(listener);
+    FakeAudio.instances[0]?.emit("timeupdate");
+    FakeAudio.instances[0]?.emit("durationchange");
+    expect(listener).toHaveBeenCalledTimes(2);
+    playback.dispose();
+  });
+
+  it("readWaveform returns false without an analyser", async () => {
+    const { createAudioPlayback } = await import("./playback");
+    const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+    playback.toggle();
+    expect(playback.readWaveform(new Uint8Array(8))).toBe(false);
+    playback.dispose();
+  });
+
+  it("started stays true after pausing", async () => {
+    const { createAudioPlayback } = await import("./playback");
+    const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+    expect(playback.started).toBe(false);
+    playback.toggle();
+    playback.toggle();
+    expect(playback.started).toBe(true);
+    playback.dispose();
+  });
+
+  describe("with Web Audio", () => {
+    const calls: string[] = [];
+    const gainNode = { gain: { value: 1 }, connect: vi.fn() };
+    let lowEndDb = -100;
+
+    function node(name: string, extra: object = {}) {
+      return {
+        ...extra,
+        connect: vi.fn((target: { name?: string }) => {
+          calls.push(`${name}->${target.name ?? "?"}`);
+        }),
+        name,
+      };
+    }
+
+    beforeEach(() => {
+      calls.length = 0;
+      gainNode.gain.value = 1;
+      lowEndDb = -100;
+      class FakeContext {
+        sampleRate = 44100;
+        destination = { name: "destination" };
+        createMediaElementSource() {
+          return node("source");
+        }
+        createAnalyser() {
+          return node("analyser", {
+            frequencyBinCount: 512,
+            getFloatFrequencyData: (buffer: Float32Array) => buffer.fill(lowEndDb),
+            getByteTimeDomainData: (buffer: Uint8Array) => buffer.fill(128),
+          });
+        }
+        createGain() {
+          return Object.assign(node("gain"), { gain: gainNode.gain });
+        }
+        resume() {
+          return Promise.resolve();
+        }
+        close() {
+          return Promise.resolve();
+        }
+      }
+      vi.stubGlobal("AudioContext", FakeContext);
+      (window as unknown as { AudioContext: unknown }).AudioContext = FakeContext;
+    });
+
+    afterEach(() => {
+      delete (window as unknown as { AudioContext?: unknown }).AudioContext;
+    });
+
+    it("routes volume through the gain node with the analyser pre-gain", async () => {
+      const { createAudioPlayback } = await import("./playback");
+      const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+      playback.toggle();
+      expect(calls).toEqual(["source->analyser", "analyser->gain", "gain->destination"]);
+      playback.setVolume(0.5);
+      expect(gainNode.gain.value).toBe(0.5);
+      playback.toggleMute();
+      expect(gainNode.gain.value).toBe(0);
+      expect(FakeAudio.instances[0]?.volume).toBe(1);
+      expect(FakeAudio.instances[0]?.muted).toBe(false);
+      playback.dispose();
+    });
+
+    it("finds beats in a loud master that would pin the byte spectrum", async () => {
+      const frames: FrameRequestCallback[] = [];
+      vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+        frames.push(callback);
+        return frames.length;
+      });
+      vi.stubGlobal("cancelAnimationFrame", vi.fn());
+      let now = 0;
+      const step = (db: number) => {
+        lowEndDb = db;
+        now += 1000 / 60;
+        frames.shift()?.(now);
+      };
+      const { createAudioPlayback } = await import("./playback");
+      const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+      playback.toggle();
+      FakeAudio.instances[0]?.emit("playing");
+      // Two seconds of steady bass at -12 dB (well above the byte scale's -30 dB ceiling).
+      for (let i = 0; i < 120; i += 1) step(-12);
+      expect(playback.level).toBeLessThan(0.05);
+      step(-6); // a kick: twice the running magnitude
+      expect(playback.level).toBe(1);
+      playback.dispose();
+    });
+
+    it("readWaveform fills the buffer and returns true", async () => {
+      const { createAudioPlayback } = await import("./playback");
+      const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+      playback.toggle();
+      const buffer = new Uint8Array(16);
+      expect(playback.readWaveform(buffer)).toBe(true);
+      expect(Array.from(buffer).every((byte) => byte === 128)).toBe(true);
+      playback.dispose();
+    });
   });
 });

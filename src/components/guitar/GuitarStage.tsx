@@ -9,10 +9,12 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  type CSSProperties,
   type ReactNode,
 } from "react";
-import type { StopId } from "./journey";
+import { LIGHT_POSES, type LightPose, type StopId } from "./journey";
 import { usePlayback } from "./PlaybackProvider";
+import { useStagePulse } from "./useStagePulse";
 
 // The three.js scene is its own chunk, loaded only on the client after first paint.
 const GuitarCanvas = dynamic(() => import("./Guitar").then((mod) => mod.GuitarCanvas), {
@@ -77,6 +79,18 @@ class CanvasBoundary extends Component<
   }
 }
 
+type StageVariables = CSSProperties & Record<`--${string}`, string>;
+
+/** Light pool position (x relative to the guitar centre, `--stage-x`) and haze offset. */
+function stageVariables(light: LightPose, hazeShift: number): StageVariables {
+  return {
+    "--light-x": `calc(var(--stage-x) + ${light.x}%)`,
+    "--light-y": `${light.y}%`,
+    "--light-size": `${light.size}%`,
+    "--haze-shift": String(hazeShift),
+  };
+}
+
 const noopSubscribe = () => () => {};
 const serverTrue = () => true;
 const serverFalse = () => false;
@@ -85,11 +99,17 @@ export function GuitarStage({
   route,
   position,
   litFret,
+  light,
+  hazeShift,
 }: {
   route: readonly StopId[];
   /** Scroll position along `route` in index units (see useScrollProgress). */
   position: number;
   litFret: number;
+  /** Light pool for the current scroll position (sampleLight in journey.ts). */
+  light: LightPose;
+  /** Scroll-driven haze offset; the haze never drifts on its own. */
+  hazeShift: number;
 }) {
   const signal = usePlayback();
   // Server snapshots pick the poster-only path so hydration always matches.
@@ -107,6 +127,7 @@ export function GuitarStage({
   );
   const wrapperRef = useRef<HTMLDivElement>(null);
   const showCanvas = webgl && !contextLost && !canvasFailed;
+  useStagePulse(wrapperRef, signal, reducedMotion);
 
   useEffect(() => {
     const element = wrapperRef.current;
@@ -139,7 +160,11 @@ export function GuitarStage({
       aria-hidden="true"
       data-playing={playing ? "" : undefined}
       className="guitar-stage relative h-full w-full overflow-hidden"
+      // Reduced motion pins the camera to the hero pose, so the light stays with it.
+      style={reducedMotion ? stageVariables(LIGHT_POSES.hero, 0) : stageVariables(light, hazeShift)}
     >
+      <div className="guitar-stage-spot pointer-events-none absolute inset-0" />
+      <div className="guitar-stage-haze pointer-events-none absolute inset-0" />
       <Image
         src="/guitar-poster.webp"
         alt=""

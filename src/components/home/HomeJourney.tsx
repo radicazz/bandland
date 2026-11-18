@@ -3,8 +3,8 @@ import { Fragment, type ReactNode } from "react";
 
 import { proceduralAnchors } from "@/components/guitar/guitarModel";
 import { buildRoute, type StopId } from "@/components/guitar/journey";
-import { PlaybackProvider } from "@/components/guitar/PlaybackProvider";
 import { PlayButton } from "@/components/guitar/PlayButton";
+import { Reveal } from "@/components/Reveal";
 import { MerchCard } from "@/components/MerchCard";
 import { ShowCard } from "@/components/ShowCard";
 import { site } from "@/config/site";
@@ -48,7 +48,7 @@ function Stop({
       id={stopAnchor(id)}
       data-stop={id}
       aria-labelledby={labelledBy}
-      className={`stop-reveal relative flex min-h-svh flex-col ${SCROLL_CLEAR} ${className}`}
+      className={`relative flex min-h-svh flex-col ${SCROLL_CLEAR} ${className}`}
     >
       {children}
     </section>
@@ -99,167 +99,179 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
       >
         <h1
           id="journey-hero"
-          className="-ml-1 font-brand text-[clamp(4.5rem,24vw,9rem)] leading-[0.85] text-text md:text-[clamp(6rem,11vw,11rem)]"
+          className="intro-wordmark -ml-1 font-brand text-[clamp(4.5rem,24vw,9rem)] leading-[0.85] text-text md:text-[clamp(6rem,11vw,11rem)]"
         >
           {site.name}
         </h1>
-        <p className="mt-4 max-w-xl text-lg leading-8 text-text sm:text-xl">
-          {settings.hero.tagline ?? labels.meta.description}
-        </p>
-        {route.includes("release") ? (
-          <a
-            href={`#${stopAnchor("release")}`}
-            className="group mt-6 inline-flex max-w-xl items-center gap-3 self-start text-base text-text-muted"
-          >
-            <span aria-hidden className="h-px w-8 bg-highlight" />
-            <span>
-              {labels.home.latestReleaseTitle}:{" "}
-              <span className="font-semibold text-text underline decoration-border underline-offset-4 transition-colors group-hover:decoration-highlight">
-                {settings.release.title}
+        <div className="flex flex-col">
+          <p className="mt-4 max-w-xl text-lg leading-8 text-text sm:text-xl">
+            {settings.hero.tagline ?? labels.meta.description}
+          </p>
+          {route.includes("release") ? (
+            <a
+              href={`#${stopAnchor("release")}`}
+              className="group mt-6 inline-flex max-w-xl items-center gap-3 self-start text-base text-text-muted"
+            >
+              <span aria-hidden className="h-px w-8 bg-highlight" />
+              <span>
+                {labels.home.latestReleaseTitle}:{" "}
+                <span className="font-semibold text-text underline decoration-border underline-offset-4 transition-colors group-hover:decoration-highlight">
+                  {settings.release.title}
+                </span>
               </span>
-            </span>
-          </a>
-        ) : null}
-        <div className="mt-10 flex flex-col items-start gap-2">
-          <PlayButton labels={journey} />
-          <p className="text-sm text-text-dim">{journey.playHint}</p>
+            </a>
+          ) : null}
+          <div className="mt-10 flex flex-col items-start gap-2">
+            <PlayButton labels={journey} />
+            <p className="text-sm text-text-dim">{journey.playHint}</p>
+          </div>
         </div>
       </Stop>
     ),
     release: () => (
       <Stop id="release" labelledBy="journey-release">
-        <Kicker number={number("release")}>{labels.home.latestReleaseTitle}</Kicker>
-        <h2 id="journey-release" className={STOP_TITLE}>
-          {settings.release.title}
-        </h2>
-        <p className="mt-2 text-lg text-text-muted">
-          {settings.release.description ?? labels.home.latestReleaseDescription}
-        </p>
-        {settings.release.embedUrl ? (
-          <div className="mt-6 overflow-hidden rounded-card border border-border bg-surface p-2">
-            <iframe
-              title={`${labels.home.latestReleaseTitle}: ${settings.release.title}`}
-              src={settings.release.embedUrl}
-              width="100%"
-              height="152"
-              loading="lazy"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              className="block w-full rounded-control"
-            />
-          </div>
-        ) : null}
-        <a
-          href={settings.release.href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={`${labels.home.latestReleaseCta}: ${settings.release.title} (${labels.common.opensInNewTab})`}
-          className="btn-primary mt-6 self-start"
-        >
-          {labels.home.latestReleaseCta}
-          <span aria-hidden>{"\u2197\uFE0E"}</span>
-        </a>
+        <Reveal className="flex flex-col">
+          <Kicker number={number("release")}>{labels.home.latestReleaseTitle}</Kicker>
+          <h2 id="journey-release" className={STOP_TITLE}>
+            {settings.release.title}
+          </h2>
+          <p className="mt-2 text-lg text-text-muted">
+            {settings.release.description ?? labels.home.latestReleaseDescription}
+          </p>
+          {settings.release.embedUrl ? (
+            <div className="mt-6 overflow-hidden rounded-card border border-border bg-surface p-2">
+              <iframe
+                title={`${labels.home.latestReleaseTitle}: ${settings.release.title}`}
+                src={settings.release.embedUrl}
+                width="100%"
+                height="152"
+                loading="lazy"
+                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                className="block w-full rounded-control"
+              />
+            </div>
+          ) : null}
+          <a
+            href={settings.release.href}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`${labels.home.latestReleaseCta}: ${settings.release.title} (${labels.common.opensInNewTab})`}
+            className="btn-primary mt-6 self-start"
+          >
+            {labels.home.latestReleaseCta}
+            <span aria-hidden>{"\u2197\uFE0E"}</span>
+          </a>
+        </Reveal>
       </Stop>
     ),
     neck: () =>
       upcoming.length > 0 ? (
         <Stop id="neck" labelledBy="journey-neck">
-          <Kicker number={number("neck")}>{labels.home.nextShowLabel}</Kicker>
-          <h2 id="journey-neck" className={STOP_TITLE}>
-            {journey.neckTitle}
-          </h2>
-          <ol id={NECK_ROWS_ID} className="mt-8 grid gap-4 border-l border-border pl-4 sm:pl-6">
-            {upcoming.map((show, index) => (
-              <li key={show.id} data-fret={index}>
-                <ShowCard
-                  show={show}
-                  locale={locale}
-                  labels={labels.shows}
-                  isNext={index === 0}
-                  newTabLabel={labels.common.opensInNewTab}
-                />
-              </li>
-            ))}
-          </ol>
-          <Link href="/shows" className="btn-secondary mt-8 self-start">
-            {labels.home.allShowsCta}
-          </Link>
+          <Reveal className="flex flex-col">
+            <Kicker number={number("neck")}>{labels.home.nextShowLabel}</Kicker>
+            <h2 id="journey-neck" className={STOP_TITLE}>
+              {journey.neckTitle}
+            </h2>
+            <ol id={NECK_ROWS_ID} className="mt-8 grid gap-4 border-l border-border pl-4 sm:pl-6">
+              {upcoming.map((show, index) => (
+                <li key={show.id} data-fret={index}>
+                  <ShowCard
+                    show={show}
+                    locale={locale}
+                    labels={labels.shows}
+                    isNext={index === 0}
+                    newTabLabel={labels.common.opensInNewTab}
+                  />
+                </li>
+              ))}
+            </ol>
+            <Link href="/shows" className="btn-secondary mt-8 self-start">
+              {labels.home.allShowsCta}
+            </Link>
+          </Reveal>
         </Stop>
       ) : (
         <Stop id="neck" labelledBy="journey-neck">
-          <Kicker number={number("neck")}>{labels.home.nextShowLabel}</Kicker>
-          <h2 id="journey-neck" className={STOP_TITLE}>
-            {labels.home.nextShowFallbackTitle}
-          </h2>
-          <p className="mt-4 text-lg leading-8 text-text-muted">
-            {labels.home.nextShowFallbackDescription}
-          </p>
-          <Link href="/shows" className="btn-primary mt-8 self-start">
-            {labels.home.allShowsCta}
-          </Link>
+          <Reveal className="flex flex-col">
+            <Kicker number={number("neck")}>{labels.home.nextShowLabel}</Kicker>
+            <h2 id="journey-neck" className={STOP_TITLE}>
+              {labels.home.nextShowFallbackTitle}
+            </h2>
+            <p className="mt-4 text-lg leading-8 text-text-muted">
+              {labels.home.nextShowFallbackDescription}
+            </p>
+            <Link href="/shows" className="btn-primary mt-8 self-start">
+              {labels.home.allShowsCta}
+            </Link>
+          </Reveal>
         </Stop>
       ),
     body: () => (
       <Stop id="body" labelledBy="journey-body">
-        <Kicker number={number("body")}>{labels.nav.merch}</Kicker>
-        <h2 id="journey-body" className={STOP_TITLE}>
-          {journey.bodyTitle}
-        </h2>
-        <ul className="mt-8 grid gap-6 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
-          {merchPreview.map((item) => (
-            <li key={item.id} className="min-w-0">
-              <MerchCard
-                item={item}
-                labels={labels.merch}
-                newTabLabel={labels.common.opensInNewTab}
-              />
-            </li>
-          ))}
-        </ul>
-        <Link href="/merch" className="btn-secondary mt-8 self-start">
-          {labels.nav.merch}
-        </Link>
+        <Reveal className="flex flex-col">
+          <Kicker number={number("body")}>{labels.nav.merch}</Kicker>
+          <h2 id="journey-body" className={STOP_TITLE}>
+            {journey.bodyTitle}
+          </h2>
+          <ul className="mt-8 grid gap-6 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
+            {merchPreview.map((item) => (
+              <li key={item.id} className="min-w-0">
+                <MerchCard
+                  item={item}
+                  labels={labels.merch}
+                  newTabLabel={labels.common.opensInNewTab}
+                />
+              </li>
+            ))}
+          </ul>
+          <Link href="/merch" className="btn-secondary mt-8 self-start">
+            {labels.nav.merch}
+          </Link>
+        </Reveal>
       </Stop>
     ),
     outro: () => (
       <Stop id="outro" labelledBy="journey-outro">
-        <Kicker number={number("outro")}>{journey.outroKicker}</Kicker>
-        <h2 id="journey-outro" className={STOP_TITLE}>
-          {journey.outroTitle}
-        </h2>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Link href="/shows" className="btn-primary">
-            {labels.home.allShowsCta}
-          </Link>
-          <Link href="/merch" className="btn-secondary">
-            {labels.nav.merch}
-          </Link>
-        </div>
+        <Reveal className="flex flex-col">
+          <Kicker number={number("outro")}>{journey.outroKicker}</Kicker>
+          <h2 id="journey-outro" className={STOP_TITLE}>
+            {journey.outroTitle}
+          </h2>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link href="/shows" className="btn-primary">
+              {labels.home.allShowsCta}
+            </Link>
+            <Link href="/merch" className="btn-secondary">
+              {labels.nav.merch}
+            </Link>
+          </div>
+        </Reveal>
       </Stop>
     ),
   };
 
+  // Starts under the translucent sticky header so the stage runs edge to edge.
   return (
-    <PlaybackProvider>
-      {/* Starts under the translucent sticky header so the stage runs edge to edge. */}
-      <div className="relative -mt-16">
-        {/*
-          Full-screen backdrop pinned for the whole journey; the negative margin
-          lets the sections scroll over it instead of after it. lvh keeps the
-          canvas size steady while mobile browser bars slide in and out.
-        */}
-        <div className="sticky top-0 -mb-[100lvh] h-lvh">
-          <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
-        </div>
-        <div
-          className={`relative mx-auto w-full max-w-6xl px-4 sm:px-6 ${INTERACTIVE_SCROLL_CLEAR}`}
-        >
-          <div className="md:w-1/2 md:pr-6 lg:pr-10">
-            {route.map((stop) => (
-              <Fragment key={stop}>{sections[stop]()}</Fragment>
-            ))}
-          </div>
+    <div className="relative -mt-16">
+      {/*
+        Full-screen backdrop pinned for the whole journey; the negative margin
+        lets the sections scroll over it instead of after it. lvh keeps the
+        canvas size steady while mobile browser bars slide in and out. Once the
+        player bar is up, the stage ends above it so the bar never covers the
+        guitar (--player-clear is set by PlayerBar).
+      */}
+      <div className="sticky top-0 -mb-[calc(100lvh-var(--player-clear,0px))] h-[calc(100lvh-var(--player-clear,0px))]">
+        <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
+        {/* Fades from black over the poster (which stays painted underneath) on a session's first load. */}
+        <div aria-hidden className="stage-intro" />
+      </div>
+      <div className={`relative mx-auto w-full max-w-6xl px-4 sm:px-6 ${INTERACTIVE_SCROLL_CLEAR}`}>
+        <div className="md:w-1/2 md:pr-6 lg:pr-10">
+          {route.map((stop) => (
+            <Fragment key={stop}>{sections[stop]()}</Fragment>
+          ))}
         </div>
       </div>
-    </PlaybackProvider>
+    </div>
   );
 }

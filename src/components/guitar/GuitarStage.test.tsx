@@ -1,6 +1,7 @@
 import { act, cleanup, render, screen } from "@testing-library/react";
 import React, { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { memoryStorage } from "@/test/memoryStorage";
 
 const fiberMock = vi.hoisted(() => ({ throwOnRender: false }));
 
@@ -62,16 +63,27 @@ function stubWebGL(available: boolean) {
     available ? {} : null) as unknown as HTMLCanvasElement["getContext"]);
 }
 
-async function renderStage() {
+async function renderStage(light = { x: 0, y: 38, size: 55 }, hazeShift = 0) {
   vi.resetModules();
   const { GuitarStage } = await import("./GuitarStage");
   const { PlaybackProvider } = await import("./PlaybackProvider");
   return render(
     <PlaybackProvider>
-      <GuitarStage route={["hero", "release", "neck", "body", "outro"]} position={0} litFret={0} />
+      <GuitarStage
+        route={["hero", "release", "neck", "body", "outro"]}
+        position={0}
+        litFret={0}
+        light={light}
+        hazeShift={hazeShift}
+      />
     </PlaybackProvider>,
   );
 }
+
+// The default driver reads the stored volume; keep Node's own localStorage out of it.
+beforeEach(() => {
+  vi.stubGlobal("localStorage", memoryStorage());
+});
 
 afterEach(() => {
   cleanup();
@@ -132,6 +144,44 @@ describe("GuitarStage", () => {
     await flush();
     expect(screen.queryByTestId("r3f-canvas")).toBeNull();
     expect(container.querySelector("img[alt='']")).not.toBeNull();
+  });
+});
+
+describe("GuitarStage atmosphere", () => {
+  it("writes light variables from the light prop", async () => {
+    stubMatchMedia(false);
+    stubWebGL(false);
+    const { LIGHT_POSES } = await import("./journey");
+    const { container } = await renderStage(LIGHT_POSES.body, 3.5);
+    const stage = container.querySelector<HTMLElement>(".guitar-stage");
+    expect(stage).not.toBeNull();
+    expect(stage?.style.getPropertyValue("--light-x")).toBe("calc(var(--stage-x) + 0%)");
+    expect(stage?.style.getPropertyValue("--light-y")).toBe("62%");
+    expect(stage?.style.getPropertyValue("--light-size")).toBe("48%");
+    expect(stage?.style.getPropertyValue("--haze-shift")).toBe("3.5");
+  });
+
+  it("pins the light to the hero pose and the haze to 0 under reduced motion", async () => {
+    stubMatchMedia(true);
+    stubWebGL(false);
+    const { LIGHT_POSES } = await import("./journey");
+    const { container } = await renderStage(LIGHT_POSES.body, 3.5);
+    const stage = container.querySelector<HTMLElement>(".guitar-stage");
+    expect(stage?.style.getPropertyValue("--light-y")).toBe(`${LIGHT_POSES.hero.y}%`);
+    expect(stage?.style.getPropertyValue("--light-size")).toBe(`${LIGHT_POSES.hero.size}%`);
+    expect(stage?.style.getPropertyValue("--haze-shift")).toBe("0");
+  });
+
+  it("renders spotlight and haze layers as aria-hidden decoration", async () => {
+    stubMatchMedia(false);
+    stubWebGL(false);
+    const { container } = await renderStage();
+    for (const selector of [".guitar-stage-spot", ".guitar-stage-haze"]) {
+      const layer = container.querySelector(selector);
+      expect(layer).not.toBeNull();
+      expect(layer?.closest("[aria-hidden='true']")).not.toBeNull();
+      expect(layer?.textContent).toBe("");
+    }
   });
 });
 
@@ -201,6 +251,10 @@ describe("GuitarStage context loss", () => {
 describe("PlaybackProvider", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    // jsdom does not implement media playback and logs each call.
+    vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+    vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    vi.spyOn(HTMLMediaElement.prototype, "load").mockImplementation(() => {});
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -257,6 +311,44 @@ describe("PlaybackProvider", () => {
     expect(listener).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0);
     hidden.mockRestore();
+  });
+
+  it("PlaybackProvider forwards volume, seek and waveform to the driver", async () => {
+    vi.resetModules();
+    const { PlaybackProvider, usePlayback } = await import("./PlaybackProvider");
+    const { createSimulatedPlayback } = await import("./playback");
+    const driver = createSimulatedPlayback();
+    const setVolume = vi.spyOn(driver, "setVolume");
+    const seek = vi.spyOn(driver, "seek");
+    const readWaveform = vi.spyOn(driver, "readWaveform");
+    const toggleMute = vi.spyOn(driver, "toggleMute");
+    let signal: ReturnType<typeof usePlayback> | undefined;
+    function Probe() {
+      const current = usePlayback();
+      useEffect(() => {
+        signal = current;
+      }, [current]);
+      return null;
+    }
+    render(
+      <PlaybackProvider createDriver={() => driver}>
+        <Probe />
+      </PlaybackProvider>,
+    );
+    act(() => {
+      signal?.setVolume(0.25);
+      signal?.toggleMute();
+      signal?.seek(12);
+    });
+    const buffer = new Uint8Array(4);
+    expect(signal?.readWaveform(buffer)).toBe(false);
+    expect(setVolume).toHaveBeenCalledWith(0.25);
+    expect(toggleMute).toHaveBeenCalled();
+    expect(seek).toHaveBeenCalledWith(12);
+    expect(readWaveform).toHaveBeenCalledWith(buffer);
+    expect(signal?.volume).toBe(0.25);
+    expect(signal?.muted).toBe(true);
+    expect(Number.isNaN(signal?.duration)).toBe(true);
   });
 
   it("usePlayback throws outside the provider", async () => {

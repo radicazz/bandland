@@ -153,17 +153,29 @@ body {
   }
 
   /*
-   * Guitar stage: one bare bulb over a dark floor. Painted in CSS so the WebGL
+   * Guitar stage: one overhead light in a dark room. Painted in CSS so the WebGL
    * canvas (transparent) and the poster fallback share the same backdrop.
+   * Layers, back to front: light pool + floor (element background), red floor
+   * spill (::before, playing only), spotlight cone, haze, poster/canvas,
+   * vignette + grain.
+   *
+   * --light-x/--light-y/--light-size: per-stop light pool (GuitarStage, from
+   * sampleLight in journey.ts). --pulse: playback envelope 0..1 (useStagePulse;
+   * stays 0 when idle or under reduced motion). --haze-shift: scroll position.
    */
   .guitar-stage {
     /* Horizontal centre of the guitar; md+ follows STAGE_SHIFT (journey.ts). */
     --stage-x: 50%;
+    --light-x: var(--stage-x);
+    --light-y: 38%;
+    --light-size: 55%;
+    --pulse: 0;
+    --haze-shift: 0;
     isolation: isolate;
     background:
       radial-gradient(
-        ellipse 55% 42% at var(--stage-x) 40%,
-        color-mix(in srgb, var(--text) 7%, transparent),
+        ellipse var(--light-size) calc(var(--light-size) * 0.76) at var(--light-x) var(--light-y),
+        color-mix(in srgb, var(--text) calc(7% + 6% * var(--pulse, 0)), transparent),
         transparent 70%
       ),
       radial-gradient(
@@ -180,7 +192,13 @@ body {
     }
   }
 
-  /* Warm floor spill that only exists while Play is on. */
+  @media (prefers-reduced-motion: reduce) {
+    .guitar-stage {
+      --haze-shift: 0 !important;
+    }
+  }
+
+  /* Warm floor spill that only exists while Play is on; breathes with --pulse. */
   .guitar-stage::before {
     content: "";
     position: absolute;
@@ -196,7 +214,45 @@ body {
   }
 
   .guitar-stage[data-playing]::before {
-    opacity: 1;
+    opacity: calc(0.6 + 0.4 * var(--pulse, 0));
+    /* Short enough to follow the beat; the slow fade-out stays on the rule above. */
+    transition-duration: 150ms;
+  }
+
+  /*
+   * Spotlight cone and haze share one mask: a narrow wedge whose apex sits above
+   * the top edge at --light-x, soft on both sides (masks read alpha only).
+   */
+  .guitar-stage-spot,
+  .guitar-stage-haze {
+    --cone: conic-gradient(
+      from 166deg at var(--light-x) -12%,
+      transparent 0deg,
+      color-mix(in srgb, var(--text) 35%, transparent) 6deg,
+      var(--text) 14deg,
+      color-mix(in srgb, var(--text) 35%, transparent) 22deg,
+      transparent 28deg
+    );
+    -webkit-mask-image: var(--cone);
+    mask-image: var(--cone);
+  }
+
+  .guitar-stage-spot {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--text) 9%, transparent),
+      transparent 75%
+    );
+    opacity: calc(0.6 + 0.4 * var(--pulse, 0));
+  }
+
+  /* Haze in the beam: grayscale fractal noise that moves only with scroll. */
+  .guitar-stage-haze {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='h'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23h)'/%3E%3C/svg%3E");
+    background-size: 900px 900px;
+    background-position: calc(var(--haze-shift, 0) * -120px) calc(var(--haze-shift, 0) * 60px);
+    mix-blend-mode: screen;
+    opacity: calc(0.08 + 0.06 * var(--pulse, 0));
   }
 
   .guitar-stage-vignette {
@@ -250,30 +306,172 @@ body {
   .display-title {
     @apply break-words font-sans font-bold leading-[1.05] tracking-tight text-text;
   }
-}
 
-/*
- * Journey stops settle in as they scroll into view. Scroll-linked only (never
- * time-based), skipped where unsupported and under reduced motion.
- */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .stop-reveal > * {
-      animation: stop-reveal linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 60%;
-    }
+  /* Persistent player: frosted surface along the bottom edge. */
+  .player-bar {
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    backdrop-filter: blur(16px) saturate(120%);
+    box-shadow: 0 -12px 32px color-mix(in srgb, var(--bg) 55%, transparent);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /*
+   * Player sliders: a thin token-coloured track filled up to `--fill`, with a
+   * small thumb that grows on hover/focus. The hit area stays tall for touch.
+   */
+  .player-range {
+    --fill: 0%;
+    --track: color-mix(in srgb, var(--text) 16%, transparent);
+    --track-fill: var(--text-muted);
+    appearance: none;
+    -webkit-appearance: none;
+    height: 1.25rem;
+    background: transparent;
+    border-radius: 9999px;
+  }
+
+  .player-range:hover:not(:disabled),
+  .player-range:focus-visible {
+    --track-fill: var(--text);
+  }
+
+  .player-range:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .player-range::-webkit-slider-runnable-track {
+    height: 3px;
+    border-radius: 9999px;
+    background: linear-gradient(to right, var(--track-fill) var(--fill), var(--track) var(--fill));
+  }
+
+  .player-range::-moz-range-track {
+    height: 3px;
+    border-radius: 9999px;
+    background: var(--track);
+  }
+
+  .player-range::-moz-range-progress {
+    height: 3px;
+    border-radius: 9999px;
+    background: var(--track-fill);
+  }
+
+  .player-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    margin-top: calc((3px - 0.75rem) / 2);
+    border: 0;
+    border-radius: 9999px;
+    background: var(--text);
+    transform: scale(0.75);
+    transition: transform 150ms ease;
+  }
+
+  .player-range::-moz-range-thumb {
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 0;
+    border-radius: 9999px;
+    background: var(--text);
+    transform: scale(0.75);
+    transition: transform 150ms ease;
+  }
+
+  .player-range:hover:not(:disabled)::-webkit-slider-thumb,
+  .player-range:focus-visible::-webkit-slider-thumb {
+    transform: scale(1);
+  }
+
+  .player-range:hover:not(:disabled)::-moz-range-thumb,
+  .player-range:focus-visible::-moz-range-thumb {
+    transform: scale(1);
+  }
+
+  .player-range:disabled::-webkit-slider-thumb {
+    visibility: hidden;
+  }
+
+  .player-range:disabled::-moz-range-thumb {
+    visibility: hidden;
   }
 }
 
-@keyframes stop-reveal {
+/*
+ * Intro: on a session's first load the stage lifts from black (light first,
+ * then the guitar), then the wordmark rises. Opacity/transform only; the poster
+ * stays painted underneath. The boot script adds `intro-seen` on later loads.
+ */
+.stage-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--bg);
+  pointer-events: none;
+  /* Only once the boot script has run (no JS: content shows immediately). */
+  display: none;
+}
+
+:root.js:not(.intro-seen) .stage-intro {
+  display: block;
+  animation: intro-lift 1.2s ease-out 0.15s both;
+}
+
+:root.js:not(.intro-seen) .intro-wordmark {
+  animation: intro-rise 0.9s ease-out 0.6s both;
+}
+
+@keyframes intro-lift {
   from {
-    opacity: 0.3;
-    transform: translateY(1rem);
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes intro-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Section reveals: hidden only once hydrated code adds the root `reveal-ready` class, so no-JS shows everything. */
+[data-reveal] {
+  transition:
+    opacity 700ms ease,
+    transform 700ms ease;
+}
+
+:root.reveal-ready [data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root.js:not(.intro-seen) .stage-intro {
+    display: none;
+  }
+
+  :root.js:not(.intro-seen) .intro-wordmark {
+    animation: none;
+  }
+
+  :root.reveal-ready [data-reveal]:not([data-revealed]) {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-reveal] {
+    transition: none;
   }
 }
 

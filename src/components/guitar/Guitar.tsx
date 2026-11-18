@@ -6,6 +6,7 @@ import {
   AdditiveBlending,
   BoxGeometry,
   BufferAttribute,
+  BufferGeometry,
   CanvasTexture,
   CatmullRomCurve3,
   CircleGeometry,
@@ -20,6 +21,8 @@ import {
   MeshStandardMaterial,
   PlaneGeometry,
   PMREMGenerator,
+  Points,
+  PointsMaterial,
   type PointLight,
   Quaternion,
   Scene,
@@ -40,6 +43,19 @@ import {
   proceduralAnchors,
   type GuitarAnchors,
 } from "./guitarModel";
+import {
+  BODY_EDGE,
+  BODY_OUTLINE,
+  BRIDGE_PLATE_SIZE,
+  CONTROL_PLATE,
+  HEADSTOCK_OUTLINE,
+  HUMBUCKER_SIZE,
+  PICKGUARD_OUTLINE,
+  type Outline,
+  postPosition,
+  stringX,
+  tunerButtonX,
+} from "./telecaster";
 import { site } from "@/config/site";
 import {
   CAMERA_POSES,
@@ -49,6 +65,7 @@ import {
   type CameraPose,
   type StopId,
 } from "./journey";
+import { createMoteField, MOTE_COUNT, stepMotes } from "./motes";
 import type { PlaybackSignal } from "./playback";
 
 type Palette = {
@@ -149,7 +166,7 @@ function clampLitFret(litFret: number, fretCount: number): number | null {
 /* ------------------------------------------------------------------------ */
 
 /** A smooth closed outline through `points` (centripetal Catmull-Rom). */
-function smoothShape(points: ReadonlyArray<readonly [number, number]>, divisions = 160): Shape {
+function smoothShape(points: Outline, divisions = 160): Shape {
   const curve = new CatmullRomCurve3(
     points.map(([x, y]) => new Vector3(x, y, 0)),
     true,
@@ -175,112 +192,10 @@ function roundedRect(width: number, height: number, radius: number): Shape {
   return shape;
 }
 
-// Telecaster slab, authored around (0, bodyCenterY). The rounded upper bout
-// sits on the bass side (-x); the single cutaway and its short horn sit on the
-// treble side (+x). The neck pocket is the flat run across the top.
-const BODY_OUTLINE: ReadonlyArray<readonly [number, number]> = [
-  [0.15, 1.1],
-  [0.16, 0.8],
-  [0.22, 0.62],
-  [0.36, 0.56],
-  [0.52, 0.6],
-  [0.66, 0.72],
-  [0.76, 0.88],
-  [0.85, 0.98],
-  [0.95, 0.96],
-  [1.02, 0.82],
-  [1.05, 0.55],
-  [1.03, 0.25],
-  [1.06, -0.1],
-  [1.14, -0.5],
-  [1.18, -0.85],
-  [1.15, -1.2],
-  [1.02, -1.45],
-  [0.75, -1.6],
-  [0.35, -1.66],
-  [0, -1.67],
-  [-0.35, -1.66],
-  [-0.75, -1.6],
-  [-1.02, -1.45],
-  [-1.15, -1.2],
-  [-1.18, -0.85],
-  [-1.14, -0.5],
-  [-1.06, -0.1],
-  [-1.03, 0.25],
-  [-1.05, 0.6],
-  [-1.04, 0.92],
-  [-0.94, 1.17],
-  [-0.74, 1.3],
-  [-0.48, 1.32],
-  [-0.28, 1.25],
-  [-0.15, 1.12],
-];
-
-// One-piece HH guard: hugs the cutaway, wraps both humbuckers and stops short
-// of the bridge plate and the control plate.
-const PICKGUARD_OUTLINE: ReadonlyArray<readonly [number, number]> = [
-  [0.15, 0.6],
-  [0.3, 0.5],
-  [0.5, 0.52],
-  [0.64, 0.6],
-  [0.72, 0.45],
-  [0.66, 0.1],
-  [0.56, -0.2],
-  [0.42, -0.42],
-  [0.36, -0.68],
-  [0.1, -0.74],
-  [-0.2, -0.74],
-  [-0.4, -0.68],
-  [-0.56, -0.45],
-  [-0.72, -0.1],
-  [-0.84, 0.3],
-  [-0.88, 0.75],
-  [-0.8, 1.05],
-  [-0.6, 1.17],
-  [-0.36, 1.16],
-  [-0.2, 1.08],
-  [-0.15, 1.04],
-];
-
-// Telecaster headstock, authored from the nut (y = 0) upward: tuners in a line
-// on the bass side, the treble edge widening toward a rounded tip.
-const HEADSTOCK_OUTLINE: ReadonlyArray<readonly [number, number]> = [
-  [0.105, -0.06],
-  [0.11, 0.14],
-  [0.135, 0.36],
-  [0.175, 0.58],
-  [0.205, 0.78],
-  [0.205, 0.92],
-  [0.17, 1.02],
-  [0.09, 1.07],
-  [-0.02, 1.08],
-  [-0.11, 1.06],
-  [-0.165, 1.0],
-  [-0.17, 0.86],
-  [-0.155, 0.55],
-  [-0.135, 0.28],
-  [-0.115, 0.08],
-  [-0.105, -0.06],
-  [0, -0.08],
-];
-
-// Control plate on the lower treble bout, angled along the body edge.
-const CONTROL_PLATE = { x: 0.8, y: -0.92, angle: -0.3, length: 0.86, width: 0.22 } as const;
-
-const BODY_BEVEL = 0.06;
-
-/** String x at height y: strings fan out from the nut to the bridge. */
-function stringX(index: number, y: number): number {
-  const t = D.stringCount > 1 ? index / (D.stringCount - 1) : 0.5;
-  const nutX = -0.08 + t * 0.16;
-  const bridgeX = -0.11 + t * 0.22;
-  const u = (D.nutY - y) / D.scaleLength;
-  return nutX + (bridgeX - nutX) * u;
-}
-
-function postPosition(index: number): Vector3 {
-  // Low E (index 0) winds on the post nearest the nut, high E on the tip.
-  return new Vector3(-0.085, D.nutY + 0.22 + index * 0.125, HEADSTOCK_FACE_Z + 0.05);
+/** Tuner post on the headstock face, in scene space. */
+function postVector(index: number): Vector3 {
+  const [x, y] = postPosition(index);
+  return new Vector3(x, y, HEADSTOCK_FACE_Z + 0.05);
 }
 
 /** A cylinder from `a` to `b`. */
@@ -549,6 +464,17 @@ function Strings({ signal, palette, reducedMotion, motion, litFret }: GuitarStri
   );
 }
 
+// The string tree sits between the B and high E runs, partway to their posts.
+const STRING_TREE_RISE = 0.42;
+const STRING_TREE_X =
+  [D.stringCount - 2, D.stringCount - 1]
+    .map((index) => {
+      const [postX, postY] = postPosition(index);
+      const nutX = stringX(index, D.nutY);
+      return nutX + ((postX - nutX) * STRING_TREE_RISE) / (postY - D.nutY);
+    })
+    .reduce((sum, x) => sum + x, 0) / 2;
+
 function Headstock({ palette, materials }: { palette: Palette; materials: Materials }) {
   const geometry = useDisposables(() => {
     const thickness = 0.07;
@@ -563,14 +489,17 @@ function Headstock({ palette, materials }: { palette: Palette; materials: Materi
     plate.translate(0, D.nutY, HEADSTOCK_FACE_Z - (thickness - 0.01));
     const runs = Array.from({ length: D.stringCount }, (_, index) => {
       const from = new Vector3(stringX(index, D.nutY), D.nutY, STRING_Z);
-      return segmentGeometry(from, postPosition(index), 0.0095 - index * 0.001);
+      return segmentGeometry(from, postVector(index), 0.0095 - index * 0.001);
     });
     return {
       plate,
       runs,
       post: new CylinderGeometry(0.016, 0.016, 0.07, 16).rotateX(Math.PI / 2),
       bushing: new CylinderGeometry(0.03, 0.032, 0.012, 24).rotateX(Math.PI / 2),
-      shaft: new CylinderGeometry(0.009, 0.009, 0.07, 10).rotateZ(Math.PI / 2),
+      // Tuner shaft: from the post out through the bass edge to the button.
+      shaft: new CylinderGeometry(0.009, 0.009, postPosition(0)[0] - tunerButtonX(), 10).rotateZ(
+        Math.PI / 2,
+      ),
       button: new SphereGeometry(1, 20, 12),
       nut: new BoxGeometry(D.neckWidthAtNut, 0.025, 0.03),
       tree: new CylinderGeometry(0.018, 0.018, 0.012, 16).rotateX(Math.PI / 2),
@@ -585,7 +514,7 @@ function Headstock({ palette, materials }: { palette: Palette; materials: Materi
       <mesh
         geometry={geometry.tree}
         material={materials.chrome}
-        position={[-0.016, D.nutY + 0.42, STRING_Z + 0.008]}
+        position={[STRING_TREE_X, D.nutY + STRING_TREE_RISE, STRING_Z + 0.008]}
       />
       <mesh
         geometry={geometry.nut}
@@ -593,7 +522,7 @@ function Headstock({ palette, materials }: { palette: Palette; materials: Materi
         position={[0, D.nutY, NECK_FRONT_Z + 0.005]}
       />
       {geometry.runs.map((run, index) => {
-        const post = postPosition(index);
+        const post = postVector(index);
         const backZ = HEADSTOCK_FACE_Z - 0.06;
         return (
           <group key={index}>
@@ -611,12 +540,12 @@ function Headstock({ palette, materials }: { palette: Palette; materials: Materi
             <mesh
               geometry={geometry.shaft}
               material={materials.chrome}
-              position={[-0.2, post.y, backZ]}
+              position={[(post.x + tunerButtonX()) / 2, post.y, backZ]}
             />
             <mesh
               geometry={geometry.button}
               material={materials.chrome}
-              position={[-0.255, post.y, backZ]}
+              position={[tunerButtonX(), post.y, backZ]}
               scale={[0.042, 0.03, 0.013]}
             />
           </group>
@@ -667,7 +596,7 @@ function HeadstockLogo({ palette }: { palette: Palette }) {
 
   if (!texture) return null;
   return (
-    <mesh position={[0.085, D.nutY + 0.7, HEADSTOCK_FACE_Z + 0.001]} rotation={[0, 0, Math.PI / 2]}>
+    <mesh position={[0.17, D.nutY + 0.7, HEADSTOCK_FACE_Z + 0.001]} rotation={[0, 0, Math.PI / 2]}>
       <planeGeometry args={[0.42, 0.1]} />
       <meshStandardMaterial
         color={palette.textMuted}
@@ -681,6 +610,8 @@ function HeadstockLogo({ palette }: { palette: Palette }) {
 }
 
 const INLAY_FRETS = [3, 5, 7, 9, 15, 17, 19, 21];
+// The 12th-fret pair sits a quarter of the board width either side of centre.
+const DOUBLE_DOT_OFFSET = neckWidthAt((fretY(11) + fretY(12)) / 2) * 0.25;
 
 function Neck({
   palette,
@@ -769,12 +700,12 @@ function Neck({
           position={[0, inlayY(fret), NECK_FRONT_Z + 0.0005]}
         />
       ))}
-      {[-0.06, 0.06].map((x) => (
+      {[-1, 1].map((side) => (
         <mesh
-          key={x}
+          key={side}
           geometry={geometry.dot}
           material={materials.inlay}
-          position={[x, inlayY(12), NECK_FRONT_Z + 0.0005]}
+          position={[side * DOUBLE_DOT_OFFSET, inlayY(12), NECK_FRONT_Z + 0.0005]}
         />
       ))}
       {litY === null ? null : (
@@ -804,13 +735,13 @@ function Body({
   const playLight = useRef<PointLight>(null);
   const geometry = useDisposables(() => {
     const shell = new ExtrudeGeometry(smoothShape(BODY_OUTLINE), {
-      depth: D.bodyDepth - BODY_BEVEL * 2,
+      depth: D.bodyDepth - BODY_EDGE * 2,
       bevelEnabled: true,
-      bevelThickness: BODY_BEVEL,
-      bevelSize: BODY_BEVEL,
-      bevelSegments: 8,
+      bevelThickness: BODY_EDGE,
+      bevelSize: BODY_EDGE,
+      bevelSegments: 4,
     });
-    shell.translate(0, 0, BODY_BEVEL); // front face lands on BODY_FRONT_Z
+    shell.translate(0, 0, BODY_EDGE); // front face lands on BODY_FRONT_Z
     const guard = new ExtrudeGeometry(smoothShape(PICKGUARD_OUTLINE), {
       depth: 0.004,
       bevelEnabled: true,
@@ -819,20 +750,26 @@ function Body({
       bevelSegments: 2,
     });
     guard.translate(0, 0, BODY_FRONT_Z);
-    const humbucker = new ExtrudeGeometry(roundedRect(0.5, 0.26, 0.035), {
-      depth: 0.03,
-      bevelEnabled: true,
-      bevelThickness: 0.008,
-      bevelSize: 0.008,
-      bevelSegments: 3,
-    });
-    const bridgePlate = new ExtrudeGeometry(roundedRect(0.6, 0.32, 0.03), {
-      depth: 0.008,
-      bevelEnabled: true,
-      bevelThickness: 0.004,
-      bevelSize: 0.004,
-      bevelSegments: 2,
-    });
+    const humbucker = new ExtrudeGeometry(
+      roundedRect(HUMBUCKER_SIZE.width, HUMBUCKER_SIZE.height, 0.035),
+      {
+        depth: 0.03,
+        bevelEnabled: true,
+        bevelThickness: 0.008,
+        bevelSize: 0.008,
+        bevelSegments: 3,
+      },
+    );
+    const bridgePlate = new ExtrudeGeometry(
+      roundedRect(BRIDGE_PLATE_SIZE.width, BRIDGE_PLATE_SIZE.height, 0.03),
+      {
+        depth: 0.008,
+        bevelEnabled: true,
+        bevelThickness: 0.004,
+        bevelSize: 0.004,
+        bevelSegments: 2,
+      },
+    );
     const controlPlate = new ExtrudeGeometry(
       roundedRect(CONTROL_PLATE.width, CONTROL_PLATE.length, CONTROL_PLATE.width / 2),
       {
@@ -849,7 +786,7 @@ function Body({
       humbucker,
       pole: new CircleGeometry(0.014, 16),
       bridgePlate,
-      bridgeLip: new BoxGeometry(0.6, 0.02, 0.05),
+      bridgeLip: new BoxGeometry(BRIDGE_PLATE_SIZE.width, 0.02, 0.05),
       saddle: new BoxGeometry(0.055, 0.13, 0.075),
       controlPlate,
       knob: new CylinderGeometry(0.056, 0.056, 0.07, 32).rotateX(Math.PI / 2),
@@ -920,17 +857,17 @@ function Body({
           />
         ))}
       </group>
-      {/* Angled control plate: selector lever on top, then volume and tone. */}
+      {/* Control plate: selector lever nearest the neck, then volume and tone. */}
       <group
         position={[CONTROL_PLATE.x, CONTROL_PLATE.y, BODY_FRONT_Z]}
         rotation={[0, 0, CONTROL_PLATE.angle]}
       >
         <mesh geometry={geometry.controlPlate} material={materials.chrome} />
-        <group position={[0, 0.3, 0.01]} rotation={[0.35, 0, 0]}>
+        <group position={[0, 0.4, 0.01]} rotation={[0.35, 0, 0]}>
           <mesh geometry={geometry.lever} material={materials.chrome} position={[0, 0, 0.04]} />
           <mesh geometry={geometry.leverTip} material={materials.knob} position={[0, 0, 0.085]} />
         </group>
-        {[0.02, -0.26].map((y) => (
+        {[-0.12, -0.4].map((y) => (
           <group key={y} position={[0, y, 0.01]}>
             <mesh geometry={geometry.knob} material={materials.chrome} position={[0, 0, 0.035]} />
             <mesh
@@ -1015,6 +952,73 @@ function SwayRig({
   });
 
   return <group ref={group}>{children}</group>;
+}
+
+/* ------------------------------------------------------------------------ */
+/* Dust motes                                                                */
+/* ------------------------------------------------------------------------ */
+
+const MOTE_SEED = 1971;
+/** Scroll velocity (stops per second) to drift energy: ordinary scrolling reads as a gentle drift. */
+const MOTE_ENERGY_PER_VELOCITY = 0.35;
+const MOTE_DRIFT_ENERGY_MIN = 0.001;
+const MOTE_SIZE = 0.055;
+const MOTE_OPACITY = 0.65;
+
+/** Dust catching the overhead stage light; drifts only while scrolling or playing. */
+function Motes({
+  signal,
+  motion,
+  reducedMotion,
+  palette,
+}: {
+  signal: PlaybackSignal;
+  motion: SceneMotion;
+  reducedMotion: boolean;
+  palette: Palette;
+}) {
+  const [field] = useState(() => {
+    const phone = !window.matchMedia("(min-width: 768px)").matches;
+    const base = createMoteField(phone ? MOTE_COUNT.phone : MOTE_COUNT.desktop, MOTE_SEED);
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new BufferAttribute(base.slice(), 3));
+    const map = glowTexture();
+    const material = new PointsMaterial({
+      color: palette.text,
+      size: MOTE_SIZE,
+      sizeAttenuation: true,
+      map,
+      transparent: true,
+      opacity: MOTE_OPACITY,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    });
+    return { base, geometry, material, map, points: new Points(geometry, material) };
+  });
+  const time = useRef(0);
+
+  useEffect(
+    () => () => {
+      field.geometry.dispose();
+      field.material.dispose();
+      field.map.dispose(); // owned here: glowTexture() makes a fresh texture per call
+    },
+    [field],
+  );
+
+  useFrame((state, rawDelta) => {
+    if (reducedMotion) return;
+    const energy = Math.min(1, Math.abs(motion.velocity) * MOTE_ENERGY_PER_VELOCITY + signal.level);
+    if (energy <= MOTE_DRIFT_ENERGY_MIN) return;
+    time.current += Math.min(rawDelta, FRAME_DELTA_CAP);
+    const attribute = field.geometry.getAttribute("position");
+    if (!(attribute instanceof BufferAttribute)) return;
+    stepMotes(attribute.array as Float32Array, field.base, time.current, energy);
+    attribute.needsUpdate = true;
+    state.invalidate();
+  });
+
+  return <primitive object={field.points} />;
 }
 
 export function Guitar({
@@ -1273,6 +1277,7 @@ export function GuitarCanvas({
         reducedMotion={reducedMotion}
         motion={motion}
       />
+      <Motes signal={signal} motion={motion} reducedMotion={reducedMotion} palette={palette} />
       <ViewShift />
       <FirstFrame onReady={onReady} />
     </Canvas>

@@ -9,11 +9,56 @@ export type PlaybackSignal = {
   readonly playing: boolean;
   readonly status: PlaybackStatus;
   readonly level: number; // 0..1, decaying envelope
+  readonly volume: number; // 0..1, default 0.8
+  readonly muted: boolean;
+  readonly currentTime: number; // seconds, 0 before load
+  readonly duration: number; // seconds; NaN until known
+  /** True once toggle() has started playback at least once. */
+  readonly started: boolean;
   pluck(stringIndex: number): void;
   subscribe(listener: () => void): () => void;
   toggle(): void;
+  /** Non-finite values are ignored; clamps to [0, 1]; unmutes when above 0. */
+  setVolume(value: number): void;
+  toggleMute(): void;
+  /** No-op unless the duration is known; clamps to [0, duration]. */
+  seek(seconds: number): void;
+  /** Fills `target` with time-domain bytes; false when there is no analyser. */
+  readWaveform(target: Uint8Array): boolean;
   dispose(): void;
 };
+
+export const VOLUME_STORAGE_KEY = "bandland-volume";
+export const DEFAULT_VOLUME = 0.8;
+
+type StoredVolume = { volume: number; muted: boolean };
+
+function clampVolume(value: number): number {
+  return Math.min(1, Math.max(0, value));
+}
+
+export function readStoredVolume(): StoredVolume {
+  const fallback = { volume: DEFAULT_VOLUME, muted: false };
+  try {
+    const raw = window.localStorage.getItem(VOLUME_STORAGE_KEY);
+    if (raw === null) return fallback;
+    const parsed: unknown = JSON.parse(raw);
+    if (typeof parsed !== "object" || parsed === null) return fallback;
+    const { volume, muted } = parsed as { volume?: unknown; muted?: unknown };
+    if (typeof volume !== "number" || !Number.isFinite(volume)) return fallback;
+    return { volume: clampVolume(volume), muted: muted === true };
+  } catch {
+    return fallback;
+  }
+}
+
+function writeStoredVolume(value: StoredVolume): void {
+  try {
+    window.localStorage.setItem(VOLUME_STORAGE_KEY, JSON.stringify(value));
+  } catch {
+    // Storage can be unavailable (private mode, blocked site data); the session still works.
+  }
+}
 
 // Fixed 8-step riff expressed as string indexes.
 const RIFF: readonly number[] = [0, 2, 3, 2, 0, 4, 3, 1];
@@ -34,6 +79,9 @@ export function createSimulatedPlayback(
   let level = 0;
   let step = 0;
   let disposed = false;
+  let started = false;
+  let volume = DEFAULT_VOLUME;
+  let muted = false;
   let beatTimer: ReturnType<typeof setInterval> | undefined;
   let decayTimer: ReturnType<typeof setInterval> | undefined;
 
@@ -87,6 +135,17 @@ export function createSimulatedPlayback(
     get level() {
       return level;
     },
+    get volume() {
+      return volume;
+    },
+    get muted() {
+      return muted;
+    },
+    currentTime: 0,
+    duration: Number.NaN,
+    get started() {
+      return started;
+    },
     pluck,
     subscribe(listener: () => void): () => void {
       listeners.add(listener);
@@ -94,10 +153,26 @@ export function createSimulatedPlayback(
         listeners.delete(listener);
       };
     },
+    setVolume(value: number): void {
+      if (disposed || !Number.isFinite(value)) return;
+      volume = clampVolume(value);
+      if (volume > 0) muted = false;
+      notify();
+    },
+    toggleMute(): void {
+      if (disposed) return;
+      muted = !muted;
+      notify();
+    },
+    seek(): void {},
+    readWaveform(): boolean {
+      return false;
+    },
     toggle(): void {
       if (disposed) return;
       playing = !playing;
       if (playing) {
+        started = true;
         beatTimer = setInterval(beat, beatMs);
       } else if (beatTimer !== undefined) {
         clearInterval(beatTimer);
@@ -122,9 +197,9 @@ export function createSimulatedPlayback(
 const ANALYSER_FFT_SIZE = 1024;
 const LOW_END_HZ = 180;
 const ONSET_RATIO = 1.35; // a beat is this much louder than the running average
-const ONSET_FLOOR = 0.2; // ignore onsets in near-silence
+const ONSET_FLOOR = 0.001; // linear magnitude (≈ -60 dB); ignore onsets in near-silence
 const ONSET_GAP_MS = 140; // at most ~7 plucks a second
-const AVERAGE_RATE = 0.06; // running-average smoothing per animation frame
+const AVERAGE_PER_SECOND = 4; // running-average rate, independent of the frame rate
 const LEVEL_DECAY_PER_SECOND = 2.6; // matches the simulated driver's 0.88 per 50 ms
 
 type AudioContextConstructor = new () => AudioContext;
@@ -151,7 +226,12 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
   let audio: HTMLAudioElement | null = null;
   let context: AudioContext | null = null;
   let analyser: AnalyserNode | null = null;
-  let bins: Uint8Array<ArrayBuffer> | null = null;
+  let gain: GainNode | null = null;
+  let started = false;
+  const stored = readStoredVolume();
+  let volume = stored.volume;
+  let muted = stored.muted;
+  let bins: Float32Array<ArrayBuffer> | null = null;
   let lowBins = 1;
   let average = 0;
   let lastOnset = 0;
@@ -183,10 +263,13 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
     level *= Math.exp(-LEVEL_DECAY_PER_SECOND * dt);
     if (level < 0.001) level = 0;
     if (analyser && bins) {
-      analyser.getByteFrequencyData(bins);
+      // Linear magnitudes, not the byte data: a loud master pins the byte scale
+      // (it tops out at -30 dB), so beats never stand out from the average.
+      // Bin 0 is DC and is skipped.
+      analyser.getFloatFrequencyData(bins);
       let sum = 0;
-      for (let i = 0; i < lowBins; i += 1) sum += bins[i] ?? 0;
-      const energy = sum / (lowBins * 255);
+      for (let i = 1; i <= lowBins; i += 1) sum += 10 ** ((bins[i] ?? -Infinity) / 20);
+      const energy = sum / lowBins;
       if (
         energy > ONSET_FLOOR &&
         energy > average * ONSET_RATIO &&
@@ -194,7 +277,7 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
       ) {
         onset(now);
       }
-      average += (energy - average) * AVERAGE_RATE;
+      average += (energy - average) * (1 - Math.exp(-AVERAGE_PER_SECOND * dt));
     }
     frame = window.requestAnimationFrame(tick);
   }
@@ -218,6 +301,16 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
     level = 0;
   }
 
+  // Through the gain node when Web Audio is up (the analyser stays pre-gain), else the element.
+  function applyVolume(): void {
+    if (gain) {
+      gain.gain.value = muted ? 0 : volume;
+    } else if (audio) {
+      audio.volume = volume;
+      audio.muted = muted;
+    }
+  }
+
   function connectAnalyser(element: HTMLAudioElement): void {
     const Context = audioContextConstructor();
     if (!Context) return;
@@ -227,15 +320,19 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
       analyser = context.createAnalyser();
       analyser.fftSize = ANALYSER_FFT_SIZE;
       analyser.smoothingTimeConstant = 0.6;
+      const output = context.createGain();
       source.connect(analyser);
-      analyser.connect(context.destination);
-      bins = new Uint8Array(analyser.frequencyBinCount);
+      analyser.connect(output);
+      output.connect(context.destination);
+      gain = output;
+      bins = new Float32Array(analyser.frequencyBinCount);
       const binHz = context.sampleRate / ANALYSER_FFT_SIZE;
       lowBins = Math.max(1, Math.round(LOW_END_HZ / binHz));
     } catch {
       // The element keeps playing on its own; the envelope uses the pulse instead.
       analyser = null;
       bins = null;
+      gain = null;
     }
   }
 
@@ -274,10 +371,14 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
       stopAnalysis();
       setStatus("error");
     });
+    for (const type of ["timeupdate", "durationchange", "loadedmetadata"]) {
+      element.addEventListener(type, notify);
+    }
     element.src = opts.src;
     audio = element;
     // Created inside the click that pressed Play, so browsers allow it to start.
     connectAnalyser(element);
+    applyVolume();
     return element;
   }
 
@@ -329,9 +430,51 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
     get level() {
       return level;
     },
+    get volume() {
+      return volume;
+    },
+    get muted() {
+      return muted;
+    },
+    get currentTime() {
+      return audio?.currentTime ?? 0;
+    },
+    get duration() {
+      return audio?.duration ?? Number.NaN;
+    },
+    get started() {
+      return started;
+    },
     pluck(stringIndex: number): void {
       if (disposed || !Number.isInteger(stringIndex) || stringIndex < 0) return;
       onset(performance.now());
+    },
+    setVolume(value: number): void {
+      if (disposed || !Number.isFinite(value)) return;
+      volume = clampVolume(value);
+      if (volume > 0) muted = false;
+      applyVolume();
+      writeStoredVolume({ volume, muted });
+      notify();
+    },
+    toggleMute(): void {
+      if (disposed) return;
+      muted = !muted;
+      applyVolume();
+      writeStoredVolume({ volume, muted });
+      notify();
+    },
+    seek(seconds: number): void {
+      if (disposed || !audio || !Number.isFinite(seconds) || !Number.isFinite(audio.duration)) {
+        return;
+      }
+      audio.currentTime = Math.min(audio.duration, Math.max(0, seconds));
+      notify();
+    },
+    readWaveform(target: Uint8Array): boolean {
+      if (!analyser) return false;
+      analyser.getByteTimeDomainData(target as Uint8Array<ArrayBuffer>);
+      return true;
     },
     subscribe(listener: () => void): () => void {
       listeners.add(listener);
@@ -341,8 +484,12 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
     },
     toggle(): void {
       if (disposed) return;
-      if (wantsPlay) pause();
-      else play();
+      if (wantsPlay) {
+        pause();
+      } else {
+        started = true;
+        play();
+      }
     },
     dispose(): void {
       disposed = true;
@@ -361,6 +508,7 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
       void context?.close().catch(() => undefined);
       context = null;
       analyser = null;
+      gain = null;
       listeners.clear();
     },
   };

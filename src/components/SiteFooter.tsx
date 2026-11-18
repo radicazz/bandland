@@ -20,7 +20,7 @@ export function SiteFooter({
   socials,
 }: SiteFooterProps) {
   return (
-    <footer className="bg-bg">
+    <footer className="bg-bg pb-[var(--player-clear,0px)]">
       <Container className="flex flex-col gap-8 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-md">
           <p className="font-brand text-2xl text-text">{site.name}</p>

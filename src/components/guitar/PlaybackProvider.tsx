@@ -2,7 +2,12 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { site } from "@/config/site";
-import { createAudioPlayback, type PlaybackSignal, type PlaybackStatus } from "./playback";
+import {
+  createAudioPlayback,
+  readStoredVolume,
+  type PlaybackSignal,
+  type PlaybackStatus,
+} from "./playback";
 
 type PlaybackHost = PlaybackSignal & {
   /** Starts a fresh driver; the returned cleanup disposes it. StrictMode-safe. */
@@ -36,8 +41,35 @@ function createPlaybackHost(createDriver: DriverFactory): PlaybackHost {
     get level() {
       return driver?.level ?? 0;
     },
+    get volume() {
+      return driver?.volume ?? readStoredVolume().volume;
+    },
+    get muted() {
+      return driver?.muted ?? readStoredVolume().muted;
+    },
+    get currentTime() {
+      return driver?.currentTime ?? 0;
+    },
+    get duration() {
+      return driver?.duration ?? Number.NaN;
+    },
+    get started() {
+      return driver?.started ?? false;
+    },
     pluck(stringIndex: number) {
       driver?.pluck(stringIndex);
+    },
+    setVolume(value: number) {
+      driver?.setVolume(value);
+    },
+    toggleMute() {
+      driver?.toggleMute();
+    },
+    seek(seconds: number) {
+      driver?.seek(seconds);
+    },
+    readWaveform(target: Uint8Array) {
+      return driver?.readWaveform(target) ?? false;
     },
     subscribe(listener: () => void) {
       listeners.add(listener);
@@ -70,8 +102,9 @@ function createPlaybackHost(createDriver: DriverFactory): PlaybackHost {
 const PlaybackContext = createContext<PlaybackSignal | null>(null);
 
 /**
- * Owns the home page's playback. The track keeps playing in a background tab
- * (the canvas stops drawing on its own) and stops when the reader leaves `/`.
+ * Owns the site's playback. Rendered by the root layout, so the track keeps
+ * playing in a background tab (the canvas stops drawing on its own) and across
+ * client-side navigation; a full reload resets it.
  */
 export function PlaybackProvider({
   children,
