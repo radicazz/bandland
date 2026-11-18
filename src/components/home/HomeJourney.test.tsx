@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { useEffect } from "react";
+import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HomeJourney } from "./HomeJourney";
@@ -104,6 +105,23 @@ describe("HomeJourney", () => {
     );
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("button", { name: labels.home.journey.play })).toBeInTheDocument();
+  });
+
+  it("hero wordmark and every stop heading are rendered in the server HTML", async () => {
+    getMerchItemsMock.mockResolvedValue([createMerch({})]);
+    const html = renderToString(
+      <PlaybackProvider createDriver={simulated}>
+        {await HomeJourney({ labels, locale: "en", settings: getDefaultSettings() })}
+      </PlaybackProvider>,
+    );
+
+    expect(html).toMatch(/<h1[^>]*intro-wordmark[^>]*>/);
+    for (const id of ["release", "neck", "body", "outro"]) {
+      expect(html).toContain(`id="journey-${id}"`);
+    }
+    // Reveal wrappers hide only via the post-hydration root class, never inline.
+    expect(html).toContain("data-reveal");
+    expect(html).not.toMatch(/data-reveal[^>]*style=/);
   });
 
   it("shows the next show first with a ticket link, then following shows", async () => {

@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Grenze_Gotisch } from "next/font/google";
 import "./globals.css";
+import { BOOT_SCRIPT } from "./bootScript";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { IntroSeen } from "@/components/IntroSeen";
 import { ErrorMessagesProvider } from "@/components/ErrorMessagesProvider";
 import { PlaybackProvider } from "@/components/guitar/PlaybackProvider";
 import { PlayerBar } from "@/components/player/PlayerBar";
@@ -79,8 +81,9 @@ export default async function RootLayout({
   const { locale, labels } = await getTranslationsFromCookies();
   const settings = await getSiteSettings();
   return (
-    <html lang={locale} className="bg-bg text-text">
+    <html lang={locale} className="bg-bg text-text" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
         <link rel="preconnect" href="https://open.spotify.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://open.spotify.com" />
         <link rel="preconnect" href="https://i.scdn.co" crossOrigin="anonymous" />
@@ -102,6 +105,7 @@ export default async function RootLayout({
           {labels.common.skipToContent}
         </a>
         {/* Playback lives here so the track keeps going across client navigation. */}
+        <IntroSeen />
         <PlaybackProvider>
           <div className="flex min-h-dvh flex-col">
             <SiteHeader locale={locale} labels={labels} socials={settings.socials} />

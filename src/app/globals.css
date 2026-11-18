@@ -401,27 +401,77 @@ body {
 }
 
 /*
- * Journey stops settle in as they scroll into view. Scroll-linked only (never
- * time-based), skipped where unsupported and under reduced motion.
+ * Intro: on a session's first load the stage lifts from black (light first,
+ * then the guitar), then the wordmark rises. Opacity/transform only; the poster
+ * stays painted underneath. The boot script adds `intro-seen` on later loads.
  */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .stop-reveal > * {
-      animation: stop-reveal linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 60%;
-    }
+.stage-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: var(--bg);
+  pointer-events: none;
+  /* Only once the boot script has run (no JS: content shows immediately). */
+  display: none;
+}
+
+:root.js:not(.intro-seen) .stage-intro {
+  display: block;
+  animation: intro-lift 1.2s ease-out 0.15s both;
+}
+
+:root.js:not(.intro-seen) .intro-wordmark {
+  animation: intro-rise 0.9s ease-out 0.6s both;
+}
+
+@keyframes intro-lift {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
   }
 }
 
-@keyframes stop-reveal {
+@keyframes intro-rise {
   from {
-    opacity: 0.3;
-    transform: translateY(1rem);
+    opacity: 0;
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Section reveals: hidden only after hydration (root `js` class), so no-JS shows everything. */
+[data-reveal] {
+  transition:
+    opacity 700ms ease,
+    transform 700ms ease;
+}
+
+:root.js [data-reveal]:not([data-revealed]) {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root.js:not(.intro-seen) .stage-intro {
+    display: none;
+  }
+
+  :root.js:not(.intro-seen) .intro-wordmark {
+    animation: none;
+  }
+
+  :root.js [data-reveal]:not([data-revealed]) {
+    opacity: 1;
+    transform: none;
+  }
+
+  [data-reveal] {
+    transition: none;
   }
 }
 
