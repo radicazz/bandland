@@ -6,6 +6,7 @@ import {
   AdditiveBlending,
   BoxGeometry,
   BufferAttribute,
+  BufferGeometry,
   CanvasTexture,
   CatmullRomCurve3,
   CircleGeometry,
@@ -20,6 +21,8 @@ import {
   MeshStandardMaterial,
   PlaneGeometry,
   PMREMGenerator,
+  Points,
+  PointsMaterial,
   type PointLight,
   Quaternion,
   Scene,
@@ -62,6 +65,7 @@ import {
   type CameraPose,
   type StopId,
 } from "./journey";
+import { createMoteField, MOTE_COUNT, stepMotes } from "./motes";
 import type { PlaybackSignal } from "./playback";
 
 type Palette = {
@@ -950,6 +954,73 @@ function SwayRig({
   return <group ref={group}>{children}</group>;
 }
 
+/* ------------------------------------------------------------------------ */
+/* Dust motes                                                                */
+/* ------------------------------------------------------------------------ */
+
+const MOTE_SEED = 1971;
+/** Scroll velocity (stops per second) to drift energy: ordinary scrolling reads as a gentle drift. */
+const MOTE_ENERGY_PER_VELOCITY = 0.35;
+const MOTE_DRIFT_ENERGY_MIN = 0.001;
+const MOTE_SIZE = 0.035;
+const MOTE_OPACITY = 0.35;
+
+/** Dust catching the overhead stage light; drifts only while scrolling or playing. */
+function Motes({
+  signal,
+  motion,
+  reducedMotion,
+  palette,
+}: {
+  signal: PlaybackSignal;
+  motion: SceneMotion;
+  reducedMotion: boolean;
+  palette: Palette;
+}) {
+  const [field] = useState(() => {
+    const phone = !window.matchMedia("(min-width: 768px)").matches;
+    const base = createMoteField(phone ? MOTE_COUNT.phone : MOTE_COUNT.desktop, MOTE_SEED);
+    const geometry = new BufferGeometry();
+    geometry.setAttribute("position", new BufferAttribute(base.slice(), 3));
+    const map = glowTexture();
+    const material = new PointsMaterial({
+      color: palette.text,
+      size: MOTE_SIZE,
+      sizeAttenuation: true,
+      map,
+      transparent: true,
+      opacity: MOTE_OPACITY,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    });
+    return { base, geometry, material, map, points: new Points(geometry, material) };
+  });
+  const time = useRef(0);
+
+  useEffect(
+    () => () => {
+      field.geometry.dispose();
+      field.material.dispose();
+      field.map.dispose(); // owned here: glowTexture() makes a fresh texture per call
+    },
+    [field],
+  );
+
+  useFrame((state, rawDelta) => {
+    if (reducedMotion) return;
+    const energy = Math.min(1, Math.abs(motion.velocity) * MOTE_ENERGY_PER_VELOCITY + signal.level);
+    if (energy <= MOTE_DRIFT_ENERGY_MIN) return;
+    time.current += Math.min(rawDelta, FRAME_DELTA_CAP);
+    const attribute = field.geometry.getAttribute("position");
+    if (!(attribute instanceof BufferAttribute)) return;
+    stepMotes(attribute.array as Float32Array, field.base, time.current, energy);
+    attribute.needsUpdate = true;
+    state.invalidate();
+  });
+
+  return <primitive object={field.points} />;
+}
+
 export function Guitar({
   signal,
   palette,
@@ -1206,6 +1277,7 @@ export function GuitarCanvas({
         reducedMotion={reducedMotion}
         motion={motion}
       />
+      <Motes signal={signal} motion={motion} reducedMotion={reducedMotion} palette={palette} />
       <ViewShift />
       <FirstFrame onReady={onReady} />
     </Canvas>
