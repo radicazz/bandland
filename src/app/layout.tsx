@@ -104,8 +104,8 @@ export default async function RootLayout({
         >
           {labels.common.skipToContent}
         </a>
-        {/* Playback lives here so the track keeps going across client navigation. */}
         <IntroSeen />
+        {/* Playback lives here so the track keeps going across client navigation. */}
         <PlaybackProvider>
           <div className="flex min-h-dvh flex-col">
             <SiteHeader locale={locale} labels={labels} socials={settings.socials} />
