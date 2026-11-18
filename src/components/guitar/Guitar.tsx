@@ -962,8 +962,8 @@ const MOTE_SEED = 1971;
 /** Scroll velocity (stops per second) to drift energy: ordinary scrolling reads as a gentle drift. */
 const MOTE_ENERGY_PER_VELOCITY = 0.35;
 const MOTE_DRIFT_ENERGY_MIN = 0.001;
-const MOTE_SIZE = 0.035;
-const MOTE_OPACITY = 0.35;
+const MOTE_SIZE = 0.055;
+const MOTE_OPACITY = 0.65;
 
 /** Dust catching the overhead stage light; drifts only while scrolling or playing. */
 function Motes({

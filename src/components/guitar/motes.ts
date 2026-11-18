@@ -36,7 +36,10 @@ export function createMoteField(count: number, seed: number): Float32Array {
   const [zLow, zHigh] = MOTE_VOLUME.z;
   for (let i = 0; i < count; i += 1) {
     const y = yLow + random() * (yHigh - yLow);
-    field[i * 3] = (random() * 2 - 1) * MOTE_VOLUME.halfWidth * spreadAt(y);
+    // Denser in the centre column under the light, thinning toward the edges.
+    const across = random() * 2 - 1;
+    const centred = Math.sign(across) * Math.abs(across) ** 1.8;
+    field[i * 3] = centred * MOTE_VOLUME.halfWidth * spreadAt(y);
     field[i * 3 + 1] = y;
     field[i * 3 + 2] = zLow + random() * (zHigh - zLow);
   }
