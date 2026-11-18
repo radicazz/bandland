@@ -3,7 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Reveal } from "./Reveal";
 
-type Callback = (entries: Pick<IntersectionObserverEntry, "isIntersecting">[]) => void;
+type Callback = (
+  entries: Pick<IntersectionObserverEntry, "isIntersecting" | "intersectionRatio">[],
+) => void;
 
 function stubObserver() {
   const state: { callback?: Callback; disconnect: ReturnType<typeof vi.fn>; options?: unknown } = {
@@ -46,10 +48,10 @@ describe("Reveal", () => {
     render(<Reveal>Hello</Reveal>);
     const node = screen.getByText("Hello");
     expect(node).not.toHaveAttribute("data-revealed");
-    expect(state.options).toEqual({ threshold: 0.15 });
-    state.callback?.([{ isIntersecting: false }]);
+    expect(state.options).toEqual({ threshold: 0, rootMargin: "0px 0px -10% 0px" });
+    state.callback?.([{ isIntersecting: false, intersectionRatio: 0 }]);
     expect(node).not.toHaveAttribute("data-revealed");
-    state.callback?.([{ isIntersecting: true }]);
+    state.callback?.([{ isIntersecting: true, intersectionRatio: 0.001 }]);
     expect(node).toHaveAttribute("data-revealed");
   });
 
@@ -62,7 +64,7 @@ describe("Reveal", () => {
   it("disconnects after revealing", () => {
     const state = stubObserver();
     render(<Reveal>Hello</Reveal>);
-    state.callback?.([{ isIntersecting: true }]);
+    state.callback?.([{ isIntersecting: true, intersectionRatio: 0.5 }]);
     expect(state.disconnect).toHaveBeenCalled();
   });
 
