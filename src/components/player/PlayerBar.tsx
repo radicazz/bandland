@@ -166,7 +166,7 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
           className="hidden shrink-0 text-xs tabular-nums text-text-dim sm:block"
         >
           {formatTime(currentTime)}
-          <span className="px-1 text-border">/</span>
+          <span className="px-1">/</span>
           {formatTime(total)}
         </p>
 
