@@ -4,8 +4,9 @@ import { useEffect, useRef, type ReactNode } from "react";
 
 /**
  * Fades and lifts its content in once it first scrolls into view. The hidden
- * state is CSS-only and applies after hydration (`:root.js`), so the content is
- * visible without JavaScript.
+ * state is CSS-only and applies once hydrated code adds `reveal-ready` to the
+ * root (IntroSeen), so content stays visible without JavaScript or if the
+ * bundle fails to load.
  */
 export function Reveal({
   children,

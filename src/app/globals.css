@@ -444,14 +444,14 @@ body {
   }
 }
 
-/* Section reveals: hidden only after hydration (root `js` class), so no-JS shows everything. */
+/* Section reveals: hidden only once hydrated code adds the root `reveal-ready` class, so no-JS shows everything. */
 [data-reveal] {
   transition:
     opacity 700ms ease,
     transform 700ms ease;
 }
 
-:root.js [data-reveal]:not([data-revealed]) {
+:root.reveal-ready [data-reveal]:not([data-revealed]) {
   opacity: 0;
   transform: translateY(12px);
 }
@@ -465,7 +465,7 @@ body {
     animation: none;
   }
 
-  :root.js [data-reveal]:not([data-revealed]) {
+  :root.reveal-ready [data-reveal]:not([data-revealed]) {
     opacity: 1;
     transform: none;
   }
