@@ -161,6 +161,17 @@ describe("GuitarStage atmosphere", () => {
     expect(stage?.style.getPropertyValue("--haze-shift")).toBe("3.5");
   });
 
+  it("pins the light to the hero pose and the haze to 0 under reduced motion", async () => {
+    stubMatchMedia(true);
+    stubWebGL(false);
+    const { LIGHT_POSES } = await import("./journey");
+    const { container } = await renderStage(LIGHT_POSES.body, 3.5);
+    const stage = container.querySelector<HTMLElement>(".guitar-stage");
+    expect(stage?.style.getPropertyValue("--light-y")).toBe(`${LIGHT_POSES.hero.y}%`);
+    expect(stage?.style.getPropertyValue("--light-size")).toBe(`${LIGHT_POSES.hero.size}%`);
+    expect(stage?.style.getPropertyValue("--haze-shift")).toBe("0");
+  });
+
   it("renders spotlight and haze layers as aria-hidden decoration", async () => {
     stubMatchMedia(false);
     stubWebGL(false);

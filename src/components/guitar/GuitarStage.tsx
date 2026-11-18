@@ -12,7 +12,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
-import type { LightPose, StopId } from "./journey";
+import { LIGHT_POSES, type LightPose, type StopId } from "./journey";
 import { usePlayback } from "./PlaybackProvider";
 import { useStagePulse } from "./useStagePulse";
 
@@ -160,7 +160,8 @@ export function GuitarStage({
       aria-hidden="true"
       data-playing={playing ? "" : undefined}
       className="guitar-stage relative h-full w-full overflow-hidden"
-      style={stageVariables(light, hazeShift)}
+      // Reduced motion pins the camera to the hero pose, so the light stays with it.
+      style={reducedMotion ? stageVariables(LIGHT_POSES.hero, 0) : stageVariables(light, hazeShift)}
     >
       <div className="guitar-stage-spot pointer-events-none absolute inset-0" />
       <div className="guitar-stage-haze pointer-events-none absolute inset-0" />
