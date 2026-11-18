@@ -197,9 +197,9 @@ export function createSimulatedPlayback(
 const ANALYSER_FFT_SIZE = 1024;
 const LOW_END_HZ = 180;
 const ONSET_RATIO = 1.35; // a beat is this much louder than the running average
-const ONSET_FLOOR = 0.2; // ignore onsets in near-silence
+const ONSET_FLOOR = 0.001; // linear magnitude (≈ -60 dB); ignore onsets in near-silence
 const ONSET_GAP_MS = 140; // at most ~7 plucks a second
-const AVERAGE_RATE = 0.06; // running-average smoothing per animation frame
+const AVERAGE_PER_SECOND = 4; // running-average rate, independent of the frame rate
 const LEVEL_DECAY_PER_SECOND = 2.6; // matches the simulated driver's 0.88 per 50 ms
 
 type AudioContextConstructor = new () => AudioContext;
@@ -231,7 +231,7 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
   const stored = readStoredVolume();
   let volume = stored.volume;
   let muted = stored.muted;
-  let bins: Uint8Array<ArrayBuffer> | null = null;
+  let bins: Float32Array<ArrayBuffer> | null = null;
   let lowBins = 1;
   let average = 0;
   let lastOnset = 0;
@@ -263,10 +263,13 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
     level *= Math.exp(-LEVEL_DECAY_PER_SECOND * dt);
     if (level < 0.001) level = 0;
     if (analyser && bins) {
-      analyser.getByteFrequencyData(bins);
+      // Linear magnitudes, not the byte data: a loud master pins the byte scale
+      // (it tops out at -30 dB), so beats never stand out from the average.
+      // Bin 0 is DC and is skipped.
+      analyser.getFloatFrequencyData(bins);
       let sum = 0;
-      for (let i = 0; i < lowBins; i += 1) sum += bins[i] ?? 0;
-      const energy = sum / (lowBins * 255);
+      for (let i = 1; i <= lowBins; i += 1) sum += 10 ** ((bins[i] ?? -Infinity) / 20);
+      const energy = sum / lowBins;
       if (
         energy > ONSET_FLOOR &&
         energy > average * ONSET_RATIO &&
@@ -274,7 +277,7 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
       ) {
         onset(now);
       }
-      average += (energy - average) * AVERAGE_RATE;
+      average += (energy - average) * (1 - Math.exp(-AVERAGE_PER_SECOND * dt));
     }
     frame = window.requestAnimationFrame(tick);
   }
@@ -322,7 +325,7 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
       analyser.connect(output);
       output.connect(context.destination);
       gain = output;
-      bins = new Uint8Array(analyser.frequencyBinCount);
+      bins = new Float32Array(analyser.frequencyBinCount);
       const binHz = context.sampleRate / ANALYSER_FFT_SIZE;
       lowBins = Math.max(1, Math.round(LOW_END_HZ / binHz));
     } catch {

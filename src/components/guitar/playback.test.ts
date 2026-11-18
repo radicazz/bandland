@@ -332,6 +332,7 @@ describe("createAudioPlayback", () => {
   describe("with Web Audio", () => {
     const calls: string[] = [];
     const gainNode = { gain: { value: 1 }, connect: vi.fn() };
+    let lowEndDb = -100;
 
     function node(name: string, extra: object = {}) {
       return {
@@ -346,6 +347,7 @@ describe("createAudioPlayback", () => {
     beforeEach(() => {
       calls.length = 0;
       gainNode.gain.value = 1;
+      lowEndDb = -100;
       class FakeContext {
         sampleRate = 44100;
         destination = { name: "destination" };
@@ -355,7 +357,7 @@ describe("createAudioPlayback", () => {
         createAnalyser() {
           return node("analyser", {
             frequencyBinCount: 512,
-            getByteFrequencyData: vi.fn(),
+            getFloatFrequencyData: (buffer: Float32Array) => buffer.fill(lowEndDb),
             getByteTimeDomainData: (buffer: Uint8Array) => buffer.fill(128),
           });
         }
@@ -388,6 +390,31 @@ describe("createAudioPlayback", () => {
       expect(gainNode.gain.value).toBe(0);
       expect(FakeAudio.instances[0]?.volume).toBe(1);
       expect(FakeAudio.instances[0]?.muted).toBe(false);
+      playback.dispose();
+    });
+
+    it("finds beats in a loud master that would pin the byte spectrum", async () => {
+      const frames: FrameRequestCallback[] = [];
+      vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+        frames.push(callback);
+        return frames.length;
+      });
+      vi.stubGlobal("cancelAnimationFrame", vi.fn());
+      let now = 0;
+      const step = (db: number) => {
+        lowEndDb = db;
+        now += 1000 / 60;
+        frames.shift()?.(now);
+      };
+      const { createAudioPlayback } = await import("./playback");
+      const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+      playback.toggle();
+      FakeAudio.instances[0]?.emit("playing");
+      // Two seconds of steady bass at -12 dB (well above the byte scale's -30 dB ceiling).
+      for (let i = 0; i < 120; i += 1) step(-12);
+      expect(playback.level).toBeLessThan(0.05);
+      step(-6); // a kick: twice the running magnitude
+      expect(playback.level).toBe(1);
       playback.dispose();
     });
 
