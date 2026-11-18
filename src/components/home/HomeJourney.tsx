@@ -256,9 +256,11 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
       {/*
         Full-screen backdrop pinned for the whole journey; the negative margin
         lets the sections scroll over it instead of after it. lvh keeps the
-        canvas size steady while mobile browser bars slide in and out.
+        canvas size steady while mobile browser bars slide in and out. Once the
+        player bar is up, the stage ends above it so the bar never covers the
+        guitar (--player-clear is set by PlayerBar).
       */}
-      <div className="sticky top-0 -mb-[100lvh] h-lvh">
+      <div className="sticky top-0 -mb-[calc(100lvh-var(--player-clear,0px))] h-[calc(100lvh-var(--player-clear,0px))]">
         <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
         {/* Fades from black over the poster (which stays painted underneath) on a session's first load. */}
         <div aria-hidden className="stage-intro" />
