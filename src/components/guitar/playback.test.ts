@@ -311,6 +311,31 @@ describe("createAudioPlayback", () => {
     playback.dispose();
   });
 
+  it("keeps currentTime and duration stable between media events (Safari reads a live clock)", async () => {
+    const { createAudioPlayback } = await import("./playback");
+    const playback = createAudioPlayback({ src: "/audio/song.mp3" });
+    playback.toggle();
+    const audio = FakeAudio.instances[0];
+    if (!audio) throw new Error("no audio element");
+    // WebKit advances currentTime on every read, even within one task.
+    let clock = 1;
+    Object.defineProperty(audio, "currentTime", {
+      configurable: true,
+      get: () => (clock += 0.001),
+      set: (value: number) => {
+        clock = value;
+      },
+    });
+    audio.emit("timeupdate");
+    const first = playback.currentTime;
+    expect(playback.currentTime).toBe(first);
+    expect(playback.currentTime).toBe(first);
+    audio.emit("timeupdate");
+    expect(playback.currentTime).toBeGreaterThan(first);
+    expect(Object.is(playback.duration, playback.duration)).toBe(true);
+    playback.dispose();
+  });
+
   it("readWaveform returns false without an analyser", async () => {
     const { createAudioPlayback } = await import("./playback");
     const playback = createAudioPlayback({ src: "/audio/song.mp3" });

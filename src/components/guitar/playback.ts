@@ -238,9 +238,19 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
   let lastFrame = 0;
   let frame = 0;
   let pulseTimer: ReturnType<typeof setInterval> | undefined;
+  // Snapshots of the element's clock. WebKit returns a live value from
+  // `currentTime` on every read, so exposing it directly makes React's
+  // useSyncExternalStore see a new snapshot each render and loop until it throws.
+  let time = 0;
+  let length = Number.NaN;
 
   function notify(): void {
     for (const listener of [...listeners]) listener();
+  }
+
+  function syncClock(): void {
+    time = audio?.currentTime ?? 0;
+    length = audio?.duration ?? Number.NaN;
   }
 
   function setStatus(next: PlaybackStatus): void {
@@ -363,6 +373,7 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
     element.addEventListener("ended", () => {
       wantsPlay = false;
       element.currentTime = 0;
+      syncClock();
       stopAnalysis();
       setStatus("paused");
     });
@@ -371,8 +382,11 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
       stopAnalysis();
       setStatus("error");
     });
-    for (const type of ["timeupdate", "durationchange", "loadedmetadata"]) {
-      element.addEventListener(type, notify);
+    for (const type of ["timeupdate", "durationchange", "loadedmetadata", "seeked", "emptied"]) {
+      element.addEventListener(type, () => {
+        syncClock();
+        notify();
+      });
     }
     element.src = opts.src;
     audio = element;
@@ -437,10 +451,10 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
       return muted;
     },
     get currentTime() {
-      return audio?.currentTime ?? 0;
+      return time;
     },
     get duration() {
-      return audio?.duration ?? Number.NaN;
+      return length;
     },
     get started() {
       return started;
@@ -469,6 +483,7 @@ export function createAudioPlayback(opts: { src: string; fallbackBpm?: number })
         return;
       }
       audio.currentTime = Math.min(audio.duration, Math.max(0, seconds));
+      syncClock();
       notify();
     },
     readWaveform(target: Uint8Array): boolean {
