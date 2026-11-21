@@ -14,6 +14,7 @@ import { getShows } from "@/content/shows";
 import type { Locale, Translations } from "@/i18n/translations";
 import { splitShowsByStatus } from "@/lib/shows";
 import { JourneyStage } from "./JourneyStage";
+import { ReleasePlayer } from "./ReleasePlayer";
 
 const MERCH_PREVIEW_COUNT = 3;
 const NECK_ROWS_ID = "journey-neck-rows";
@@ -139,17 +140,16 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
             {settings.release.description ?? labels.home.latestReleaseDescription}
           </p>
           {settings.release.embedUrl ? (
-            <div className="mt-6 overflow-hidden rounded-card border border-border bg-surface p-2">
-              <iframe
-                title={`${labels.home.latestReleaseTitle}: ${settings.release.title}`}
-                src={settings.release.embedUrl}
-                width="100%"
-                height="152"
-                loading="lazy"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                className="block w-full rounded-control"
-              />
-            </div>
+            <ReleasePlayer
+              src={settings.release.embedUrl}
+              title={`${labels.home.latestReleaseTitle}: ${settings.release.title}`}
+              loadLabel={labels.home.loadReleasePlayer.replace(
+                "{provider}",
+                new URL(settings.release.embedUrl).hostname === "embed.music.apple.com"
+                  ? "Apple Music"
+                  : "Spotify",
+              )}
+            />
           ) : null}
           <a
             href={settings.release.href}
@@ -261,7 +261,10 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
         player bar is up, the stage ends above it so the bar never covers the
         guitar (--player-clear is set by PlayerBar).
       */}
-      <div className="pointer-events-none sticky top-0 h-[calc(100lvh-var(--player-clear,0px))] [&_*]:pointer-events-none">
+      <div
+        inert
+        className="pointer-events-none sticky top-0 h-[calc(100lvh-var(--player-clear,0px))]"
+      >
         <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
         {/* Fades from black over the poster (which stays painted underneath) on a session's first load. */}
         <div aria-hidden className="stage-intro" />

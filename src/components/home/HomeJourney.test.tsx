@@ -292,6 +292,16 @@ describe("HomeJourney", () => {
     expect(release.querySelector("iframe")).toBeNull();
   });
 
+  it("loads a release iframe only after the visitor requests it", async () => {
+    const { container } = await renderJourney();
+    expect(container.querySelector("iframe")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Load Spotify player" }));
+    expect(container.querySelector("iframe")).toHaveAttribute(
+      "src",
+      getDefaultSettings().release.embedUrl,
+    );
+  });
+
   it("outro contains links to /shows and /merch", async () => {
     const { container } = await renderJourney();
 

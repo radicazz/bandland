@@ -45,7 +45,7 @@ function getWebGLSupport(): boolean {
   if (webglSupport === undefined) {
     try {
       const probe = document.createElement("canvas");
-      const context = probe.getContext("webgl2") ?? probe.getContext("webgl");
+      const context = probe.getContext("webgl2");
       webglSupport = Boolean(context);
       // Release the probe context right away instead of waiting for GC.
       context?.getExtension?.("WEBGL_lose_context")?.loseContext();
@@ -114,20 +114,32 @@ export function GuitarStage({
   const signal = usePlayback();
   // Server snapshots pick the poster-only path so hydration always matches.
   const reducedMotion = useSyncExternalStore(subscribeReducedMotion, getReducedMotion, serverTrue);
-  const webgl = useSyncExternalStore(noopSubscribe, getWebGLSupport, serverFalse);
+  const webgl = useSyncExternalStore(
+    noopSubscribe,
+    reducedMotion ? serverFalse : getWebGLSupport,
+    serverFalse,
+  );
   const documentVisible = useSyncExternalStore(subscribeVisibility, getDocumentVisible, serverTrue);
   const [onScreen, setOnScreen] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
   const [contextLost, setContextLost] = useState(false);
   const [canvasFailed, setCanvasFailed] = useState(false);
   const [canvasReady, setCanvasReady] = useState(false);
+  if (reducedMotion && canvasReady) setCanvasReady(false);
   const playing = useSyncExternalStore(
     signal.subscribe,
     () => signal.playing,
     () => false,
   );
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const showCanvas = webgl && !contextLost && !canvasFailed;
-  useStagePulse(wrapperRef, signal, reducedMotion);
+  const showCanvas = hasInitialized && webgl && !reducedMotion && !contextLost && !canvasFailed;
+  useStagePulse(wrapperRef, signal, reducedMotion || !documentVisible || !onScreen);
+
+  useEffect(() => {
+    if (hasInitialized || reducedMotion || !webgl || !onScreen || !documentVisible) return;
+    const timer = window.setTimeout(() => setHasInitialized(true), 0);
+    return () => window.clearTimeout(timer);
+  }, [hasInitialized, reducedMotion, webgl, onScreen, documentVisible]);
 
   useEffect(() => {
     const element = wrapperRef.current;
@@ -153,7 +165,7 @@ export function GuitarStage({
   // once the first frame is up instead of double-exposing through it.
   const posterHidden = showCanvas && canvasReady;
 
-  // Reduced motion keeps the canvas but pins it to the hero pose (see Guitar.tsx).
+  // Reduced motion uses the static hero poster.
   return (
     <div
       ref={wrapperRef}
@@ -169,14 +181,14 @@ export function GuitarStage({
         src="/guitar-poster.webp"
         alt=""
         fill
-        sizes="100vw"
+        sizes="min(100vw, 38lvh)"
         loading="eager"
         fetchPriority="high"
         // md+: same sideways shift as the canvas (STAGE_SHIFT in journey.ts).
         className={`object-contain transition-opacity duration-300 md:translate-x-[20%] ${posterHidden ? "opacity-0" : "opacity-100"}`}
       />
       {showCanvas ? (
-        <div className="absolute inset-0" data-motion={reducedMotion ? "reduced" : "full"}>
+        <div className="absolute inset-0" data-motion="full">
           <CanvasBoundary onError={handleCanvasError}>
             <GuitarCanvas
               signal={signal}

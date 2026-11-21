@@ -15,8 +15,14 @@ class FakeObserver {
   static instances: FakeObserver[] = [];
   observed: Element[] = [];
   disconnected = false;
-  constructor(public callback: Callback) {
+  constructor(
+    public handle: (entries: Parameters<Callback>[0], observer: FakeObserver) => void,
+    public options: IntersectionObserverInit,
+  ) {
     FakeObserver.instances.push(this);
+  }
+  callback(entries: Parameters<Callback>[0]) {
+    this.handle(entries, this);
   }
   observe(element: Element) {
     this.observed.push(element);
@@ -97,6 +103,22 @@ describe("JourneyStage", () => {
     );
     expect(firstObserver.disconnected).toBe(true);
     expect((FakeObserver.instances.at(-1) as FakeObserver).observed).toHaveLength(4);
+  });
+
+  it("measures the reading band from viewport height and refreshes on resize", () => {
+    vi.stubGlobal("innerHeight", 800);
+    render(
+      <>
+        <Rows count={1} />
+        <JourneyStage route={["hero", "neck"]} rowsId="rows" rowCount={1} />
+      </>,
+    );
+    const first = FakeObserver.instances.at(-1);
+    expect(first?.options.rootMargin).toBe("-360px 0px -360px 0px");
+    vi.stubGlobal("innerHeight", 600);
+    act(() => window.dispatchEvent(new Event("resize")));
+    expect(first?.disconnected).toBe(true);
+    expect(FakeObserver.instances.at(-1)?.options.rootMargin).toBe("-270px 0px -270px 0px");
   });
 
   it("disconnects the observer on unmount", () => {

@@ -20,6 +20,7 @@ const geistSans = Geist({
 });
 
 const geistMono = Geist_Mono({
+  preload: false,
   variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
@@ -84,16 +85,6 @@ export default async function RootLayout({
     <html lang={locale} className="bg-bg text-text" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
-        <link rel="preconnect" href="https://open.spotify.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://open.spotify.com" />
-        <link rel="preconnect" href="https://i.scdn.co" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://i.scdn.co" />
-        <link rel="preconnect" href="https://p.scdn.co" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://p.scdn.co" />
-        <link rel="preconnect" href="https://embed.music.apple.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://embed.music.apple.com" />
-        <link rel="preconnect" href="https://music.apple.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://music.apple.com" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${bandlandGothic.variable} antialiased`}

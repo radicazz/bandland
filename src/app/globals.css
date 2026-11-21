@@ -175,7 +175,7 @@ body {
     background:
       radial-gradient(
         ellipse var(--light-size) calc(var(--light-size) * 0.76) at var(--light-x) var(--light-y),
-        color-mix(in srgb, var(--text) calc(7% + 6% * var(--pulse, 0)), transparent),
+        color-mix(in srgb, var(--text) 7%, transparent),
         transparent 70%
       ),
       radial-gradient(

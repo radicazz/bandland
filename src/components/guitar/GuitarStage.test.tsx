@@ -93,7 +93,7 @@ afterEach(() => {
 });
 
 describe("GuitarStage", () => {
-  it("under prefers-reduced-motion renders the canvas pinned to the hero pose above the aria-hidden poster", async () => {
+  it("uses only the aria-hidden hero poster under reduced motion", async () => {
     stubMatchMedia(true);
     stubWebGL(true);
     const { container } = await renderStage();
@@ -102,8 +102,8 @@ describe("GuitarStage", () => {
     expect(img).toHaveAttribute("alt", "");
     expect(img?.getAttribute("src")).toContain("guitar-poster.webp");
     expect(img?.closest("[aria-hidden='true']")).not.toBeNull();
-    const canvas = await screen.findByTestId("r3f-canvas");
-    expect(canvas.closest("[data-motion]")).toHaveAttribute("data-motion", "reduced");
+    await flush();
+    expect(screen.queryByTestId("r3f-canvas")).toBeNull();
   });
 
   it("renders the poster fallback when WebGL is unavailable", async () => {
@@ -122,10 +122,7 @@ describe("GuitarStage", () => {
     const canvas = await screen.findByTestId("r3f-canvas");
     expect(canvas.closest("[data-motion]")).toHaveAttribute("data-motion", "full");
     act(() => media.set(true));
-    expect(screen.getByTestId("r3f-canvas").closest("[data-motion]")).toHaveAttribute(
-      "data-motion",
-      "reduced",
-    );
+    expect(screen.queryByTestId("r3f-canvas")).toBeNull();
     act(() => media.set(false));
     await flush();
     expect(screen.getByTestId("r3f-canvas").closest("[data-motion]")).toHaveAttribute(

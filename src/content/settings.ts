@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
 
 import type { SiteSettings } from "@/content/schema";
 import { getDefaultSettings, normalizeWidgets } from "@/content/settings-defaults";
@@ -13,7 +14,7 @@ const getCachedSettings = unstable_cache(async () => readSettings(), ["settings-
  * Site-wide settings. The layout depends on this, so a storage failure falls back
  * to the built-in defaults instead of taking the whole site down.
  */
-export async function getSiteSettings(): Promise<SiteSettings> {
+export const getSiteSettings = cache(async (): Promise<SiteSettings> => {
   try {
     const settings = await getCachedSettings();
     return { ...settings, widgets: normalizeWidgets(settings.widgets) };
@@ -21,4 +22,4 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     console.error("[Settings] Falling back to default settings", error);
     return getDefaultSettings();
   }
-}
+});

@@ -24,6 +24,7 @@ export type Translations = {
     latestReleaseTitle: string;
     latestReleaseDescription: string;
     latestReleaseCta: string;
+    loadReleasePlayer: string;
     nextShowLabel: string;
     nextShowFallbackTitle: string;
     nextShowFallbackDescription: string;
@@ -42,8 +43,6 @@ export type Translations = {
       trackPlaying: string;
       trackError: string;
       playHint: string;
-      neckTitle: string;
-      bodyTitle: string;
       outroTitle: string;
       outroKicker: string;
     };
@@ -131,6 +130,7 @@ export const translations: Record<Locale, Translations> = {
       latestReleaseTitle: "Newest release",
       latestReleaseDescription: "Out now.",
       latestReleaseCta: "Listen",
+      loadReleasePlayer: "Load {provider} player",
       nextShowLabel: "Next show",
       nextShowFallbackTitle: "No upcoming shows",
       nextShowFallbackDescription:
@@ -149,8 +149,6 @@ export const translations: Record<Locale, Translations> = {
         trackPlaying: "Now playing: {track}",
         trackError: "{track} didn't load. Press play to try again.",
         playHint: "Scroll down to follow the guitar from headstock to body.",
-        neckTitle: "Up the neck",
-        bodyTitle: "Into the body",
         outroTitle: "Hear it live",
         outroKicker: "Encore",
       },
@@ -244,6 +242,7 @@ export const translations: Record<Locale, Translations> = {
       latestReleaseTitle: "Nuutste vrystelling",
       latestReleaseDescription: "Nou beskikbaar.",
       latestReleaseCta: "Luister",
+      loadReleasePlayer: "Laai {provider}-speler",
       nextShowLabel: "Volgende vertoning",
       nextShowFallbackTitle: "Geen komende vertonings",
       nextShowFallbackDescription:
@@ -262,8 +261,6 @@ export const translations: Record<Locale, Translations> = {
         trackPlaying: "Speel nou: {track}",
         trackError: "{track} wou nie laai nie. Druk speel om weer te probeer.",
         playHint: "Rol af om die kitaar van kop tot lyf te volg.",
-        neckTitle: "Teen die nek op",
-        bodyTitle: "In die kitaarlyf",
         outroTitle: "Hoor dit regstreeks",
         outroKicker: "Toegif",
       },

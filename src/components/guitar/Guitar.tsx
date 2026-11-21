@@ -327,11 +327,14 @@ function bakeStudio(gl: WebGLRenderer, palette: Palette) {
     return material;
   });
   const generator = new PMREMGenerator(gl);
-  const target = generator.fromScene(studio, 0.03);
-  // The softbox scene is only needed for the bake.
-  geometry.dispose();
-  for (const material of materials) material.dispose();
-  return { target, generator };
+  try {
+    return { target: generator.fromScene(studio, 0.03) };
+  } finally {
+    // Keep the output target until unmount. The generator and softbox are scratch resources.
+    generator.dispose();
+    geometry.dispose();
+    for (const material of materials) material.dispose();
+  }
 }
 
 type GuitarString = {

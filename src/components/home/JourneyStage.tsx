@@ -28,25 +28,34 @@ export function JourneyStage({
     const container = document.getElementById(rowsId);
     if (!container) return;
     const rows = container.querySelectorAll<HTMLElement>("[data-fret]");
-    const visible = new Set<number>();
-    // A 10%-tall band around the reading line.
-    const line = READING_LINE * 100;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const fret = Number((entry.target as HTMLElement).dataset.fret);
-          if (!Number.isFinite(fret)) continue;
-          if (entry.isIntersecting) visible.add(fret);
-          else visible.delete(fret);
-        }
-        setLitFret(visible.size > 0 ? Math.min(...visible) : -1);
-      },
-      { rootMargin: `-${line - 5}% 0px -${100 - line - 5}% 0px` },
-    );
-    rows.forEach((row) => observer.observe(row));
+    let observer: IntersectionObserver | undefined;
+    const observeRows = () => {
+      observer?.disconnect();
+      const visible = new Set<number>();
+      const height = document.documentElement.clientHeight || window.innerHeight;
+      const above = Math.round(height * (READING_LINE - 0.05));
+      const below = Math.round(height * (1 - READING_LINE - 0.05));
+      observer = new IntersectionObserver(
+        (entries, current) => {
+          if (observer !== current) return;
+          for (const entry of entries) {
+            const fret = Number((entry.target as HTMLElement).dataset.fret);
+            if (!Number.isFinite(fret)) continue;
+            if (entry.isIntersecting) visible.add(fret);
+            else visible.delete(fret);
+          }
+          setLitFret(visible.size > 0 ? Math.min(...visible) : -1);
+        },
+        { rootMargin: `-${above}px 0px -${below}px 0px` },
+      );
+      rows.forEach((row) => observer?.observe(row));
+    };
+    observeRows();
+    window.addEventListener("resize", observeRows);
     return () => {
-      observer.disconnect();
-      // Rows changed or went away: nothing is in view until the new observer reports.
+      window.removeEventListener("resize", observeRows);
+      observer?.disconnect();
+      observer = undefined;
       setLitFret(-1);
     };
   }, [rowsId, rowCount]);

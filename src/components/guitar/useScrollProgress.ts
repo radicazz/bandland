@@ -34,16 +34,6 @@ export function computeRoutePosition(centers: number[], viewportCenter: number):
 /** Fraction of the viewport height where the reader's eye sits (the stage is a full-screen backdrop). */
 export const READING_LINE = 0.5;
 
-function measure(route: readonly StopId[]): number {
-  const centers = route.map((id) => {
-    const element = document.querySelector<HTMLElement>(`[data-stop="${id}"]`);
-    if (!element) return Number.NaN;
-    const rect = element.getBoundingClientRect();
-    return rect.top + rect.height / 2;
-  });
-  return computeRoutePosition(centers, window.innerHeight * READING_LINE);
-}
-
 /** Current scroll position along `route`, in index units, read from `[data-stop]` elements. */
 export function useScrollProgress(route: readonly StopId[], enabled = true): number {
   const [position, setPosition] = useState(0);
@@ -52,21 +42,45 @@ export function useScrollProgress(route: readonly StopId[], enabled = true): num
   useEffect(() => {
     // No canvas to drive: skip listeners, rAF and layout reads entirely.
     if (!enabled) return;
-    const stops = routeKey.split(",") as StopId[];
+    const stops = routeKey
+      .split(",")
+      .map((id) => document.querySelector<HTMLElement>(`[data-stop="${id}"]`));
+    let centers: number[] = [];
+    let needsMeasurement = true;
     let frame = 0;
     const schedule = () => {
       if (frame !== 0) return;
       frame = window.requestAnimationFrame(() => {
         frame = 0;
-        setPosition(measure(stops));
+        if (needsMeasurement) {
+          needsMeasurement = false;
+          centers = stops.map((element) => {
+            if (!element) return Number.NaN;
+            const rect = element.getBoundingClientRect();
+            return window.scrollY + rect.top + rect.height / 2;
+          });
+        }
+        setPosition(
+          computeRoutePosition(centers, window.scrollY + window.innerHeight * READING_LINE),
+        );
       });
     };
+    const refresh = () => {
+      needsMeasurement = true;
+      schedule();
+    };
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(refresh);
+    observer?.observe(document.body);
+    stops.forEach((element) => {
+      if (element) observer?.observe(element);
+    });
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    window.addEventListener("resize", refresh);
     return () => {
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", refresh);
+      observer?.disconnect();
       if (frame !== 0) window.cancelAnimationFrame(frame);
     };
   }, [routeKey, enabled]);
