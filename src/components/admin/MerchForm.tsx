@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { startTransition, type FormEvent, useActionState, useEffect, useRef } from "react";
 
 import {
   adminInputClassName as inputBase,
@@ -25,7 +25,7 @@ export function MerchForm({
   submitLabel,
   uploadPrefix = "media/development/merch/",
 }: MerchFormProps) {
-  const [state, formAction] = useActionState(
+  const [state, formAction, pending] = useActionState(
     (previousState: AdminFormState, formData: FormData) =>
       submitAdminFormWithImage({ action, previousState, formData, uploadPrefix }),
     initialAdminFormState,
@@ -38,8 +38,15 @@ export function MerchForm({
     }
   }, [state]);
 
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (pending) return;
+    const formData = new FormData(event.currentTarget);
+    startTransition(() => formAction(formData));
+  };
+
   return (
-    <form ref={formRef} action={formAction} className="mt-6 grid gap-5 sm:gap-6">
+    <form ref={formRef} onSubmit={handleSubmit} className="mt-6 grid gap-5 sm:gap-6">
       {state.message ? (
         <p
           role="alert"
@@ -126,7 +133,7 @@ export function MerchForm({
       />
 
       <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 border border-border bg-surface/95 p-3 shadow-2xl sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
-        <SubmitButton label={submitLabel} />
+        <SubmitButton label={submitLabel} pending={pending} />
       </div>
     </form>
   );

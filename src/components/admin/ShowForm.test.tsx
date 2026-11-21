@@ -56,6 +56,30 @@ describe("ShowForm", () => {
       await waitFor(() => expect(action).toHaveBeenCalledOnce());
     },
   );
+  it("keeps edited fields and preview after a rejected save", async () => {
+    const action = vi.fn(async () => ({
+      status: "error" as const,
+      message: "Save rejected",
+      fieldErrors: { venue: "Check this venue" },
+    }));
+    render(
+      <ShowForm
+        action={action}
+        labels={translations.en.shows}
+        locale="en"
+        submitLabel="Save changes"
+        initialValues={baseShow}
+      />,
+    );
+    const venue = screen.getByLabelText(/^venue/i);
+    fireEvent.change(venue, { target: { value: "Mercury Live" } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save changes" }).closest("form")!);
+    await screen.findByText("Save rejected");
+    expect(venue).toHaveValue("Mercury Live");
+    expect(venue).toHaveFocus();
+    expect(screen.getByText("Mercury Live", { selector: "p" })).toBeInTheDocument();
+  });
+
   it("renders the has happened checkbox unchecked by default for new shows", () => {
     render(
       <ShowForm

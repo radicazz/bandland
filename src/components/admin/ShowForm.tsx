@@ -1,6 +1,14 @@
 "use client";
 
-import { type FormEvent, useActionState, useEffect, useId, useRef, useState } from "react";
+import {
+  startTransition,
+  type FormEvent,
+  useActionState,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from "react";
 
 import { ShowCard, type ShowCardDetails } from "@/components/ShowCard";
 import {
@@ -93,7 +101,7 @@ export function ShowForm({
   submitLabel,
   uploadPrefix = "media/development/shows/",
 }: ShowFormProps) {
-  const [state, formAction] = useActionState(
+  const [state, formAction, pending] = useActionState(
     (previousState: AdminFormState, formData: FormData) =>
       submitAdminFormWithImage({ action, previousState, formData, uploadPrefix }),
     initialAdminFormState,
@@ -118,7 +126,10 @@ export function ShowForm({
     }
   }, [state]);
 
-  const handleFormAction = (formData: FormData) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (pending) return;
+    const formData = new FormData(event.currentTarget);
     const date = formData.get("showDate") as string;
     const time = formData.get("showTime") as string;
 
@@ -130,7 +141,7 @@ export function ShowForm({
     formData.delete("showDate");
     formData.delete("showTime");
 
-    return formAction(formData);
+    startTransition(() => formAction(formData));
   };
 
   const handleDraftChange = (event: FormEvent<HTMLFormElement>) => {
@@ -155,7 +166,7 @@ export function ShowForm({
   return (
     <form
       ref={formRef}
-      action={handleFormAction}
+      onSubmit={handleSubmit}
       onChange={handleDraftChange}
       className="mt-6 grid gap-5 sm:gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,0.85fr)] lg:items-start"
     >
@@ -363,7 +374,7 @@ export function ShowForm({
       </aside>
 
       <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 border border-border bg-surface/95 p-3 shadow-2xl sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none lg:col-start-1">
-        <SubmitButton label={submitLabel} />
+        <SubmitButton label={submitLabel} pending={pending} />
       </div>
     </form>
   );

@@ -25,7 +25,7 @@ export default async function AdminSettingsPage({
       {readOnly ? (
         <p className="mt-4 text-sm text-text-muted">Settings cannot be changed in preview mode.</p>
       ) : null}
-      <SettingsForm action={updateSettingsAction} settings={settings} />
+      <SettingsForm action={updateSettingsAction} settings={settings} readOnly={readOnly} />
     </section>
   );
 }

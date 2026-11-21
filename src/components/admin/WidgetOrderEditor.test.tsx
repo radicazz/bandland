@@ -12,26 +12,26 @@ function readValue(container: HTMLElement) {
 }
 
 describe("WidgetOrderEditor", () => {
-  it("reorders, hides and resizes widgets and submits the result", () => {
+  it("pins release and reorders other widgets without changing stored widths", () => {
     const { container } = render(
       <WidgetOrderEditor initialWidgets={getDefaultSettings().widgets} />,
     );
 
+    const initialWidths = Object.fromEntries(
+      readValue(container).map(({ id, width }) => [id, width]),
+    );
+    expect(
+      screen.queryByRole("button", { name: "Move Latest release down" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Move Next show up" })).toBeDisabled();
     fireEvent.click(screen.getByRole("button", { name: "Move Next show down" }));
-    expect(readValue(container).map((widget) => widget.id)).toEqual([
-      "release",
-      "nextShow",
-      "merch",
-    ]);
-    expect(screen.getByRole("status")).toHaveTextContent("Next show moved to position 2 of 3");
+    expect(screen.getByRole("status")).toHaveTextContent("Next show moved to position 3 of 3");
 
-    fireEvent.click(screen.getAllByRole("checkbox")[2] as HTMLElement);
-    fireEvent.change(screen.getAllByRole("combobox")[0] as HTMLElement, {
-      target: { value: "full" },
-    });
+    fireEvent.click(screen.getAllByRole("checkbox")[1] as HTMLElement);
     const value = readValue(container);
-    expect(value[2]).toMatchObject({ id: "merch", enabled: false });
-    expect(value[0]).toMatchObject({ id: "release", width: "full" });
+    expect(value.map((widget) => widget.id)).toEqual(["release", "merch", "nextShow"]);
+    expect(value[1]).toMatchObject({ id: "merch", enabled: false });
+    expect(Object.fromEntries(value.map(({ id, width }) => [id, width]))).toEqual(initialWidths);
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
   });
 });

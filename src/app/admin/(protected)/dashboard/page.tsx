@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { auth } from "@/auth";
 
 import { readAudit, readMerch, readShows } from "@/lib/content-store";
+import { isReadOnlyDeployment } from "@/lib/runtime-environment";
 
 function formatAuditDate(value: string) {
   return new Intl.DateTimeFormat("en-ZA", {
@@ -11,8 +15,8 @@ function formatAuditDate(value: string) {
 }
 
 const actions = [
-  { href: "/admin/shows/new", label: "Add a show", hint: "Publish a new live date" },
-  { href: "/admin/merch/new", label: "Add merch", hint: "Create a store listing" },
+  { href: "/admin/shows/new", label: "Add a show", hint: "Publish a new live date", writes: true },
+  { href: "/admin/merch/new", label: "Add merch", hint: "Create a store listing", writes: true },
   { href: "/admin/shows", label: "Manage shows", hint: "Edit dates and tickets" },
   { href: "/admin/merch", label: "Manage merch", hint: "Edit products and links" },
   {
@@ -23,6 +27,10 @@ const actions = [
 ] as const;
 
 export default async function AdminDashboardPage() {
+  if (!(await auth())?.user) redirect("/admin");
+
+  const readOnly = isReadOnlyDeployment();
+  const visibleActions = actions.filter((action) => !readOnly || !("writes" in action));
   const [shows, merch, audit] = await Promise.all([
     readShows(),
     readMerch(),
@@ -35,7 +43,7 @@ export default async function AdminDashboardPage() {
         <p className="section-kicker">Quick actions</p>
         <h2 className="display-title mt-6 text-4xl sm:text-5xl">What are we doing?</h2>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          {actions.map((action, index) => (
+          {visibleActions.map((action, index) => (
             <Link
               key={action.href}
               href={action.href}

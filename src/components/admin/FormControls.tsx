@@ -1,12 +1,9 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
-
 export const adminInputClassName =
   "mt-2 min-h-11 w-full rounded-card border bg-bg/60 px-4 py-3 text-base text-text placeholder:text-text-dim";
 
-export function SubmitButton({ label }: { label: string }) {
-  const { pending } = useFormStatus();
+export function SubmitButton({ label, pending }: { label: string; pending: boolean }) {
   return (
     <button
       type="submit"
