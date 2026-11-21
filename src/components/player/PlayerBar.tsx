@@ -171,7 +171,7 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
 
         <p
           aria-hidden="true"
-          className="hidden shrink-0 text-xs tabular-nums text-text-dim lg:block"
+          className="hidden shrink-0 text-xs tabular-nums text-text-dim sm:block"
         >
           {formatTime(currentTime)}
           <span className="px-1">/</span>
@@ -210,7 +210,7 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
             value={shownVolume}
             aria-label={labels.volume}
             onChange={(event) => signal.setVolume(Number(event.currentTarget.value) / 100)}
-            className="player-range hidden w-24 lg:block"
+            className="player-range hidden w-24 sm:block"
             style={{ "--fill": `${shownVolume}%` } as React.CSSProperties}
           />
         </div>

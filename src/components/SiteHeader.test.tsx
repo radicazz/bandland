@@ -77,6 +77,22 @@ describe("SiteHeader", () => {
     });
   });
 
+  it("makes the page inert while the menu is open and restores focus on the current page", () => {
+    render(
+      <>
+        <SiteHeader locale="en" labels={translations.en} />
+        <main>Page content</main>
+      </>,
+    );
+    const opener = screen.getByRole("button", { name: /open menu/i });
+    const main = screen.getByRole("main");
+    fireEvent.click(opener);
+    expect(main).toHaveAttribute("inert");
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("link", { name: "Home" }));
+    expect(main).not.toHaveAttribute("inert");
+    expect(opener).toHaveFocus();
+  });
+
   it("updates locale cookie and refreshes the route", () => {
     render(<SiteHeader locale="en" labels={translations.en} />);
 
