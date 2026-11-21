@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { isManagedMediaUrl } from "@/config/media";
 
 type ContentImageProps = {
   src?: string | null | undefined;
@@ -13,20 +14,6 @@ type ContentImageProps = {
   decoding?: "async" | "auto" | "sync";
   sizes?: string;
 };
-
-export function isPlaceholderUrl(value: string | null | undefined) {
-  if (!value) {
-    return true;
-  }
-
-  try {
-    const url = new URL(value);
-    const host = url.hostname.toLowerCase();
-    return host === "example.com" || host.endsWith(".example.com");
-  } catch {
-    return true;
-  }
-}
 
 export function ContentImage({
   src,
@@ -41,7 +28,11 @@ export function ContentImage({
   const resolvedSrc = src;
   const [failedSource, setFailedSource] = useState<string | null>(null);
   const isDecorative = alt.trim().length === 0;
-  const hasError = failedSource === resolvedSrc || isPlaceholderUrl(resolvedSrc);
+  const supported =
+    resolvedSrc?.startsWith("blob:") ||
+    (resolvedSrc && /^\/(?![\/\\])/.test(resolvedSrc)) ||
+    (resolvedSrc && isManagedMediaUrl(resolvedSrc, process.env.NEXT_PUBLIC_MEDIA_HOST));
+  const hasError = !supported || failedSource === resolvedSrc;
 
   if (!resolvedSrc || hasError) {
     return (

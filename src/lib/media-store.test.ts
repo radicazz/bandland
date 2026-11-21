@@ -1,14 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const blobMocks = vi.hoisted(() => ({
-  del: vi.fn(),
   head: vi.fn(),
 }));
 
 vi.mock("@vercel/blob", () => blobMocks);
 
 import {
-  discardManagedMedia,
   getMediaUploadPrefix,
   MediaValidationError,
   validateManagedMedia,
@@ -19,7 +17,7 @@ const url = "https://store.public.blob.vercel-storage.com/media/development/show
 describe("Vercel media store", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env.MEDIA_BLOB_READ_WRITE_TOKEN = "media-token";
+    process.env.MEDIA_BLOB_READ_WRITE_TOKEN = "vercel_blob_rw_store_test";
     delete process.env.VERCEL_ENV;
     blobMocks.head.mockResolvedValue({
       url,
@@ -37,7 +35,7 @@ describe("Vercel media store", () => {
 
   it("accepts a verified managed image", async () => {
     await expect(validateManagedMedia(url, "shows")).resolves.toBe(url);
-    expect(blobMocks.head).toHaveBeenCalledWith(url, { token: "media-token" });
+    expect(blobMocks.head).toHaveBeenCalledWith(url, { token: "vercel_blob_rw_store_test" });
   });
 
   it("rejects images outside the expected namespace", async () => {
@@ -50,8 +48,11 @@ describe("Vercel media store", () => {
     await expect(validateManagedMedia(url, "shows")).rejects.toBeInstanceOf(MediaValidationError);
   });
 
-  it("deletes verified managed media", async () => {
-    await discardManagedMedia(url);
-    expect(blobMocks.del).toHaveBeenCalledWith(url, { token: "media-token" });
+  it("rejects another store before looking up metadata", async () => {
+    const otherStore = url.replace("store.public", "other.public");
+    await expect(validateManagedMedia(otherStore, "shows")).rejects.toBeInstanceOf(
+      MediaValidationError,
+    );
+    expect(blobMocks.head).not.toHaveBeenCalled();
   });
 });

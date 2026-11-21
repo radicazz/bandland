@@ -16,7 +16,7 @@ const show = {
   priceOnline: "R180",
   priceDoor: "R220",
   ticketUrl: "https://tickets.example.com/mercury",
-  imageUrl: "https://store.public.blob.vercel-storage.com/media/poster.webp",
+  imageUrl: "/poster.webp",
 };
 
 describe("ShowCard", () => {
@@ -50,8 +50,9 @@ describe("ShowCard", () => {
     ).toBeInTheDocument();
   });
 
-  it("does not offer calendar links for past shows", () => {
+  it("does not offer ticket or calendar links for past shows", () => {
     render(<ShowCard show={show} locale="en" labels={translations.en.shows} isPast />);
     expect(screen.queryByRole("link", { name: /calendar/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /tickets/i })).not.toBeInTheDocument();
   });
 });

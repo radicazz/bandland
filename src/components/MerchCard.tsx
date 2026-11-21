@@ -1,5 +1,6 @@
 import { ContentImage } from "@/components/ContentImage";
 import type { MerchItem } from "@/content/schema";
+import { isHttpsUrl } from "@/lib/public-url";
 import type { Translations } from "@/i18n/translations";
 
 export function MerchCard({
@@ -49,18 +50,20 @@ export function MerchCard({
         {item.description ? (
           <p className="mt-3 break-words text-base leading-7 text-text-muted">{item.description}</p>
         ) : null}
-        <div className="mt-auto pt-6">
-          <a
-            className="btn-primary w-full"
-            href={item.href}
-            target="_blank"
-            rel="noreferrer"
-            aria-label={`${labels.view}: ${item.name} (${newTabLabel})`}
-          >
-            {labels.view}
-            <span aria-hidden>{"\u2197\uFE0E"}</span>
-          </a>
-        </div>
+        {isHttpsUrl(item.href) ? (
+          <div className="mt-auto pt-6">
+            <a
+              className="btn-primary w-full"
+              href={item.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`${labels.view}: ${item.name} (${newTabLabel})`}
+            >
+              {labels.view}
+              <span aria-hidden>{"\u2197\uFE0E"}</span>
+            </a>
+          </div>
+        ) : null}
       </div>
     </article>
   );

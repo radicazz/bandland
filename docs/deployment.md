@@ -4,7 +4,7 @@ Bandland supports Vercel only. Vercel Git integration owns Preview and Productio
 
 ## 1. Import and connect the project
 
-Import the Git repository into Vercel as a Next.js project. Keep the framework defaults—`vercel.json` only adds project security headers.
+Import the Git repository into Vercel as a Next.js project. Use the Next.js framework defaults. The app serves a report-only Content Security Policy on production builds.
 
 Create two Blob stores from the project Storage page:
 
@@ -61,7 +61,8 @@ Verify:
 
 - `/`, `/shows`, and `/merch` render their empty states before content is added.
 - Production admin create, edit, delete, and image upload flows work.
-- Uploaded image URLs use the public Vercel Blob domain and are optimized by Next Image.
+- Uploaded image URLs use the configured media store host and `/media/` path and are optimized by Next Image.
+- Check the browser console for Content Security Policy reports during sign-in, uploads, playback, and release embed loading.
 - A Preview deployment shows production content, displays its read-only banner, hides mutation controls, and rejects direct mutation/upload requests.
 - After five attempts across the form and credentials callback from the same IP, the next attempt reports the rate limit. Check the SDK rule in Firewall Observability.
 
@@ -69,4 +70,4 @@ Verify:
 
 Attach the production domain in Vercel Project Settings and keep `NEXT_PUBLIC_SITE_URL` aligned with it. Use Vercel's deployment history to promote or roll back application code. Content lives independently in Blob storage and is not changed by code rollbacks.
 
-The private content store keeps the latest datasets and up to 100 audit entries. There is no hidden snapshot or media-archive subsystem; use the Vercel Blob dashboard for inspection and deliberate manual cleanup.
+The private content store keeps the latest datasets and up to 100 audit entries. Removing an image or replacing a listing changes content references. Uploads from failed saves and detached images remain in the media store. During a maintenance window, compare candidates against current show and merch records in every namespace sharing that store before deleting unreferenced blobs in the Vercel dashboard.

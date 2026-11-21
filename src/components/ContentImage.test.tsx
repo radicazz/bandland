@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ContentImage } from "./ContentImage";
 
@@ -10,22 +10,20 @@ const commonProps = {
   fallbackLabel: "Image unavailable",
 };
 
+afterEach(() => vi.unstubAllEnvs());
+
 describe("ContentImage", () => {
   it("recovers when a failed source is replaced", () => {
-    const { rerender } = render(
-      <ContentImage src="https://images.test/broken.jpg" {...commonProps} />,
-    );
+    const { rerender } = render(<ContentImage src="/broken.jpg" {...commonProps} />);
     fireEvent.error(screen.getByRole("img", { name: "Show poster" }));
     expect(screen.getByText("Image unavailable")).toBeInTheDocument();
 
-    rerender(<ContentImage src="https://images.test/working.jpg" {...commonProps} />);
-    expect(screen.getByRole("img", { name: "Show poster" })).toHaveAttribute(
-      "src",
-      "https://images.test/working.jpg",
-    );
+    rerender(<ContentImage src="/working.jpg" {...commonProps} />);
+    expect(screen.getByRole("img", { name: "Show poster" })).toHaveAttribute("src", "/working.jpg");
   });
 
   it("renders a Vercel Blob image through Next Image", () => {
+    vi.stubEnv("NEXT_PUBLIC_MEDIA_HOST", "store.public.blob.vercel-storage.com");
     const { container } = render(
       <ContentImage
         src="https://store.public.blob.vercel-storage.com/media/poster.webp"

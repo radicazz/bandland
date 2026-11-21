@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { isHttpsUrl } from "@/lib/public-url";
+
+const httpsUrl = z.string().refine(isHttpsUrl, "Use a link starting with https://");
 
 function deriveHasHappenedFromDate(date: string) {
   const parsed = Date.parse(date);
@@ -17,7 +20,7 @@ export const showInputSchema = z.object({
   price: z.string().min(1).optional(),
   priceOnline: z.string().min(1).optional(),
   priceDoor: z.string().min(1).optional(),
-  ticketUrl: z.string().url().optional(),
+  ticketUrl: httpsUrl.optional(),
 });
 
 export const showSchema = showInputSchema
@@ -25,6 +28,7 @@ export const showSchema = showInputSchema
     id: z.string().uuid(),
     // Backward-compatible for older prod content files; missing values are auto-derived.
     hasHappened: showInputSchema.shape.hasHappened.optional(),
+    ticketUrl: z.string().url().optional(),
     imageUrl: z.string().url().optional(),
     createdAt: z.string().datetime({ offset: true }),
     updatedAt: z.string().datetime({ offset: true }),
@@ -40,11 +44,12 @@ export const merchInputSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1).optional(),
   price: z.string().min(1),
-  href: z.string().url(),
+  href: httpsUrl,
   badge: z.enum(["new", "sold-out"]).optional(),
 });
 
 export const merchItemSchema = merchInputSchema.extend({
+  href: z.string().url(),
   id: z.string().uuid(),
   imageUrl: z.string().url().optional(),
   createdAt: z.string().datetime({ offset: true }),

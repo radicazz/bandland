@@ -1,7 +1,8 @@
 import "server-only";
 
-import { del, head } from "@vercel/blob";
+import { head } from "@vercel/blob";
 
+import { getMediaHost, isManagedMediaUrl } from "@/config/media";
 import { getDataNamespace } from "@/lib/runtime-environment";
 
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
@@ -22,14 +23,22 @@ export function getMediaUploadPrefix(entity: "shows" | "merch") {
 }
 
 export async function validateManagedMedia(url: string, entity: "shows" | "merch") {
+  const token = getMediaToken();
+  const prefix = getMediaUploadPrefix(entity);
+  if (!isManagedMediaUrl(url, getMediaHost(token), `/${prefix}`)) {
+    throw new MediaValidationError("The uploaded image is from the wrong storage area.");
+  }
   let metadata;
   try {
-    metadata = await head(url, { token: getMediaToken() });
+    metadata = await head(url, { token });
   } catch {
     throw new MediaValidationError("The uploaded image could not be verified.");
   }
 
-  if (!metadata.pathname.startsWith(getMediaUploadPrefix(entity))) {
+  if (
+    !metadata.pathname.startsWith(prefix) ||
+    !isManagedMediaUrl(metadata.url, getMediaHost(token), `/${prefix}`)
+  ) {
     throw new MediaValidationError("The uploaded image is from the wrong storage area.");
   }
   if (
@@ -42,14 +51,4 @@ export async function validateManagedMedia(url: string, entity: "shows" | "merch
   }
 
   return metadata.url;
-}
-
-export async function discardManagedMedia(url: string | undefined) {
-  if (!url) return;
-  try {
-    await head(url, { token: getMediaToken() });
-    await del(url, { token: getMediaToken() });
-  } catch (error) {
-    console.error("[Media] Unable to delete managed image", error);
-  }
 }

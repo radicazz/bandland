@@ -16,7 +16,7 @@ import {
 } from "@/content/schema";
 import type { AdminFormState } from "@/lib/admin-form-state";
 import { appendAuditEntry, mutateMerch, mutateSettings, mutateShows } from "@/lib/content-store";
-import { discardManagedMedia, MediaValidationError, validateManagedMedia } from "@/lib/media-store";
+import { MediaValidationError, validateManagedMedia } from "@/lib/media-store";
 import { isReadOnlyDeployment } from "@/lib/runtime-environment";
 
 function normalizeInput(value: FormDataEntryValue | null) {
@@ -49,7 +49,7 @@ function formatZodErrors(error: z.ZodError) {
 
 async function requireAdmin() {
   const session = await auth();
-  if (!session) redirect("/admin");
+  if (!session?.user) redirect("/admin");
   return session;
 }
 
@@ -100,10 +100,6 @@ function storageErrorState(error: unknown): AdminFormState {
   };
 }
 
-async function cleanupFailedUpload(url: string | undefined) {
-  if (url) await discardManagedMedia(url);
-}
-
 export async function createShowAction(
   _prevState: AdminFormState,
   formData: FormData,
@@ -125,7 +121,6 @@ export async function createShowAction(
     ticketUrl: optionalInput(formData.get("ticketUrl")),
   });
   if (!parsed.success) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return {
       status: "error",
       message: "Please correct the highlighted fields.",
@@ -137,7 +132,6 @@ export async function createShowAction(
   try {
     imageUrl = uploadedImageUrl ? await validateManagedMedia(uploadedImageUrl, "shows") : undefined;
   } catch (error) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return storageErrorState(error);
   }
 
@@ -153,7 +147,6 @@ export async function createShowAction(
   try {
     await mutateShows((shows) => ({ data: [...shows, nextShow], result: undefined }));
   } catch (error) {
-    await cleanupFailedUpload(imageUrl);
     return storageErrorState(error);
   }
 
@@ -178,7 +171,6 @@ export async function updateShowAction(
   const id = normalizeInput(formData.get("id"));
   const uploadedImageUrl = getUploadedImageUrl(formData);
   if (!id) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return { status: "error", message: "Show ID is missing." };
   }
 
@@ -194,7 +186,6 @@ export async function updateShowAction(
     ticketUrl: optionalInput(formData.get("ticketUrl")),
   });
   if (!parsed.success) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return {
       status: "error",
       message: "Please correct the highlighted fields.",
@@ -206,7 +197,6 @@ export async function updateShowAction(
   try {
     imageUrl = uploadedImageUrl ? await validateManagedMedia(uploadedImageUrl, "shows") : undefined;
   } catch (error) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return storageErrorState(error);
   }
 
@@ -227,7 +217,6 @@ export async function updateShowAction(
     });
 
     if (!result) {
-      await cleanupFailedUpload(imageUrl);
       return { status: "error", message: "Show not found." };
     }
 
@@ -237,11 +226,7 @@ export async function updateShowAction(
       entityId: id,
       details: JSON.stringify(result),
     });
-    if ((imageUrl || shouldRemoveImage) && result.before.imageUrl !== imageUrl) {
-      await discardManagedMedia(result.before.imageUrl);
-    }
   } catch (error) {
-    await cleanupFailedUpload(imageUrl);
     return storageErrorState(error);
   }
 
@@ -267,7 +252,6 @@ export async function deleteShowAction(formData: FormData) {
     entityId: id,
     details: JSON.stringify({ before: removed }),
   });
-  await discardManagedMedia(removed.imageUrl);
   updateTag("shows");
   redirect("/admin/shows?saved=deleted");
 }
@@ -289,7 +273,6 @@ export async function createMerchAction(
     badge: optionalInput(formData.get("badge")),
   });
   if (!parsed.success) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return {
       status: "error",
       message: "Please correct the highlighted fields.",
@@ -301,7 +284,6 @@ export async function createMerchAction(
   try {
     imageUrl = uploadedImageUrl ? await validateManagedMedia(uploadedImageUrl, "merch") : undefined;
   } catch (error) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return storageErrorState(error);
   }
 
@@ -317,7 +299,6 @@ export async function createMerchAction(
   try {
     await mutateMerch((items) => ({ data: [...items, nextItem], result: undefined }));
   } catch (error) {
-    await cleanupFailedUpload(imageUrl);
     return storageErrorState(error);
   }
 
@@ -342,7 +323,6 @@ export async function updateMerchAction(
   const id = normalizeInput(formData.get("id"));
   const uploadedImageUrl = getUploadedImageUrl(formData);
   if (!id) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return { status: "error", message: "Merch ID is missing." };
   }
 
@@ -354,7 +334,6 @@ export async function updateMerchAction(
     badge: optionalInput(formData.get("badge")),
   });
   if (!parsed.success) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return {
       status: "error",
       message: "Please correct the highlighted fields.",
@@ -366,7 +345,6 @@ export async function updateMerchAction(
   try {
     imageUrl = uploadedImageUrl ? await validateManagedMedia(uploadedImageUrl, "merch") : undefined;
   } catch (error) {
-    await cleanupFailedUpload(uploadedImageUrl);
     return storageErrorState(error);
   }
 
@@ -388,7 +366,6 @@ export async function updateMerchAction(
     });
 
     if (!result) {
-      await cleanupFailedUpload(imageUrl);
       return { status: "error", message: "Merch item not found." };
     }
 
@@ -398,11 +375,7 @@ export async function updateMerchAction(
       entityId: id,
       details: JSON.stringify(result),
     });
-    if ((imageUrl || shouldRemoveImage) && result.before.imageUrl !== imageUrl) {
-      await discardManagedMedia(result.before.imageUrl);
-    }
   } catch (error) {
-    await cleanupFailedUpload(imageUrl);
     return storageErrorState(error);
   }
 
@@ -428,7 +401,6 @@ export async function deleteMerchAction(formData: FormData) {
     entityId: id,
     details: JSON.stringify({ before: removed }),
   });
-  await discardManagedMedia(removed.imageUrl);
   updateTag("merch");
   redirect("/admin/merch?saved=deleted");
 }

@@ -1,5 +1,6 @@
 import { ContentImage } from "@/components/ContentImage";
 import type { Locale, Translations } from "@/i18n/translations";
+import { isHttpsUrl } from "@/lib/public-url";
 import { buildShowCalendar } from "@/lib/calendar";
 import { formatShowDatePretty, getShowDateBlock } from "@/lib/formatters";
 
@@ -67,7 +68,7 @@ export function ShowCard({
   previewOnly = false,
   newTabLabel = "opens in a new tab",
 }: ShowCardProps) {
-  const ticketUrl = isPast ? undefined : show.ticketUrl;
+  const ticketUrl = !isPast && isHttpsUrl(show.ticketUrl) ? show.ticketUrl : undefined;
   const calendar = !isPast && !previewOnly ? buildShowCalendar(show) : null;
   const hasSplitPrices = Boolean(show.priceOnline || show.priceDoor);
   const formattedDate = formatShowDatePretty(show.date, locale);
