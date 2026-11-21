@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       token,
       onBeforeGenerateToken: async (pathname) => {
         const session = await auth();
-        if (!session) throw new Error("Unauthorized");
+        if (!session?.user) throw new Error("Unauthorized");
         if (isReadOnlyDeployment()) throw new Error("Preview deployments are read-only");
 
         const allowedPrefixes = [getMediaUploadPrefix("shows"), getMediaUploadPrefix("merch")];

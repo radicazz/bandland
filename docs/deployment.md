@@ -37,15 +37,21 @@ Vercel-generated env files are gitignored. Never commit Blob tokens or authentic
 
 ## 3. Protect the admin login
 
-In the Vercel Firewall dashboard, add a rate-limit rule with:
+The admin form posts a Server Action to `/admin`. The credentials API also accepts
+sign-in attempts. Both check the same Vercel Firewall SDK rule before running
+bcrypt.
 
-- Request method: `POST`
-- Request path: `/api/auth/callback/credentials`
-- Key: client IP
-- Limit: 5 requests per 15 minutes
-- Follow-up action: return HTTP 429
+In **Firewall → Configure**, create and publish a rule with these settings before
+deploying this code:
 
-Publish the rule before directing the production domain to the project.
+- Condition: `@vercel/firewall`, with rate limit ID `bandland-admin-login`
+- Limit: 5 requests per client IP in a fixed 15-minute window, with the default
+  429 action
+
+Expose Vercel's system environment variables. To exercise the rule on a protected
+Preview deployment, enable Protection Bypass for Automation so the server-side
+SDK request can reach the firewall. Sign-in is unavailable on Vercel while the
+rule is missing or unreachable. Local development skips the Vercel check.
 
 ## 4. Deploy and verify
 
@@ -57,7 +63,7 @@ Verify:
 - Production admin create, edit, delete, and image upload flows work.
 - Uploaded image URLs use the public Vercel Blob domain and are optimized by Next Image.
 - A Preview deployment shows production content, displays its read-only banner, hides mutation controls, and rejects direct mutation/upload requests.
-- The sixth rapid credentials request receives HTTP 429 from Vercel Firewall.
+- After five attempts across the form and credentials callback from the same IP, the next attempt reports the rate limit. Check the SDK rule in Firewall Observability.
 
 ## Domains and rollback
 

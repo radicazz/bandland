@@ -8,7 +8,7 @@ export default auth((request: NextAuthRequest) => {
     return NextResponse.next();
   }
 
-  if (!request.auth) {
+  if (!request.auth?.user) {
     const redirectUrl = new URL("/admin", request.nextUrl);
     redirectUrl.searchParams.set("from", request.nextUrl.pathname);
     return NextResponse.redirect(redirectUrl);

@@ -2,6 +2,7 @@ import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { getAdminLoginLimit } from "@/lib/admin-login-limit";
 
 const credentialsSchema = z.object({
   password: z.string().min(1),
@@ -45,7 +46,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
         const parsed = credentialsSchema.safeParse(credentials);
         if (!parsed.success) {
           console.error("[Auth] Invalid credentials schema");
@@ -63,6 +64,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.error("[Auth] Empty password after trim");
           throw new AdminSignInError("missing_password");
         }
+
+        const limit = await getAdminLoginLimit(request);
+        if (limit !== "allowed") throw new AdminSignInError(limit);
 
         const isValid = await bcrypt.compare(normalizedPassword, passwordHash);
 
