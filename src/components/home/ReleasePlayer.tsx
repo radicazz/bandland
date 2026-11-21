@@ -18,14 +18,16 @@ export function ReleasePlayer({
 }) {
   const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
   const playback = usePlayback();
+  const autoLoad = new URL(src).hostname === "open.spotify.com";
   return (
     <div className="mt-6 overflow-hidden rounded-card border border-border bg-surface p-2">
-      {loadedSrc === src ? (
+      {autoLoad || loadedSrc === src ? (
         <iframe
-          ref={focusPlayer}
+          ref={autoLoad ? undefined : focusPlayer}
           title={title}
           src={src}
           height="152"
+          loading={autoLoad ? "lazy" : undefined}
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           className="block w-full rounded-control"
         />

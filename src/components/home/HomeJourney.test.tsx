@@ -292,14 +292,22 @@ describe("HomeJourney", () => {
     expect(release.querySelector("iframe")).toBeNull();
   });
 
-  it("loads a release iframe only after the visitor requests it", async () => {
+  it("renders the Spotify embed automatically without taking focus", async () => {
     const { container } = await renderJourney();
+    const embed = container.querySelector("iframe");
+    expect(embed).toHaveAttribute("src", getDefaultSettings().release.embedUrl);
+    expect(embed).toHaveAttribute("loading", "lazy");
+    expect(embed).not.toHaveFocus();
+    expect(screen.queryByRole("button", { name: "Load Spotify player" })).not.toBeInTheDocument();
+  });
+
+  it("loads the Apple Music iframe after the visitor requests it", async () => {
+    const settings = getDefaultSettings();
+    settings.release.embedUrl = "https://embed.music.apple.com/za/album/example/123";
+    const { container } = await renderJourney(settings);
     expect(container.querySelector("iframe")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Load Spotify player" }));
-    expect(container.querySelector("iframe")).toHaveAttribute(
-      "src",
-      getDefaultSettings().release.embedUrl,
-    );
+    fireEvent.click(screen.getByRole("button", { name: "Load Apple Music player" }));
+    expect(container.querySelector("iframe")).toHaveAttribute("src", settings.release.embedUrl);
   });
 
   it("outro contains links to /shows and /merch", async () => {
