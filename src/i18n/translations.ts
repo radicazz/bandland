@@ -67,6 +67,7 @@ export type Translations = {
     nextShowBadge: string;
     addToCalendar: string;
     showOlder: string;
+    hideOlder: string;
   };
   merch: {
     title: string;
@@ -173,6 +174,7 @@ export const translations: Record<Locale, Translations> = {
       nextShowBadge: "Next show",
       addToCalendar: "Add to calendar",
       showOlder: "Show older shows ({count})",
+      hideOlder: "Hide older shows",
     },
     merch: {
       title: "Merch",
@@ -286,6 +288,7 @@ export const translations: Record<Locale, Translations> = {
       nextShowBadge: "Volgende vertoning",
       addToCalendar: "Voeg by kalender",
       showOlder: "Wys ouer vertonings ({count})",
+      hideOlder: "Versteek ouer vertonings",
     },
     merch: {
       title: "Merch",

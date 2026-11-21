@@ -24,6 +24,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
   const menuId = useId();
   const menuRef = useRef<HTMLDivElement>(null);
   const menuPanelRef = useRef<HTMLDivElement>(null);
+  const restoreBackgroundRef = useRef<(() => void) | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -31,6 +32,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
 
   const closeMenu = ({ returnFocus = false }: { returnFocus?: boolean } = {}) => {
     setIsMenuOpen(false);
+    restoreBackgroundRef.current?.();
     if (returnFocus) {
       menuButtonRef.current?.focus();
     }
@@ -102,7 +104,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
     function handlePointerDown(event: PointerEvent) {
       const target = event.target as Node;
       if (!menuRef.current?.contains(target) && !menuButtonRef.current?.contains(target)) {
-        closeMenu();
+        closeMenu({ returnFocus: true });
       }
     }
 
@@ -148,11 +150,32 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
       return;
     }
 
+    const siblings: Element[] = [];
+    for (
+      let node: Element | null = menuPanelRef.current;
+      node && node !== document.body;
+      node = node.parentElement
+    ) {
+      for (const sibling of Array.from(node.parentElement?.children ?? [])) {
+        if (
+          sibling === node ||
+          sibling.hasAttribute("inert") ||
+          sibling.hasAttribute("data-menu-backdrop")
+        )
+          continue;
+        sibling.setAttribute("inert", "");
+        siblings.push(sibling);
+      }
+    }
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
+    const restore = () => {
+      for (const sibling of siblings) sibling.removeAttribute("inert");
       document.body.style.overflow = previousOverflow;
+      restoreBackgroundRef.current = null;
     };
+    restoreBackgroundRef.current = restore;
+    return restore;
   }, [isMenuOpen, isMobileViewport]);
 
   return (
@@ -223,7 +246,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
                                 ? "bg-surface-2 text-text"
                                 : "text-text-muted hover:bg-surface-2 hover:text-text"
                             }`}
-                            onClick={() => closeMenu()}
+                            onClick={() => closeMenu({ returnFocus: isActive })}
                           >
                             {label}
                             {isActive ? (
@@ -262,6 +285,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
           </div>
           <div
             aria-hidden="true"
+            data-menu-backdrop
             className={`fixed inset-0 top-16 z-10 bg-bg/95 transition-opacity duration-200 lg:hidden ${
               isMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
             }`}

@@ -51,8 +51,11 @@ function ShowListSection({
       <ul className="mt-5 grid gap-4">{visible.map(renderShow)}</ul>
       {hidden.length > 0 ? (
         <details className="group mt-4">
-          <summary className="btn-secondary w-full cursor-pointer list-none sm:w-auto group-open:hidden [&::-webkit-details-marker]:hidden">
-            {labels.showOlder.replace("{count}", String(hidden.length))}
+          <summary className="btn-secondary w-full cursor-pointer list-none sm:w-auto [&::-webkit-details-marker]:hidden">
+            <span className="group-open:hidden">
+              {labels.showOlder.replace("{count}", String(hidden.length))}
+            </span>
+            <span className="hidden group-open:inline">{labels.hideOlder}</span>
           </summary>
           <ul className="grid gap-4">{hidden.map(renderShow)}</ul>
         </details>

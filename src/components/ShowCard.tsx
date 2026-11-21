@@ -67,6 +67,7 @@ export function ShowCard({
   previewOnly = false,
   newTabLabel = "opens in a new tab",
 }: ShowCardProps) {
+  const ticketUrl = isPast ? undefined : show.ticketUrl;
   const calendar = !isPast && !previewOnly ? buildShowCalendar(show) : null;
   const hasSplitPrices = Boolean(show.priceOnline || show.priceDoor);
   const formattedDate = formatShowDatePretty(show.date, locale);
@@ -143,23 +144,9 @@ export function ShowCard({
         </div>
       </div>
 
-      {show.imageUrl ? (
-        <div className="mx-auto mt-5 aspect-[2/3] w-full max-w-64 overflow-hidden rounded-card border border-border bg-bg sm:mx-0">
-          <ContentImage
-            src={show.imageUrl}
-            alt={`${show.venue} show poster`}
-            className="h-full w-full object-contain"
-            fallbackClassName="flex h-full w-full items-center justify-center bg-surface"
-            fallbackLabel={show.venue}
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-      ) : null}
-
-      {show.ticketUrl || calendar ? (
+      {ticketUrl || calendar ? (
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          {show.ticketUrl ? (
+          {ticketUrl ? (
             previewOnly ? (
               <span
                 className="btn-primary pointer-events-none w-full sm:w-auto"
@@ -170,7 +157,7 @@ export function ShowCard({
             ) : (
               <a
                 className="btn-primary w-full sm:w-auto"
-                href={show.ticketUrl}
+                href={ticketUrl}
                 target="_blank"
                 rel="noreferrer"
                 aria-label={`${labels.tickets}: ${show.venue} (${newTabLabel})`}
@@ -190,6 +177,20 @@ export function ShowCard({
               {labels.addToCalendar}
             </a>
           ) : null}
+        </div>
+      ) : null}
+      {show.imageUrl ? (
+        <div className="mx-auto mt-5 aspect-[2/3] w-full max-w-64 overflow-hidden rounded-card border border-border bg-bg sm:mx-0">
+          <ContentImage
+            src={show.imageUrl}
+            alt={`${show.venue} show poster`}
+            className="h-full w-full object-contain"
+            fallbackClassName="flex h-full w-full items-center justify-center bg-surface"
+            fallbackLabel={show.venue}
+            sizes="(max-width: 320px) calc(100vw - 4rem), 256px"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       ) : null}
     </article>

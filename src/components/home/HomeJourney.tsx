@@ -170,7 +170,7 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
           <Reveal className="flex flex-col">
             <Kicker number={number("neck")}>{labels.home.nextShowLabel}</Kicker>
             <h2 id="journey-neck" className={STOP_TITLE}>
-              {journey.neckTitle}
+              {labels.nav.shows}
             </h2>
             <ol id={NECK_ROWS_ID} className="mt-8 grid gap-4 border-l border-border pl-4 sm:pl-6">
               {upcoming.map((show, index) => (
@@ -211,13 +211,14 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
         <Reveal className="flex flex-col">
           <Kicker number={number("body")}>{labels.nav.merch}</Kicker>
           <h2 id="journey-body" className={STOP_TITLE}>
-            {journey.bodyTitle}
+            {labels.nav.merch}
           </h2>
           <ul className="mt-8 grid gap-6 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2">
             {merchPreview.map((item) => (
               <li key={item.id} className="min-w-0">
                 <MerchCard
                   item={item}
+                  titleAs="h3"
                   labels={labels.merch}
                   newTabLabel={labels.common.opensInNewTab}
                 />
@@ -260,12 +261,14 @@ export async function HomeJourney({ labels, locale, settings }: HomeJourneyProps
         player bar is up, the stage ends above it so the bar never covers the
         guitar (--player-clear is set by PlayerBar).
       */}
-      <div className="sticky top-0 -mb-[calc(100lvh-var(--player-clear,0px))] h-[calc(100lvh-var(--player-clear,0px))]">
+      <div className="pointer-events-none sticky top-0 h-[calc(100lvh-var(--player-clear,0px))] [&_*]:pointer-events-none">
         <JourneyStage route={route} rowsId={NECK_ROWS_ID} rowCount={upcoming.length} />
         {/* Fades from black over the poster (which stays painted underneath) on a session's first load. */}
         <div aria-hidden className="stage-intro" />
       </div>
-      <div className={`relative mx-auto w-full max-w-6xl px-4 sm:px-6 ${INTERACTIVE_SCROLL_CLEAR}`}>
+      <div
+        className={`relative mx-auto -mt-[calc(100lvh-var(--player-clear,0px))] w-full max-w-6xl px-4 sm:px-6 ${INTERACTIVE_SCROLL_CLEAR}`}
+      >
         <div className="md:w-1/2 md:pr-6 lg:pr-10">
           {route.map((stop) => (
             <Fragment key={stop}>{sections[stop]()}</Fragment>

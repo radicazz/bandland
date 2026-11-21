@@ -37,6 +37,7 @@ export function PlayButton({ labels, track = site.featuredTrack.title }: PlayBut
   return (
     <div className="flex flex-col items-start gap-3">
       <button
+        id="featured-track-play"
         type="button"
         aria-pressed={playing}
         aria-busy={status === "loading"}

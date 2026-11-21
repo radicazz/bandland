@@ -110,6 +110,7 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
   const close = () => {
     if (signal.playing) signal.toggle();
     setDismissed(true);
+    (document.getElementById("featured-track-play") ?? document.getElementById("content"))?.focus();
   };
 
   return (
@@ -119,7 +120,7 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
       aria-label={labels.region}
       className="player-bar fixed inset-x-0 bottom-0 z-20 rounded-none border-t border-border"
     >
-      <Container className="flex flex-wrap items-center gap-x-2 pb-2 pt-1 sm:flex-nowrap sm:gap-x-3 sm:py-2.5">
+      <Container className="flex flex-wrap items-center gap-x-2 pb-2 pt-1 lg:flex-nowrap lg:gap-x-3 lg:py-2.5">
         <button
           type="button"
           aria-label={playing ? labels.pause : labels.play}
@@ -135,16 +136,16 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
           </svg>
         </button>
 
-        <p className="min-w-0 flex-1 truncate pl-1 text-sm font-medium text-text sm:w-44 sm:flex-none lg:w-52">
+        <p className="min-w-0 flex-1 truncate pl-1 text-sm font-medium text-text lg:max-w-52 lg:flex-[0_1_13rem]">
           {site.featuredTrack.title}
         </p>
 
-        <div className="w-16 shrink-0 sm:w-28">
+        <div className="hidden w-16 shrink-0 sm:block lg:w-28">
           <Waveform signal={signal} active={playing} />
         </div>
 
         {/* Phones: a thin full-width row above the controls. */}
-        <div className="order-first flex w-full items-center sm:order-none sm:w-auto sm:min-w-0 sm:flex-1">
+        <div className="order-first flex w-full items-center lg:order-none lg:w-auto lg:min-w-32 lg:flex-1">
           <input
             type="range"
             min={0}
@@ -170,7 +171,7 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
 
         <p
           aria-hidden="true"
-          className="hidden shrink-0 text-xs tabular-nums text-text-dim sm:block"
+          className="hidden shrink-0 text-xs tabular-nums text-text-dim lg:block"
         >
           {formatTime(currentTime)}
           <span className="px-1">/</span>
@@ -209,7 +210,7 @@ export function PlayerBar({ labels }: { labels: Translations["player"] }) {
             value={shownVolume}
             aria-label={labels.volume}
             onChange={(event) => signal.setVolume(Number(event.currentTarget.value) / 100)}
-            className="player-range hidden w-24 sm:block"
+            className="player-range hidden w-24 lg:block"
             style={{ "--fill": `${shownVolume}%` } as React.CSSProperties}
           />
         </div>

@@ -109,7 +109,7 @@ export default async function RootLayout({
         <PlaybackProvider>
           <div className="flex min-h-dvh flex-col">
             <SiteHeader locale={locale} labels={labels} socials={settings.socials} />
-            <main id="content" className="flex-1">
+            <main id="content" tabIndex={-1} className="flex-1">
               <ErrorMessagesProvider labels={labels.errors}>{children}</ErrorMessagesProvider>
             </main>
             <SiteFooter

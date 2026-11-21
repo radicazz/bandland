@@ -5,10 +5,12 @@ import type { Translations } from "@/i18n/translations";
 export function MerchCard({
   item,
   labels,
+  titleAs: Title = "h2",
   newTabLabel = "opens in a new tab",
 }: {
   item: MerchItem;
   labels: Translations["merch"];
+  titleAs?: "h2" | "h3";
   newTabLabel?: string;
 }) {
   const badgeLabel =
@@ -40,7 +42,7 @@ export function MerchCard({
         {badgeLabel && !item.imageUrl ? (
           <p className="mb-2 text-sm font-semibold text-highlight">{badgeLabel}</p>
         ) : null}
-        <h2 className="break-words text-xl font-bold leading-snug text-text">{item.name}</h2>
+        <Title className="break-words text-xl font-bold leading-snug text-text">{item.name}</Title>
         <p className="mt-1 break-words text-lg font-semibold tabular-nums text-text">
           {item.price}
         </p>
