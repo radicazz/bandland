@@ -21,7 +21,7 @@ export function SiteFooter({
   socials,
 }: SiteFooterProps) {
   return (
-    <footer className="panel-ink torn-top paper-grain mt-8 pb-[var(--player-clear,0px)]">
+    <footer className="panel-ink torn-top paper-grain pb-[var(--player-clear,0px)]">
       <Container className="grid gap-10 pt-16 pb-10 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:gap-12">
         <div className="min-w-0">
           <p className="font-brand text-5xl leading-none text-text">{site.name}</p>
