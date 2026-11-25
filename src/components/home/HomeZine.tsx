@@ -152,12 +152,12 @@ function ReleasePanel({ labels, settings }: Pick<HomeZineProps, "labels" | "sett
   return (
     <section
       aria-labelledby="home-release"
-      className={`panel-red paper-grain ${styles.tornPanel} grid min-w-0 overflow-x-clip sm:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]`}
+      className={`panel-red paper-grain ${styles.tornPanel} grid min-w-0 overflow-x-clip sm:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:grid-cols-[minmax(0,1.7fr)_minmax(0,1fr)]`}
     >
       <div className="flex min-w-0 flex-col p-6 pt-8 sm:p-8 lg:p-10">
         <h2
           id="home-release"
-          className="headline text-[clamp(2.75rem,11vw,4.25rem)] lg:text-[clamp(3.25rem,4.6vw,5.25rem)]"
+          className="headline text-[clamp(2.75rem,11vw,4.25rem)] lg:text-[clamp(3rem,4vw,5rem)]"
         >
           {release.title}
         </h2>

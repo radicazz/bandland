@@ -29,10 +29,11 @@ export function ReleasePlayer({
           height="152"
           loading={autoLoad ? "lazy" : undefined}
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          className="block w-full"
+          // Spotify switches to its compact player at 80px; desktop keeps the panel row short.
+          className="block h-[152px] w-full lg:h-20"
         />
       ) : (
-        <div className="flex min-h-[152px] items-center justify-center">
+        <div className="flex min-h-[152px] items-center lg:min-h-20 justify-center">
           <button
             type="button"
             className="btn-zine"
