@@ -34,7 +34,7 @@ const bandlandGothic = Grenze_Gotisch({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#060606",
+  themeColor: "#f1e8d4",
 };
 
 export async function generateMetadata(): Promise<Metadata> {

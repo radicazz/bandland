@@ -1,6 +1,46 @@
 @import "tailwindcss";
 
+/*
+ * Public theme: photocopied zine. Cream paper, ink black, one punk red.
+ * Contrast ratios (computed, see DESIGN.md): ink/paper 15.59, paper/red 5.12,
+ * red/paper-2 4.54, ink-3/paper-2 5.45, red/ink 3.04 (UI boundaries only).
+ */
 :root {
+  --paper: #f1e8d4;
+  --paper-2: #e6dbc2;
+  --paper-3: #d9ccb0;
+  --ink: #111010;
+  --ink-2: #3a3631;
+  --ink-3: #5a544b;
+  --red: #c0151c;
+  --red-deep: #8e0f15;
+
+  /* Semantic aliases used by components; panels and the admin scope re-point them. */
+  --bg: var(--paper);
+  --surface: var(--paper-2);
+  --surface-2: var(--paper-3);
+  --border: color-mix(in srgb, var(--ink) 30%, var(--paper));
+  --text: var(--ink);
+  --text-muted: var(--ink-2);
+  --text-dim: var(--ink-3);
+  --highlight: var(--red);
+  --focus: var(--ink);
+  /* Background fill that torn shapes paint on their clipped layer. */
+  --fill: var(--bg);
+  --fill-image: none;
+  /* Alpha-only SVG noise (fine specks + slow mottling); see .paper-grain. */
+  --grain:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0 0 0 -.33'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .35 0 0 0 -.13'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
+}
+
+/*
+ * Admin keeps the original dark monochrome look. `src/app/admin/layout.tsx` renders the
+ * `data-admin-theme` wrapper; `:has` re-themes the root too so the page background and
+ * site chrome around /admin match.
+ */
+:root:has([data-admin-theme]),
+[data-admin-theme] {
   --bg: #060606;
   --surface: #0f0f10;
   --surface-2: #1a1b1d;
@@ -9,6 +49,8 @@
   --text-muted: #c2c2c2;
   --text-dim: #a1a1a1;
   --highlight: #e36b6b;
+  --focus: #e36b6b;
+  --fill: var(--bg);
 }
 
 @theme inline {
@@ -20,6 +62,14 @@
   --color-text-muted: var(--text-muted);
   --color-text-dim: var(--text-dim);
   --color-highlight: var(--highlight);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-red: var(--red);
+  --color-red-deep: var(--red-deep);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-brand: var(--font-bandland-gothic);
@@ -61,7 +111,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--highlight);
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
@@ -120,36 +170,6 @@ body {
 
   .section-kicker {
     @apply text-sm font-semibold text-text-dim;
-  }
-
-  /* Identity motif: the ticket stub. A dashed perforation with side notches. */
-  .ticket {
-    @apply relative overflow-hidden;
-  }
-
-  .perforation {
-    @apply relative border-t-2 border-dashed border-border;
-  }
-
-  .perforation::before,
-  .perforation::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 9999px;
-    border: 1px solid var(--border);
-    background: var(--bg);
-    transform: translateY(-50%);
-  }
-
-  .perforation::before {
-    left: -0.75rem;
-  }
-
-  .perforation::after {
-    right: -0.75rem;
   }
 
   /*
@@ -397,6 +417,352 @@ body {
 
   .player-range:disabled::-moz-range-thumb {
     visibility: hidden;
+  }
+}
+
+/*
+ * Zine kit (public pages). Everything is CSS/SVG: no raster textures, no colour baked into
+ * data URIs (they carry alpha only; colour comes from tokens), and nothing animates, so
+ * reduced motion needs no special case. Pseudo-elements do not render on <img>, so
+ * `.halftone` and `.photo-frame` go on a wrapper around the image.
+ */
+@layer components {
+  /* Grain: fine ink specks plus faint mottling over whatever fill the element has. */
+  .paper-grain {
+    --fill-image: var(--grain);
+    background-image: var(--fill-image);
+  }
+
+  /* Panels re-point the semantic tokens so utilities (text-text, border-border, ...) still work inside. */
+  .panel-paper {
+    --fill: var(--paper);
+    --text: var(--ink);
+    --text-muted: var(--ink-2);
+    --text-dim: var(--ink-3);
+    --highlight: var(--red);
+    --border: color-mix(in srgb, var(--ink) 30%, var(--paper));
+    --focus: var(--ink);
+    background-color: var(--fill);
+    color: var(--text);
+  }
+
+  /* Red panel: paper text only (5.12:1); highlight becomes paper because ink on red is 3.04:1. */
+  .panel-red {
+    --fill: var(--red);
+    --text: var(--paper);
+    --text-muted: var(--paper);
+    --text-dim: var(--paper-2);
+    --highlight: var(--paper);
+    --border: color-mix(in srgb, var(--paper) 45%, var(--red));
+    --focus: var(--paper);
+    background-color: var(--fill);
+    color: var(--text);
+  }
+
+  /* Ink panel: paper text. Red stays available for buttons/marks, never for text (3.04:1). */
+  .panel-ink {
+    --fill: var(--ink);
+    --text: var(--paper);
+    --text-muted: var(--paper-2);
+    --text-dim: var(--paper-3);
+    --border: color-mix(in srgb, var(--paper) 30%, var(--ink));
+    --focus: var(--paper);
+    background-color: var(--fill);
+    color: var(--text);
+  }
+
+  /*
+   * Torn edges. The tear is clipped on a ::before layer that paints --fill/--fill-image, so the
+   * element itself is not clipped (focus rings, shadows and overflowing children survive). Set
+   * the fill with a panel class or `--fill`, not a bg-* utility. Leave ~1rem padding on the torn side.
+   */
+  .torn-top,
+  .torn-bottom,
+  .torn-diag {
+    position: relative;
+    isolation: isolate;
+    background: none;
+  }
+
+  .torn-top::before,
+  .torn-bottom::before,
+  .torn-diag::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-color: var(--fill);
+    background-image: var(--fill-image);
+  }
+
+  .torn-top::before {
+    clip-path: polygon(
+      0% 0px,
+      4.2% 12.9px,
+      8.3% 4px,
+      12.5% 2.9px,
+      16.7% 10.2px,
+      20.8% 7.5px,
+      25% 4.6px,
+      29.2% 10.5px,
+      33.3% 10.6px,
+      37.5% 7.6px,
+      41.7% 9.6px,
+      45.8% 8.9px,
+      50% 11.4px,
+      54.2% 3.4px,
+      58.3% 5.2px,
+      62.5% 9.9px,
+      66.7% 9.8px,
+      70.8% 0.8px,
+      75% 9.6px,
+      79.2% 6.6px,
+      83.3% 12.9px,
+      87.5% 11.3px,
+      91.7% 1.7px,
+      95.8% 7.2px,
+      100% 12.9px,
+      100% 100%,
+      0 100%
+    );
+  }
+
+  .torn-bottom::before {
+    clip-path: polygon(
+      0 0,
+      100% 0,
+      100% calc(100% - 0.8px),
+      95.8% calc(100% - 12.7px),
+      91.7% calc(100% - 2.7px),
+      87.5% calc(100% - 5.9px),
+      83.3% calc(100% - 7.1px),
+      79.2% calc(100% - 7.8px),
+      75% calc(100% - 3.8px),
+      70.8% calc(100% - 0.8px),
+      66.7% calc(100% - 12.3px),
+      62.5% calc(100% - 10.2px),
+      58.3% calc(100% - 7.8px),
+      54.2% calc(100% - 13.1px),
+      50% calc(100% - 4.1px),
+      45.8% calc(100% - 6px),
+      41.7% calc(100% - 4.2px),
+      37.5% calc(100% - 2.1px),
+      33.3% calc(100% - 4.7px),
+      29.2% calc(100% - 11.7px),
+      25% calc(100% - 4.7px),
+      20.8% calc(100% - 5.2px),
+      16.7% calc(100% - 12.7px),
+      12.5% calc(100% - 12.8px),
+      8.3% calc(100% - 8.1px),
+      4.2% calc(100% - 9px),
+      0% calc(100% - 9.6px)
+    );
+  }
+
+  /* Diagonal rip down the left side: ~22% in at the top, flush at the bottom. */
+  .torn-diag::before {
+    clip-path: polygon(
+      21.5% 0%,
+      100% 0,
+      100% 100%,
+      1.5% 100%,
+      1.2% 93.8%,
+      4.4% 87.5%,
+      3.1% 81.3%,
+      6% 75%,
+      7% 68.8%,
+      7.6% 62.5%,
+      9.3% 56.3%,
+      10.5% 50%,
+      11.5% 43.8%,
+      13.4% 37.5%,
+      13.8% 31.3%,
+      16.6% 25%,
+      19.6% 18.8%,
+      19.9% 12.5%,
+      20% 6.3%
+    );
+  }
+
+  /* Halftone: B/W, punchy, with an ink dot screen on top. Put it on the image wrapper. */
+  .halftone {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background-color: var(--paper);
+  }
+
+  .halftone img {
+    filter: grayscale(1) contrast(1.25);
+  }
+
+  .halftone::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, var(--ink) 0.7px, transparent 1.4px);
+    background-size: 4px 4px;
+    mix-blend-mode: multiply;
+    opacity: 0.3;
+  }
+
+  /* Red duotone: whites print as red, blacks stay ink. */
+  .halftone-red {
+    background-color: var(--red);
+  }
+
+  .halftone-red img {
+    mix-blend-mode: multiply;
+  }
+
+  /* Taped photo: thin paper border, a strip of tape, a slight tilt (--tilt). Wrap the img. */
+  .photo-frame {
+    position: relative;
+    display: block;
+    height: fit-content;
+    padding: 0.4rem;
+    background-color: var(--paper);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent),
+      0 10px 20px -12px color-mix(in srgb, var(--ink) 70%, transparent);
+    transform: rotate(var(--tilt, -1.5deg));
+  }
+
+  .photo-frame img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .photo-frame::before {
+    content: "";
+    position: absolute;
+    top: -0.55rem;
+    left: 50%;
+    z-index: 1;
+    width: 4.5rem;
+    height: 1.2rem;
+    translate: -50% 0;
+    rotate: var(--tape-tilt, 3deg);
+    background-color: color-mix(in srgb, var(--paper-3) 75%, transparent);
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 18%, transparent);
+  }
+
+  .tilt-left {
+    --tilt: -2.5deg;
+    --tape-tilt: -4deg;
+  }
+
+  .tilt-right {
+    --tilt: 2deg;
+    --tape-tilt: 5deg;
+  }
+
+  .tilt-none {
+    --tilt: 0deg;
+  }
+
+  /* Wordmark: blackletter, huge, tight. The only place Grenze Gotisch is used. */
+  .wordmark {
+    font-family:
+      var(--font-bandland-gothic), var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    font-size: clamp(4.5rem, 17vw, 13rem);
+    line-height: 0.82;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+
+  /* Big heavy sans headline (release title, show venue). */
+  .headline {
+    font-family: var(--font-sans);
+    font-weight: 800;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+    color: var(--text);
+  }
+
+  /* Geist ships no italic, so this is a deliberate synthetic oblique. */
+  .headline-italic {
+    font-style: oblique 10deg;
+  }
+
+  /* Small tracked caps label ("RELEASE"). Keep it to one or two words. */
+  .kicker {
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  /* Square, hard-bordered zine buttons. Raw tokens on purpose: they look the same on any panel. */
+  .btn-zine,
+  .btn-zine-red {
+    @apply inline-flex min-h-12 items-center justify-center gap-2 border-2 px-5 py-2 text-lg leading-none font-bold transition-colors motion-reduce:transition-none;
+  }
+
+  .btn-zine {
+    border-color: var(--ink);
+    background-color: var(--paper);
+    color: var(--ink);
+  }
+
+  .btn-zine:hover {
+    background-color: var(--ink);
+    color: var(--paper);
+  }
+
+  .btn-zine-red {
+    border-color: var(--red);
+    background-color: var(--red);
+    color: var(--paper);
+  }
+
+  .btn-zine-red:hover {
+    border-color: var(--red-deep);
+    background-color: var(--red-deep);
+  }
+
+  /*
+   * Decorative fretboard strip: ink board, paper fret wires every --fret, inlay dots on
+   * alternate frets, six faint strings. Purely visual: render as <div aria-hidden="true">.
+   */
+  .fret-strip {
+    --fret: 4.5rem;
+    display: block;
+    height: 2.75rem;
+    border-block: 2px solid var(--ink);
+    background-color: var(--ink);
+    background-image:
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0 calc(16.66% - 1px),
+        color-mix(in srgb, var(--paper-3) 45%, transparent) calc(16.66% - 1px) 16.66%
+      ),
+      radial-gradient(circle, var(--paper) 0 0.28rem, transparent 0.32rem),
+      repeating-linear-gradient(to right, var(--paper-3) 0 3px, transparent 3px var(--fret));
+    background-size:
+      auto,
+      calc(var(--fret) * 2) 100%,
+      auto;
+    background-position:
+      0 0,
+      calc(var(--fret) / 2) 0,
+      0 0;
+    background-repeat: repeat, repeat-x, repeat;
+  }
+
+  @media (min-width: 768px) {
+    .fret-strip {
+      --fret: 6rem;
+      height: 3.25rem;
+    }
   }
 }
 
