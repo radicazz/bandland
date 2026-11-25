@@ -187,7 +187,7 @@ describe("HomeZine", () => {
   it("degrades to the no-shows state when show storage rejects", async () => {
     getShowsMock.mockRejectedValue(new Error("blob down"));
     await renderHome();
-    expect(screen.getByText(labels.home.noShowsTitle)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: labels.home.noShowsTitle })).toBeInTheDocument();
   });
 
   it("renders up to three merch items and drops the block when storage rejects", async () => {

@@ -1,4 +1,5 @@
 import { ContentImage } from "@/components/ContentImage";
+import { fitWords, Slanted } from "@/components/Slanted";
 import type { Locale, Translations } from "@/i18n/translations";
 import { isHttpsUrl } from "@/lib/public-url";
 import { buildShowCalendar } from "@/lib/calendar";
@@ -104,7 +105,7 @@ export function ShowCard({
           </div>
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col gap-5 p-5 sm:p-6 md:flex-row md:items-start md:justify-between">
-          <div className="min-w-0">
+          <div className="min-w-0 [container-type:inline-size] md:flex-1">
             {isNext ? (
               <p className="mb-3 inline-block -rotate-2 bg-red px-2 py-1 text-sm font-bold text-paper">
                 {labels.nextShowBadge}
@@ -114,13 +115,14 @@ export function ShowCard({
             <Venue
               className={`headline break-words ${
                 isNext
-                  ? "headline-italic text-4xl sm:text-5xl"
+                  ? "headline-italic fit-words [--fit-max:2.25rem] sm:[--fit-max:3rem]"
                   : isPast
                     ? "text-2xl text-text-dim line-through decoration-2 sm:text-3xl"
                     : "text-3xl sm:text-4xl"
               }`}
+              style={isNext ? fitWords(show.venue) : undefined}
             >
-              {show.venue}
+              {isNext ? <Slanted text={show.venue} /> : show.venue}
             </Venue>
             <p
               className={`mt-2 break-words text-lg font-bold ${isPast ? "text-text-dim" : "text-text"}`}

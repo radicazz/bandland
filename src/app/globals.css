@@ -531,9 +531,25 @@ body {
     color: var(--text);
   }
 
-  /* Geist ships no italic, so this is a deliberate synthetic oblique. */
-  .headline-italic {
-    font-style: oblique 10deg;
+  /*
+   * Geist ships no italic and Chrome does not synthesize an oblique for the variable face,
+   * so the slant is a per-word skew: wrap the text in <Slanted> (src/components/Slanted.tsx).
+   * Words are inline-blocks, so they never split mid-word; size long text to fit.
+   */
+  .headline-italic .slant {
+    display: inline-block;
+    transform: skewX(-9deg);
+    transform-origin: left 80%;
+  }
+
+  /*
+   * Shrink-to-fit for headlines whose words cannot break: min(--fit-max, the size at which
+   * the longest word, --fit-chars from fitWords(), fills the container). The parent needs
+   * container-type: inline-size.
+   */
+  .fit-words {
+    --fit-max: 3rem;
+    font-size: min(var(--fit-max), calc(100cqi / var(--fit-chars) / 0.66));
   }
 
   /* Small tracked caps label ("RELEASE"). Keep it to one or two words. */

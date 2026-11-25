@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { MerchCard } from "@/components/MerchCard";
+import { fitWords, Slanted } from "@/components/Slanted";
 import { site } from "@/config/site";
 import { getMerchItems } from "@/content/merch";
 import type { MerchItem, Show, SiteSettings } from "@/content/schema";
@@ -216,7 +217,7 @@ function ShowPanel({
   locale: Locale;
 }) {
   const home = labels.home;
-  const panel = `panel-ink paper-grain ${styles.tornPanel} flex min-w-0 flex-col p-7 sm:p-9`;
+  const panel = `panel-ink paper-grain ${styles.tornPanel} flex min-w-0 flex-col p-7 [container-type:inline-size] sm:p-9`;
   if (!show) {
     return (
       <section aria-labelledby="home-show" className={panel}>
@@ -225,7 +226,7 @@ function ShowPanel({
           id="home-show"
           className="headline headline-italic mt-4 text-[clamp(2.25rem,9vw,3.5rem)] lg:text-[clamp(2.25rem,3.4vw,3.75rem)]"
         >
-          {home.noShowsTitle}
+          <Slanted text={home.noShowsTitle} />
         </h2>
         <span aria-hidden="true" className={`${styles.marker} mt-4`} />
         <p className="mt-5 text-lg leading-7 text-text-muted">{home.noShowsDescription}</p>
@@ -243,9 +244,10 @@ function ShowPanel({
       <p className="kicker">{home.nextShowLabel}</p>
       <h2
         id="home-show"
-        className="headline headline-italic mt-4 text-[clamp(2.75rem,12vw,4.5rem)] lg:text-[clamp(2.75rem,4.4vw,5rem)]"
+        className="headline headline-italic fit-words mt-4 [--fit-max:clamp(2.75rem,12vw,4.5rem)] lg:[--fit-max:clamp(2.75rem,4.4vw,5rem)]"
+        style={fitWords(show.venue)}
       >
-        {show.venue}
+        <Slanted text={show.venue} />
       </h2>
       <span aria-hidden="true" className={`${styles.marker} mt-4`} />
       <p className="mt-5 text-lg font-semibold tabular-nums">
@@ -406,7 +408,7 @@ function LinksBlock({ labels, settings }: Pick<HomeZineProps, "labels" | "settin
         className={`${WIDE} ${GUTTER} flex flex-col gap-6 pt-14 pb-12 md:flex-row md:items-center`}
       >
         <h2 id="home-links" className="headline headline-italic shrink-0 text-5xl md:mr-6">
-          {labels.home.linksTitle}
+          <Slanted text={labels.home.linksTitle} />
         </h2>
         <ul className="flex flex-wrap gap-3">
           {socials.map((social) => (

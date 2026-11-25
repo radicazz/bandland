@@ -2,6 +2,7 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 
 import { Container } from "@/components/Container";
+import { Slanted } from "@/components/Slanted";
 
 export function PageSection({ children }: { children: ReactNode }) {
   return (
@@ -60,7 +61,9 @@ export function EmptyNotice({ message, photo }: { message: string; photo: string
   return (
     <div className="mt-12 grid items-center gap-10 md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
       <div className="panel-ink torn-bottom paper-grain px-6 pt-8 pb-12 sm:px-10 sm:pt-10 sm:pb-14">
-        <p className="headline headline-italic text-4xl sm:text-5xl">{message}</p>
+        <p className="headline headline-italic text-4xl sm:text-5xl">
+          <Slanted text={message} />
+        </p>
         <span aria-hidden="true" className="mt-5 block h-1.5 w-24 -rotate-1 bg-red" />
       </div>
       <div className="photo-frame tilt-right mx-auto w-full max-w-md">
