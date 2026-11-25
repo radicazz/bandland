@@ -34,6 +34,21 @@ export type Translations = {
     liveDescription: string;
     liveCta: string;
     timeFrameLabel: string;
+    /** Zine home page. */
+    releaseKicker: string;
+    tickets: string;
+    noShowsTitle: string;
+    noShowsDescription: string;
+    photosLabel: string;
+    merchTitle: string;
+    allMerchCta: string;
+    linksTitle: string;
+    featuredTrackLabel: string;
+    photos: {
+      guitarist: string;
+      guitarAndBass: string;
+      drummer: string;
+    };
     journey: {
       play: string;
       pause: string;
@@ -141,6 +156,22 @@ export const translations: Record<Locale, Translations> = {
       liveDescription: "Upcoming dates, tickets, and venue details.",
       liveCta: "View shows",
       timeFrameLabel: "Time frame",
+      releaseKicker: "Release",
+      tickets: "Tickets",
+      noShowsTitle: "No shows announced",
+      noShowsDescription: "New dates land on the shows page first.",
+      photosLabel: "Live photos",
+      merchTitle: "Merch",
+      allMerchCta: "All merch",
+      linksTitle: "Find us",
+      featuredTrackLabel: "Featured track",
+      photos: {
+        guitarist:
+          "Schmät's guitarist headbanging mid-song, hair flying, picking hand on the strings",
+        guitarAndBass:
+          "Schmät's guitarist and bassist playing on a dark stage, the bass headstock in the foreground",
+        drummer: "Schmät's drummer singing behind the kit, one stick raised",
+      },
       journey: {
         play: "Play",
         pause: "Pause",
@@ -253,6 +284,22 @@ export const translations: Record<Locale, Translations> = {
       liveDescription: "Komende datums, kaartjies en lokaalbesonderhede.",
       liveCta: "Sien vertonings",
       timeFrameLabel: "Tydgleuf",
+      releaseKicker: "Vrystelling",
+      tickets: "Kaartjies",
+      noShowsTitle: "Geen vertonings aangekondig nie",
+      noShowsDescription: "Nuwe datums verskyn eerste op die vertonings-blad.",
+      photosLabel: "Live foto's",
+      merchTitle: "Merch",
+      allMerchCta: "Alle merch",
+      linksTitle: "Kry ons",
+      featuredTrackLabel: "Uitgesoekte liedjie",
+      photos: {
+        guitarist:
+          "Schmät se kitaarspeler wat hare swaai, middel in 'n liedjie, met sy hand op die snare",
+        guitarAndBass:
+          "Schmät se kitaarspeler en baskitaarspeler op 'n donker verhoog, met die baskop voor",
+        drummer: "Schmät se tromspeler wat agter die tromstel sing, een stok in die lug",
+      },
       journey: {
         play: "Speel",
         pause: "Onderbreek",

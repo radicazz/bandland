@@ -60,4 +60,20 @@ describe("PlayButton", () => {
     expect(screen.getByText("Engel didn't load")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
   });
+
+  it("zine variant keeps the accessible name and renders its children beside the button", () => {
+    render(
+      <PlaybackProvider createDriver={() => createSimulatedPlayback()}>
+        <PlayButton labels={labels} track="Engel" variant="zine">
+          <span data-testid="beside" />
+        </PlayButton>
+      </PlaybackProvider>,
+    );
+    const play = screen.getByRole("button", { name: "Play" });
+    expect(play.id).toBe("featured-track-play");
+    expect(screen.getByTestId("beside")).toBeTruthy();
+    fireEvent.click(play);
+    expect(screen.getByRole("button", { name: "Pause" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByText("Now playing: Engel")).toBeTruthy();
+  });
 });

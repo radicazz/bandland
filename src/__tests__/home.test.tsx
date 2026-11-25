@@ -8,9 +8,9 @@ vi.mock("@/content/settings", async () => {
   return { getSiteSettings: async () => getDefaultSettings() };
 });
 
-vi.mock("@/components/home/HomeJourney", () => ({
-  HomeJourney: function HomeJourneyMock({ locale }: { locale: string }) {
-    return <h1>Journey {locale}</h1>;
+vi.mock("@/components/home/HomeZine", () => ({
+  HomeZine: function HomeZineMock({ locale }: { locale: string }) {
+    return <h1>Zine {locale}</h1>;
   },
 }));
 
@@ -19,8 +19,8 @@ afterEach(() => {
 });
 
 describe("home", () => {
-  it("renders the guitar journey with the current locale", async () => {
+  it("renders the zine home with the current locale", async () => {
     render(await Home());
-    expect(screen.getByRole("heading", { level: 1, name: "Journey en" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Zine en" })).toBeInTheDocument();
   });
 });
