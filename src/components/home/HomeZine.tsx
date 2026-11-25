@@ -223,7 +223,8 @@ function ShowPanel({
         <p className="kicker">{home.nextShowLabel}</p>
         <h2
           id="home-show"
-          className="headline headline-italic mt-4 text-[clamp(2.25rem,9vw,3.5rem)] lg:text-[clamp(2.25rem,3.4vw,3.75rem)]"
+          className="headline headline-italic fit-words mt-4 [--fit-max:clamp(2.25rem,9vw,3.5rem)] lg:[--fit-max:clamp(2.25rem,3.4vw,3.75rem)]"
+          style={fitWords(home.noShowsTitle)}
         >
           <Slanted text={home.noShowsTitle} />
         </h2>
