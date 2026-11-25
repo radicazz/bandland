@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePlayback } from "@/components/guitar/PlaybackProvider";
+import { usePlayback } from "@/components/player/PlaybackProvider";
 
 function focusPlayer(frame: HTMLIFrameElement | null) {
   frame?.focus();
@@ -20,7 +20,7 @@ export function ReleasePlayer({
   const playback = usePlayback();
   const autoLoad = new URL(src).hostname === "open.spotify.com";
   return (
-    <div className="mt-6 overflow-hidden rounded-card border border-border bg-surface p-2">
+    <div className="mt-6 border-2 border-ink bg-ink p-1">
       {autoLoad || loadedSrc === src ? (
         <iframe
           ref={autoLoad ? undefined : focusPlayer}
@@ -29,13 +29,14 @@ export function ReleasePlayer({
           height="152"
           loading={autoLoad ? "lazy" : undefined}
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          className="block w-full rounded-control"
+          // Spotify switches to its compact player at 80px; desktop keeps the panel row short.
+          className="block h-[152px] w-full lg:h-20"
         />
       ) : (
-        <div className="flex min-h-[152px] items-center justify-center">
+        <div className="flex min-h-[152px] items-center lg:min-h-20 justify-center">
           <button
             type="button"
-            className="btn-secondary"
+            className="btn-zine"
             onClick={() => {
               if (playback.playing) playback.toggle();
               setLoadedSrc(src);

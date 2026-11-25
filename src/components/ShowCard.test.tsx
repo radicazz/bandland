@@ -50,8 +50,15 @@ describe("ShowCard", () => {
     ).toBeInTheDocument();
   });
 
+  it("can render the venue as a heading for show lists", () => {
+    render(<ShowCard show={show} locale="en" labels={translations.en.shows} venueAs="h3" />);
+    expect(screen.getByRole("heading", { level: 3, name: "Mercury Live" })).toBeInTheDocument();
+  });
+
   it("does not offer ticket or calendar links for past shows", () => {
     render(<ShowCard show={show} locale="en" labels={translations.en.shows} isPast />);
+    expect(screen.getByText("Past show")).toBeInTheDocument();
+    expect(screen.getByText("Mercury Live")).toHaveClass("line-through");
     expect(screen.queryByRole("link", { name: /calendar/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /tickets/i })).not.toBeInTheDocument();
   });

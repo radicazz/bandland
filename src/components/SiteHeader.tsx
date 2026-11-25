@@ -1,12 +1,10 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import { Container } from "@/components/Container";
-import { site } from "@/config/site";
+import { GUTTER, WIDE } from "@/components/Container";
 import { getSocialLinks, type SocialLink } from "@/components/SocialLinks";
 import type { Locale, Translations } from "@/i18n/translations";
 import { LOCALE_COOKIE } from "@/i18n/translations";
@@ -178,30 +176,56 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
     return restore;
   }, [isMenuOpen, isMobileViewport]);
 
+  const navItems = [
+    { href: "/", label: labels.nav.home },
+    { href: "/shows", label: labels.nav.shows },
+    { href: "/merch", label: labels.nav.merch },
+  ] as const;
+  const isCurrent = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const barLink = (isActive: boolean) =>
+    `inline-flex min-h-11 items-center text-xl font-extrabold tracking-tight text-text underline-offset-[7px] ${
+      isActive
+        ? "underline decoration-highlight decoration-[3px]"
+        : "decoration-text decoration-2 hover:underline"
+    }`;
+  const localeButton = (isActive: boolean) =>
+    `min-h-11 min-w-11 px-1 transition-colors motion-reduce:transition-none ${
+      isActive ? "text-highlight" : "text-text hover:underline hover:underline-offset-[7px]"
+    }`;
+
   return (
-    <header className="site-header sticky top-0 z-30">
-      <Container className="relative">
-        <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 lg:gap-8">
-          <div className="relative min-w-0" ref={menuRef}>
+    <header className="sticky top-0 z-30 bg-bg">
+      <div className={`${WIDE} ${GUTTER} relative`}>
+        <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b-2 border-text lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8">
+          <div className="relative flex min-w-0 items-center" ref={menuRef}>
             <Link
               href="/"
+              aria-current={pathname === "/" ? "page" : undefined}
               onClick={() => closeMenu()}
-              className="group flex min-h-11 min-w-0 items-center gap-2.5 self-start justify-self-start font-brand text-[1.75rem] leading-none text-text transition-colors hover:text-highlight"
+              className={`${barLink(pathname === "/")} lg:hidden`}
             >
-              <Image
-                src="/logos/schmat-rat.png"
-                alt=""
-                width={32}
-                height={32}
-                className="h-9 w-9 shrink-0 rounded-control"
-              />
-              <span className="truncate">{site.name}</span>
+              {labels.nav.home}
             </Link>
+            <nav aria-label={labels.nav.explore} className="hidden items-center gap-10 lg:flex">
+              {navItems.map((item) => {
+                const isActive = isCurrent(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={barLink(isActive)}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
             <div
               id={menuId}
               aria-hidden={!isMenuOpen}
               inert={!isMenuOpen}
-              className={`fixed inset-x-0 top-16 z-20 w-full px-4 pt-3 transition duration-200 lg:hidden ${
+              className={`fixed inset-x-0 top-16 z-20 w-full px-4 pt-3 transition duration-200 motion-reduce:transition-none lg:hidden ${
                 isMenuOpen
                   ? "pointer-events-auto translate-y-0 opacity-100"
                   : "pointer-events-none translate-y-2 opacity-0"
@@ -216,63 +240,53 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
                 <nav
                   aria-label={labels.nav.explore}
                   aria-hidden={!isMenuOpen}
-                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto rounded-card border border-border bg-surface p-4 shadow-2xl"
+                  className="menu-scroll max-h-[calc(100svh-5.5rem)] overflow-y-auto border-2 border-text bg-bg p-4 shadow-[6px_6px_0_0_var(--text)]"
                 >
                   <div className="flex justify-end">
                     <button
                       type="button"
-                      className="min-h-11 rounded-control px-3 text-base font-medium text-text-muted hover:text-text"
+                      className="min-h-11 px-3 text-base font-bold text-text hover:underline hover:underline-offset-4"
                       onClick={() => closeMenu({ returnFocus: true })}
                     >
                       {labels.common.closeMenu}
                     </button>
                   </div>
                   <ul className="grid gap-1">
-                    {(
-                      [
-                        { href: "/", label: labels.nav.home },
-                        { href: "/shows", label: labels.nav.shows },
-                        { href: "/merch", label: labels.nav.merch },
-                      ] as const
-                    ).map(({ href, label }) => {
-                      const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+                    {navItems.map(({ href, label }) => {
+                      const isActive = isCurrent(href);
                       return (
                         <li key={href}>
                           <Link
                             href={href}
                             aria-current={isActive ? "page" : undefined}
-                            className={`flex min-h-14 items-center justify-between rounded-card px-4 text-2xl font-semibold transition-colors ${
+                            className={`headline flex min-h-14 items-center px-2 text-4xl underline-offset-[6px] ${
                               isActive
-                                ? "bg-surface-2 text-text"
-                                : "text-text-muted hover:bg-surface-2 hover:text-text"
+                                ? "underline decoration-highlight decoration-[4px]"
+                                : "decoration-text decoration-2 hover:underline"
                             }`}
                             onClick={() => closeMenu({ returnFocus: isActive })}
                           >
                             {label}
-                            {isActive ? (
-                              <span aria-hidden className="h-2 w-2 rounded-full bg-highlight" />
-                            ) : null}
                           </Link>
                         </li>
                       );
                     })}
                   </ul>
                   {socialLinks.length ? (
-                    <div className="mt-3 border-t border-border pt-4 lg:hidden">
-                      <p className="px-4 text-sm font-semibold text-text-dim">
-                        {labels.nav.socials}
-                      </p>
-                      <ul className="mt-2 flex flex-wrap gap-x-5 px-4">
+                    <div className="mt-4 border-t-2 border-text pt-4 lg:hidden">
+                      <p className="kicker px-2">{labels.nav.socials}</p>
+                      <ul className="mt-2 flex flex-wrap gap-x-5 px-2">
                         {socialLinks.map((social) => (
                           <li key={social.label}>
                             <a
-                              className="inline-flex min-h-11 items-center text-lg font-medium text-text-muted hover:text-text"
+                              className="inline-flex min-h-11 items-center gap-1 text-lg font-bold text-text underline-offset-4 hover:underline"
                               href={social.href ?? undefined}
                               target="_blank"
                               rel="noreferrer"
                               aria-label={`${social.label} (${labels.common.opensInNewTab})`}
                             >
                               {social.label}
+                              <span aria-hidden>{"\u2197\uFE0E"}</span>
                             </a>
                           </li>
                         ))}
@@ -286,71 +300,35 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
           <div
             aria-hidden="true"
             data-menu-backdrop
-            className={`fixed inset-0 top-16 z-10 bg-bg/95 transition-opacity duration-200 lg:hidden ${
+            className={`fixed inset-0 top-16 z-10 bg-bg/95 transition-opacity duration-200 motion-reduce:transition-none lg:hidden ${
               isMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
             }`}
           />
-          <nav
-            aria-label={labels.nav.explore}
-            className="hidden items-center gap-6 lg:col-start-2 lg:row-start-1 lg:flex"
-          >
-            {(
-              [
-                { href: "/shows", label: labels.nav.shows },
-                { href: "/merch", label: labels.nav.merch },
-              ] as const
-            ).map((item) => {
-              const isActive = pathname.startsWith(item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex min-h-11 items-center text-base font-semibold underline-offset-8 transition-colors ${
-                    isActive
-                      ? "text-text underline decoration-highlight decoration-2"
-                      : "text-text-muted hover:text-text"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div
-            inert={isMenuOpen && isMobileViewport}
-            className="justify-self-end lg:col-start-3 lg:row-start-1"
-          >
-            <div className="flex items-center">
-              <div
-                role="group"
-                aria-label={labels.nav.language}
-                className="flex shrink-0 items-center text-sm font-semibold text-text-dim"
+          <div inert={isMenuOpen && isMobileViewport} className="justify-self-end">
+            <div
+              role="group"
+              aria-label={labels.nav.language}
+              className="flex shrink-0 items-center text-xl font-extrabold tracking-tight"
+            >
+              <button
+                type="button"
+                aria-pressed={locale === "en"}
+                onClick={() => setLocale("en")}
+                className={localeButton(locale === "en")}
               >
-                <button
-                  type="button"
-                  aria-pressed={locale === "en"}
-                  onClick={() => setLocale("en")}
-                  className={`min-h-11 min-w-11 px-1.5 transition-colors ${
-                    locale === "en" ? "text-text" : "text-text-dim hover:text-text"
-                  }`}
-                >
-                  ENG
-                </button>
-                <span aria-hidden className="text-border">
-                  /
-                </span>
-                <button
-                  type="button"
-                  aria-pressed={locale === "af"}
-                  onClick={() => setLocale("af")}
-                  className={`min-h-11 min-w-11 px-1.5 transition-colors ${
-                    locale === "af" ? "text-text" : "text-text-dim hover:text-text"
-                  }`}
-                >
-                  AFR
-                </button>
-              </div>
+                ENG
+              </button>
+              <span aria-hidden className="text-text">
+                /
+              </span>
+              <button
+                type="button"
+                aria-pressed={locale === "af"}
+                onClick={() => setLocale("af")}
+                className={localeButton(locale === "af")}
+              >
+                AFR
+              </button>
             </div>
           </div>
           <button
@@ -360,7 +338,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
             aria-controls={menuId}
             aria-haspopup="dialog"
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="-mr-2 flex h-11 w-11 items-center justify-center rounded-control text-text transition-colors hover:text-highlight lg:hidden"
+            className="-mr-2 flex h-11 w-11 items-center justify-center text-text lg:hidden"
           >
             <span className="sr-only">
               {isMenuOpen ? labels.common.closeMenu : labels.common.openMenu}
@@ -368,11 +346,11 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
             <svg
               viewBox="0 0 24 24"
               aria-hidden="true"
-              className="h-5 w-5"
+              className="h-6 w-6"
               fill="none"
               stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
+              strokeWidth="2.5"
+              strokeLinecap="square"
             >
               {isMenuOpen ? (
                 <path d="M6 6l12 12M18 6L6 18" />
@@ -382,7 +360,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
             </svg>
           </button>
         </div>
-      </Container>
+      </div>
     </header>
   );
 }

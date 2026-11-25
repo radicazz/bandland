@@ -44,6 +44,7 @@ describe("MerchCard", () => {
 
   it("shows a sold-out label", () => {
     render(<MerchCard item={{ ...item, badge: "sold-out" }} labels={translations.en.merch} />);
-    expect(screen.getByText("Sold out")).toBeInTheDocument();
+    const badge = screen.getByText("Sold out");
+    expect(badge.closest("[aria-hidden]")).toBeNull();
   });
 });

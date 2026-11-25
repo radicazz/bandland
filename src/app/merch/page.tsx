@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 
-import { PageIntro, PageSection } from "@/components/PageSection";
+import { EmptyNotice, PageIntro, PageSection } from "@/components/PageSection";
 import { MerchCard } from "@/components/MerchCard";
 import { getMerchItems } from "@/content/merch";
 import { getTranslationsFromCookies } from "@/i18n/server";
+
+// Pinned to a wall, not laid in a grid: each card leans a little differently.
+const MERCH_TILTS = ["left", "none", "right"] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { labels } = await getTranslationsFromCookies();
@@ -20,17 +23,19 @@ export default async function MerchPage() {
       <PageIntro
         title={labels.merch.title}
         description={labels.merch.introPrefix + labels.merch.introSuffix}
+        photo="/photos/03-drummer-wide.webp"
       />
       {merchItems.length === 0 ? (
-        <div className="panel mt-10 p-6 text-base text-text-muted">{labels.merch.empty}</div>
+        <EmptyNotice message={labels.merch.empty} photo="/photos/01-guitar-bass-wide.webp" />
       ) : (
-        <ul className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {merchItems.map((item) => (
+        <ul className="mt-14 grid items-start gap-x-8 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
+          {merchItems.map((item, index) => (
             <li key={item.id} className="min-w-0">
               <MerchCard
                 item={item}
                 labels={labels.merch}
                 newTabLabel={labels.common.opensInNewTab}
+                tilt={MERCH_TILTS[index % MERCH_TILTS.length] ?? "none"}
               />
             </li>
           ))}

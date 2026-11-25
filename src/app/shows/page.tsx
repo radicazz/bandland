@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { PageIntro, PageSection } from "@/components/PageSection";
+import { EmptyNotice, PageIntro, PageSection } from "@/components/PageSection";
 import { DoorPriceIcon, OnlinePriceIcon, ShowCard } from "@/components/ShowCard";
 import { getShows } from "@/content/shows";
 import { getTranslationsFromCookies } from "@/i18n/server";
@@ -40,24 +40,28 @@ function ShowListSection({
         isPast={isPast}
         isNext={highlightFirst && index === 0}
         newTabLabel={newTabLabel}
+        venueAs="h3"
       />
     </li>
   );
   return (
     <section aria-labelledby={headingId}>
-      <h2 id={headingId} className="text-2xl font-bold text-text">
+      <h2
+        id={headingId}
+        className="headline flex items-center gap-4 text-3xl after:h-0.5 after:flex-1 after:bg-text sm:text-4xl"
+      >
         {heading}
       </h2>
-      <ul className="mt-5 grid gap-4">{visible.map(renderShow)}</ul>
+      <ul className="mt-6 grid gap-6">{visible.map(renderShow)}</ul>
       {hidden.length > 0 ? (
-        <details className="group mt-4">
-          <summary className="btn-secondary w-full cursor-pointer list-none sm:w-auto [&::-webkit-details-marker]:hidden">
+        <details className="group mt-6">
+          <summary className="btn-zine w-full cursor-pointer list-none sm:w-auto [&::-webkit-details-marker]:hidden">
             <span className="group-open:hidden">
               {labels.showOlder.replace("{count}", String(hidden.length))}
             </span>
             <span className="hidden group-open:inline">{labels.hideOlder}</span>
           </summary>
-          <ul className="grid gap-4">{hidden.map(renderShow)}</ul>
+          <ul className="mt-6 grid gap-6">{hidden.map(renderShow)}</ul>
         </details>
       ) : null}
     </section>
@@ -84,19 +88,20 @@ export default async function ShowsPage() {
       <PageIntro
         title={labels.shows.title}
         description={labels.shows.introPrefix + labels.shows.introSuffix}
+        photo="/photos/02-guitarist-wide.webp"
       />
       {hasSplitPricing ? (
-        <div className="mt-8 grid gap-3 rounded-card border border-border bg-surface p-5 text-base text-text-muted sm:max-w-2xl">
-          <p className="font-semibold text-text">{labels.shows.ticketPriceGuideTitle}</p>
+        <div className="mt-10 grid gap-3 border-2 border-dashed border-text p-5 text-base text-text-muted sm:max-w-2xl">
+          <p className="kicker">{labels.shows.ticketPriceGuideTitle}</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <span className="inline-flex items-center gap-2">
-              <span className="text-text-dim" aria-hidden="true">
+              <span className="text-text" aria-hidden="true">
                 <OnlinePriceIcon />
               </span>
               <span>{labels.shows.ticketPriceGuideOnline}</span>
             </span>
             <span className="inline-flex items-center gap-2">
-              <span className="text-text-dim" aria-hidden="true">
+              <span className="text-text" aria-hidden="true">
                 <DoorPriceIcon />
               </span>
               <span>{labels.shows.ticketPriceGuideDoor}</span>
@@ -107,9 +112,9 @@ export default async function ShowsPage() {
       ) : null}
 
       {upcoming.length === 0 && past.length === 0 ? (
-        <div className="panel mt-10 p-6 text-base text-text-muted">{labels.shows.empty}</div>
+        <EmptyNotice message={labels.shows.empty} photo="/photos/03-drummer-wide.webp" />
       ) : (
-        <div className="mt-12 grid gap-12">
+        <div className="mt-14 grid gap-16">
           {upcoming.length > 0 ? (
             <ShowListSection
               heading={labels.shows.upcomingTitle}

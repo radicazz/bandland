@@ -4,8 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { formatTime } from "./formatTime";
 import { PlayerBar } from "./PlayerBar";
-import { PlaybackProvider, usePlayback } from "@/components/guitar/PlaybackProvider";
-import { createSimulatedPlayback, type PlaybackSignal } from "@/components/guitar/playback";
+import { PlaybackProvider, usePlayback } from "@/components/player/PlaybackProvider";
+import { createSimulatedPlayback, type PlaybackSignal } from "@/components/player/playback";
 import { translations } from "@/i18n/translations";
 import { memoryStorage } from "@/test/memoryStorage";
 

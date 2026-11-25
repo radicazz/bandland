@@ -10,7 +10,7 @@ const reportOnlyPolicy = [
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
-  // Next hydration and the inline boot script currently use inline scripts.
+  // Next hydration currently uses inline scripts.
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob:${mediaOrigin}`,

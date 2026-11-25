@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
-import type { PlaybackSignal } from "@/components/guitar/playback";
+import type { PlaybackSignal } from "@/components/player/playback";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 const SAMPLES = 1024;

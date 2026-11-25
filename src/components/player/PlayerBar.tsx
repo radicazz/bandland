@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Container } from "@/components/Container";
-import { usePlayback } from "@/components/guitar/PlaybackProvider";
+import { usePlayback } from "@/components/player/PlaybackProvider";
 import { site } from "@/config/site";
 import type { Translations } from "@/i18n/translations";
 import { formatTime } from "./formatTime";

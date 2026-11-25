@@ -50,7 +50,7 @@ describe("site settings", () => {
 
   it("keeps the stored order and appends any missing widgets", () => {
     const result = normalizeWidgets([{ id: "merch", enabled: false, width: "half" }]);
-    expect(result.map((widget) => widget.id)).toEqual(["merch", "nextShow", "release"]);
+    expect(result.map((widget) => widget.id)).toEqual(["merch", "release", "nextShow"]);
     expect(result[0]?.enabled).toBe(false);
   });
 });
