@@ -33,7 +33,9 @@ export function MerchCard({
   ) : null;
 
   return (
-    <article className={`photo-frame panel-paper flex min-w-0 flex-col p-3 sm:p-4 ${TILTS[tilt]}`}>
+    <article
+      className={`photo-frame panel-paper flex h-full min-w-0 flex-col p-3 sm:p-4 ${TILTS[tilt]}`}
+    >
       {item.imageUrl ? (
         <div className="relative aspect-square overflow-hidden bg-paper-2">
           {badge ? <div className="absolute left-2 top-2 z-10">{badge}</div> : null}
