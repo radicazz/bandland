@@ -82,6 +82,12 @@ Pseudo-elements do not render on `<img>`, which is why `.halftone` and `.photo-f
 
 Use real band photos only, never generated imagery. `public/photos/` holds processed copies of `public/slideshow/*`: high-contrast black and white with a little halftone and grain, in wide, tall and square crops. The originals stay untouched as the OG/Twitter images.
 
+- `01-guitar-bass-{wide,tall,square}.webp`: guitarist and red-haired bassist, with the bass neck in front.
+- `02-guitarist-{wide,tall,square}.webp`: headbanging guitarist, guitar in hand. This is the hero shot.
+- `03-drummer-{wide,tall,square}.webp`: drummer singing at the kit.
+
+The photos are already processed, so use them as they are, or inside `.photo-frame`. Add `.halftone` only to strengthen the dot screen, and `.halftone-red` for the red duotone.
+
 ## Decisions and reasons
 
 - **One red**: red marks the action (Play, Tickets), the active language and the big release panel. Everything else is ink on paper, so the red still shouts.
