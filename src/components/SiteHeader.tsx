@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
-import { Container } from "@/components/Container";
+import { GUTTER, WIDE } from "@/components/Container";
 import { getSocialLinks, type SocialLink } from "@/components/SocialLinks";
 import type { Locale, Translations } from "@/i18n/translations";
 import { LOCALE_COOKIE } from "@/i18n/translations";
@@ -195,7 +195,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 bg-bg">
-      <Container className="relative">
+      <div className={`${WIDE} ${GUTTER} relative`}>
         <div className="grid min-h-16 grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-2 border-b-2 border-text lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8">
           <div className="relative flex min-w-0 items-center" ref={menuRef}>
             <Link
@@ -360,7 +360,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
             </svg>
           </button>
         </div>
-      </Container>
+      </div>
     </header>
   );
 }

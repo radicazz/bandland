@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { GUTTER, WIDE } from "@/components/Container";
 import { MerchCard } from "@/components/MerchCard";
 import { fitWords, Slanted } from "@/components/Slanted";
 import { site } from "@/config/site";
@@ -19,8 +20,6 @@ const MERCH_PREVIEW_COUNT = 3;
 const SHOW_TIME_ZONE = "Africa/Johannesburg";
 const LOCALE_TAGS: Record<Locale, string> = { en: "en-ZA", af: "af-ZA" };
 /** Page gutter shared by every block so their edges line up. */
-const GUTTER = "px-4 sm:px-8 lg:px-12";
-const WIDE = "mx-auto w-full max-w-[100rem]";
 
 type HomeZineProps = {
   labels: Translations;
