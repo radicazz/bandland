@@ -32,6 +32,7 @@ const bandlandGothic = Grenze_Gotisch({
 });
 
 export const viewport: Viewport = {
+  // Mirrors --paper in globals.css; viewport metadata cannot read CSS variables.
   themeColor: "#f1e8d4",
 };
 
