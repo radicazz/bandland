@@ -80,11 +80,11 @@ Pseudo-elements do not render on `<img>`, which is why `.halftone` and `.photo-f
 
 ## Photos
 
-Use real band photos only, never generated imagery. `public/photos/` holds processed copies of `public/slideshow/*`: high-contrast black and white with a little halftone and grain, in wide, tall and square crops. The originals stay untouched as the OG/Twitter images.
+Use real band photos only, never generated imagery. `public/photos/` holds processed copies of `public/slideshow/*`: high-contrast black and white with a little halftone and grain, in wide and tall crops (plus a square guitar-and-bass crop). The originals stay untouched as the OG/Twitter images.
 
 - `01-guitar-bass-{wide,tall,square}.webp`: guitarist and red-haired bassist, with the bass neck in front.
-- `02-guitarist-{wide,tall,square}.webp`: headbanging guitarist, guitar in hand. This is the hero shot.
-- `03-drummer-{wide,tall,square}.webp`: drummer singing at the kit.
+- `02-guitarist-{wide,tall}.webp`: headbanging guitarist, guitar in hand. This is the hero shot.
+- `03-drummer-{wide,tall}.webp`: drummer singing at the kit.
 
 The photos are already processed, so use them as they are, or inside `.photo-frame`. Add `.halftone` only to strengthen the dot screen, and `.halftone-red` for the red duotone.
 

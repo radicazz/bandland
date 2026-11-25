@@ -46,7 +46,7 @@ These classes are in `globals.css` ("Zine kit"). They are CSS/SVG only, use no r
 - `.btn-zine`, `.btn-zine-red`: square bordered buttons, either paper with ink or red with paper.
 - `.fret-strip`: a decorative fretboard band. Always use it as `aria-hidden="true"`.
 
-The older shared classes are still available and follow the tokens: `.btn-primary`, `.btn-secondary`, `.panel`, `.section-kicker`, `.display-title`, `.card-interactive`, `.player-bar` and `.player-range`.
+The older shared classes follow the tokens and are used by admin and the player: `.btn-primary`, `.btn-secondary`, `.panel`, `.section-kicker`, `.display-title`, `.menu-scroll`, `.player-bar` and `.player-range`.
 
 ## Typography
 
@@ -59,11 +59,11 @@ The older shared classes are still available and follow the tokens: `.btn-primar
 ## Photos
 
 - Use real band photos only. Never use generated imagery.
-- `public/photos/` holds black-and-white, halftoned, grainy versions of `public/slideshow/01..03-hero.jpg`, in `-wide` (1200px), `-tall` (640x960) and `-square` (900x900) crops:
+- `public/photos/` holds black-and-white, halftoned, grainy versions of `public/slideshow/01..03-hero.jpg`, in `-wide` (1200px) and `-tall` (640x960) crops, plus `01-guitar-bass-square` (900x900). Only the crops the pages use are kept:
   - `01-guitar-bass`: guitarist and red-haired bassist, bass neck in the foreground.
   - `02-guitarist`: headbanging guitarist, the guitar-in-hand hero shot.
   - `03-drummer`: drummer singing at the kit.
-- The originals in `public/slideshow/` stay untouched; they are the OG/Twitter images via `src/config/embed.ts`.
+- The originals in `public/slideshow/` stay untouched; `01` and `02` are the OG/Twitter images via `src/config/embed.ts`, `03` is kept as the drummer source.
 - To make new versions, use ImageMagick: Rec709 grayscale, sigmoidal contrast 7x45%, a 22% blend of an `h6x6o` ordered-dither halftone, and Gaussian noise. Export WebP at quality 68-70, at most 200 KB.
 
 ## Tech Stack (Current)
@@ -75,32 +75,31 @@ The older shared classes are still available and follow the tokens: `.btn-primar
 - Zod 4 for content schemas
 - Vitest 3 + React Testing Library
 - Fonts via `next/font/google` (Geist, Geist_Mono, Grenze_Gotisch)
-- three + @react-three/fiber: still installed for the old 3D guitar. Removal is pending in WS3; do not build on it.
+- No WebGL or 3D libraries; textures are CSS/SVG
 
 ## Current Features
 
-- **Home (being rebuilt in WS1).** It becomes a zine layout of these blocks:
-  - a hero with the wordmark, Play with a live waveform, torn red paper with band photos, and a fret strip;
-  - a red release panel;
-  - a show panel with taped photos and an ink torn panel with the next show's venue and a Tickets button;
-  - merch and outro links.
-  - Admin widget order and visibility still decide which home sections show.
-  - The old 3D guitar scroll journey (`src/components/home/*`, `src/components/guitar/*` apart from playback, the poster, motes, the intro and `Reveal`) is still in the tree until WS3 removes it. Its CSS (`.guitar-stage*`, `.journey-scrim`, `.stage-intro`, `[data-reveal]`) remains in `globals.css` until then.
-- **Play.** The Play button plays `site.featuredTrack` ("Engel uit die Hemel", `public/audio/engel-uit-die-hemel.mp3`) through `createAudioPlayback` in `src/components/guitar/playback.ts`.
+- **Home** (`src/components/home/HomeZine.tsx`, a server component) is a static zine collage:
+  - Hero: blackletter wordmark, tagline, Play with a live waveform (`HeroPlayer`), torn red paper with the guitarist photo and a taped second photo, and a fret strip along the bottom.
+  - Panel row: a red release panel (title, RELEASE kicker, Listen, the Spotify embed loaded automatically or a click-to-load Apple Music embed via `ReleasePlayer`, a red halftone photo), then a 2x2 grid of taped photos and an ink torn panel with the next show's venue, date/city, All shows and Tickets. On md+ the photos sit left of the show panel; on phones the show comes before the photos.
+  - Merch preview (up to three items, skipped when empty) and a "Find us" block with the socials.
+  - Admin widget order and visibility decide the blocks. `release` and `nextShow` share the panel row and keep their relative order (the built-in default is release, next show, merch, so the release panel is on the left); `merch` is its own block. The photo grid stays even when both panel widgets are off. The widget `width` setting is preserved for older data but not used.
+- **Play.** The Play button plays `site.featuredTrack` ("Engel uit die Hemel", `public/audio/engel-uit-die-hemel.mp3`) through `createAudioPlayback` in `src/components/player/playback.ts`.
   - The file is only requested on the first press.
-  - A Web Audio analyser turns the low end into a playback envelope, with a fixed-tempo pulse when Web Audio is unavailable.
+  - A Web Audio analyser turns the low end into a playback envelope that drives the waveforms, with a fixed-tempo pulse when Web Audio is unavailable.
   - A status line covers idle, loading, playing and load errors.
-  - `PlaybackProvider` lives in the root layout, so the track keeps playing across client-side navigation and in a background tab.
+  - `PlaybackProvider` lives in the root layout, so the track keeps playing across client-side navigation and in a background tab. Loading the click-to-load Apple Music embed pauses it.
 - **Player bar.** Once Play has been pressed, a persistent player bar (`src/components/player/PlayerBar.tsx`) sits fixed along the bottom of every public page (not `/admin`).
   - It has play/pause, title, live waveform, seek, time, mute, volume and close.
   - It sets `--player-clear` to its height, which the footer pads by.
   - Closing it pauses the track. Navigating to `/admin` also pauses it.
   - Volume and mute persist in `localStorage` (`bandland-volume`). They go through a `GainNode` when Web Audio exists, otherwise through the audio element.
   - `createSimulatedPlayback` stays for tests (`PlaybackProvider` takes a `createDriver` prop).
-- **Header and footer (being restyled in WS2).** The header will have a `Home` text link, Shows, Merch and the ENG / AFR toggle (active language red), with a thin ink rule under it and a menu on mobile. Socials live in the footer and the mobile menu.
-- **Shows and merch.** The Shows and Merch pages read JSON documents from a private Vercel Blob store.
+- **Header and footer.** The header has a `Home` text link, Shows, Merch and the ENG / AFR toggle (active language red), with a thin ink rule under it and a menu on mobile. The footer is a torn ink panel with the wordmark, tagline, booking email, socials and the Admin link. Socials live in the footer, the mobile menu and the home "Find us" block.
+- **Shows and merch.** The Shows and Merch pages read JSON documents from a private Vercel Blob store and render as zine pages; storage errors show the zine error state.
 - **Admin.** The admin panel at `/admin` manages shows, merch and site settings: home widget order and visibility, latest release, footer and socials.
 - **Locales.** The locale toggle is in the header; translations are in `src/i18n/translations.ts`.
+- **Fonts.** `next/font` variables (`--font-geist-sans`, `--font-geist-mono`, `--font-bandland-gothic`) are set on `<html>`, because the Tailwind theme resolves `--font-sans` at `:root`.
 
 ## Content System
 
@@ -189,21 +188,20 @@ Location: `src/config/site.ts`
 ## Component Architecture
 
 - `Container`: a max-w-6xl wrapper with padding.
-- `SiteHeader`: nav and the locale toggle; the mobile menu adds socials. WS2 is restyling it.
-- `SiteFooter`: copyright and tagline. WS2 is restyling it.
-- `home/*`: the home page. WS1 is replacing it; the current `HomeJourney`/`JourneyStage` are the old 3D journey.
-- Pending removal in WS3: `guitar/GuitarStage`, `guitar/Guitar`, `guitar/guitarModel`, `guitar/telecaster`, `guitar/journey`, `guitar/motes`, `guitar/useStagePulse`, `guitar/useScrollProgress`, `Reveal` and `IntroSeen`.
-- Kept from `guitar/`: `guitar/playback`, `PlaybackProvider` and `guitar/PlayButton`. These are the music path.
+- `SiteHeader`: nav and the locale toggle; the mobile menu adds socials.
+- `SiteFooter`: wordmark, tagline, booking email, socials, copyright and the Admin link.
+- `home/HomeZine`: the home page (server component). `home/HeroPlayer` (Play + waveform) and `home/ReleasePlayer` (release embed) are its client islands; `home/home.module.css` holds its torn-photo, torn-panel and marker styles.
+- `player/playback`, `player/PlaybackProvider`, `player/PlayButton`: the music path (audio element, analyser envelope, context and the Play button).
 - `player/PlayerBar` and `player/Waveform`: the site-wide player bar, rendered by the root layout. It is client-only and hidden until Play is first pressed. The waveform draws on a 2D canvas only while playing.
 - `PageSection` / `PageIntro`: shared public-page layout and headings.
-- `MerchCard`: product image, details and store link.
+- `ShowCard`, `MerchCard`, `ContentImage`, `SocialLinks`, `ErrorState` (+ `ErrorMessagesProvider`): shared public building blocks.
 - Admin components are in `src/components/admin/`. `src/app/admin/layout.tsx` provides the dark admin theme scope.
 
 Pattern: simple, functional components; client JS isolated to interactive features.
 
 ## Pages (App Router)
 
-- `/`: home, being rebuilt as the zine layout (see Current Features).
+- `/`: home, the zine collage (see Current Features).
 - `/shows`: show list with ticket links.
 - `/merch`: merch grid with external links.
 - `/admin`: admin login and protected CRUD routes (`/admin/settings` for site settings). It is linked from the footer and uses the dark theme.
@@ -243,7 +241,7 @@ SEO:
 - Optimise images (next/image). Use the pre-processed `public/photos/` WebPs (each 200 KB or less) instead of filtering large originals.
 - Textures are CSS/SVG (feTurbulence data URIs, gradients, clip-paths), never large rasters.
 - Edge runtime for OG/Twitter images
-- The three.js canvas chunk (~242 KB gzip) is still loaded on `/` until WS1/WS3 remove it. Once it is gone, nothing on the site should need WebGL.
+- No WebGL: the old three.js guitar (~242 KB gzip chunk) is gone. `/` loads about 198 KB gzip of JS (Next/React runtime plus the player islands), measured with `gzip -9` over the page's script tags. The hero guitarist photo is the LCP image (`preload`).
 
 ## Development Workflow
 

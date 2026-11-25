@@ -1,8 +1,8 @@
 # Bandland
 
-Modern band landing page with a dark monochrome aesthetic. Built with Next.js 16, React 19, Tailwind CSS 4, TypeScript, and Vercel Blob.
+Band landing page for schmät, styled as a photocopied punk zine (cream paper, black ink, one red, torn edges, halftone band photos). `/admin` keeps a dark monochrome theme. Built with Next.js 16, React 19, Tailwind CSS 4, TypeScript, and Vercel Blob.
 
-Design and project rules live in `AGENTS.md`. Vercel is the only supported deployment target.
+Design and project rules live in `AGENTS.md` and `DESIGN.md`. Vercel is the only supported deployment target.
 
 ## Local development
 
@@ -31,7 +31,8 @@ Copy the generated `ADMIN_PASSWORD_HASH` and `AUTH_SECRET` into the appropriate 
 - Admin photos upload directly to the public media Blob store and render through `next/image`.
 - Site identity and social links live in `src/config/site.ts`.
 - Translations live in `src/i18n/translations.ts`.
-- Hero images live in `public/slideshow/`; keep `src/config/slideshow.ts` in sync when changing them.
+- Band photos: processed black-and-white crops in `public/photos/` (used on the pages) made from the originals in `public/slideshow/` (OG/Twitter images via `src/config/embed.ts`).
+- The featured track for the Play button is `public/audio/engel-uit-die-hemel.mp3` (`site.featuredTrack`).
 
 Production intentionally starts empty. Add the first shows and merch through `/admin` after deployment.
 
@@ -55,4 +56,4 @@ See [docs/deployment.md](docs/deployment.md) for Blob stores, environment scopes
 
 ## Licensing
 
-Code is MIT licensed under [LICENSE](LICENSE). Brand assets under `public/logos/`, `public/slideshow/`, and other band artwork are proprietary and covered by [LICENSE.ASSETS](LICENSE.ASSETS).
+Code is MIT licensed under [LICENSE](LICENSE). Brand assets under `public/logos/`, `public/slideshow/`, `public/photos/`, `public/audio/`, and other band artwork are proprietary and covered by [LICENSE.ASSETS](LICENSE.ASSETS).
