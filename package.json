@@ -16,7 +16,6 @@
     "auth:generate": "node scripts/generate-auth.mjs"
   },
   "dependencies": {
-    "@react-three/fiber": "^9.8.2",
     "@vercel/blob": "^2.9.0",
     "@vercel/firewall": "^1.2.6",
     "bcryptjs": "^2.4.3",
@@ -24,7 +23,6 @@
     "next-auth": "5.0.0-beta.32",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "three": "^0.187.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -34,9 +32,7 @@
     "@types/node": "^20.19.39",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19",
-    "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^5.2.0",
-    "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "^16.4.6",
     "jsdom": "^27.4.0",

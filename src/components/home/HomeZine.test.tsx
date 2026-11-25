@@ -3,8 +3,8 @@ import { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HomeZine } from "./HomeZine";
-import { createSimulatedPlayback, type PlaybackSignal } from "@/components/guitar/playback";
-import { PlaybackProvider, usePlayback } from "@/components/guitar/PlaybackProvider";
+import { createSimulatedPlayback, type PlaybackSignal } from "@/components/player/playback";
+import { PlaybackProvider, usePlayback } from "@/components/player/PlaybackProvider";
 import type { MerchItem, Show, SiteSettings, WidgetSetting } from "@/content/schema";
 import { getDefaultSettings } from "@/content/settings-defaults";
 import { translations } from "@/i18n/translations";
@@ -98,7 +98,7 @@ describe("HomeZine", () => {
     const [h1, ...rest] = screen.getAllByRole("heading", { level: 1 });
     expect(rest).toHaveLength(0);
     expect(h1).toHaveTextContent("schmät");
-    expect(screen.getByRole("button", { name: labels.home.journey.play })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: labels.home.track.play })).toBeInTheDocument();
     // Default widget order: release, nextShow, merch; socials close the page.
     expect(order(container)).toEqual(["title", "release", "show", "merch", "links"]);
     // The fret strip is decoration only.
@@ -311,12 +311,12 @@ describe("HomeZine", () => {
       </PlaybackProvider>
     );
     const { rerender } = render(tree(page));
-    fireEvent.click(screen.getByRole("button", { name: labels.home.journey.play }));
+    fireEvent.click(screen.getByRole("button", { name: labels.home.track.play }));
 
     rerender(tree(null));
     rerender(tree(page));
 
     expect((signal as PlaybackSignal | null)?.playing).toBe(true);
-    expect(screen.getByRole("button", { name: labels.home.journey.pause })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: labels.home.track.pause })).toBeInTheDocument();
   });
 });

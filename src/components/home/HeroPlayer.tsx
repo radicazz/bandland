@@ -1,8 +1,8 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { PlayButton } from "@/components/guitar/PlayButton";
-import { usePlayback } from "@/components/guitar/PlaybackProvider";
+import { PlayButton } from "@/components/player/PlayButton";
+import { usePlayback } from "@/components/player/PlaybackProvider";
 import { Waveform } from "@/components/player/Waveform";
 import type { Translations } from "@/i18n/translations";
 
@@ -11,7 +11,7 @@ import type { Translations } from "@/i18n/translations";
  * then a thin rule running out like a tape leader. The waveform reads the same
  * signal as the site-wide player bar, so both stay in step.
  */
-export function HeroPlayer({ labels }: { labels: Translations["home"]["journey"] }) {
+export function HeroPlayer({ labels }: { labels: Translations["home"]["track"] }) {
   const signal = usePlayback();
   const playing = useSyncExternalStore(
     signal.subscribe,

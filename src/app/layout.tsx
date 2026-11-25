@@ -1,12 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Grenze_Gotisch } from "next/font/google";
 import "./globals.css";
-import { BOOT_SCRIPT } from "./bootScript";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { IntroSeen } from "@/components/IntroSeen";
 import { ErrorMessagesProvider } from "@/components/ErrorMessagesProvider";
-import { PlaybackProvider } from "@/components/guitar/PlaybackProvider";
+import { PlaybackProvider } from "@/components/player/PlaybackProvider";
 import { PlayerBar } from "@/components/player/PlayerBar";
 import { embed, getMetadataBase } from "@/config/embed";
 import { site } from "@/config/site";
@@ -87,9 +85,6 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${bandlandGothic.variable} bg-bg text-text`}
       suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
-      </head>
       <body className="antialiased">
         <a
           href="#content"
@@ -97,7 +92,6 @@ export default async function RootLayout({
         >
           {labels.common.skipToContent}
         </a>
-        <IntroSeen />
         {/* Playback lives here so the track keeps going across client navigation. */}
         <PlaybackProvider>
           <div className="flex min-h-dvh flex-col">

@@ -10,30 +10,19 @@ export type Translations = {
   };
   nav: {
     explore: string;
-    main: string;
     home: string;
-    store: string;
     merch: string;
-    live: string;
     shows: string;
     language: string;
     socials: string;
   };
   home: {
-    pinned: string;
     latestReleaseTitle: string;
     latestReleaseDescription: string;
     latestReleaseCta: string;
     loadReleasePlayer: string;
     nextShowLabel: string;
-    nextShowFallbackTitle: string;
-    nextShowFallbackDescription: string;
     allShowsCta: string;
-    liveLabel: string;
-    liveTitle: string;
-    liveDescription: string;
-    liveCta: string;
-    timeFrameLabel: string;
     /** Zine home page. */
     releaseKicker: string;
     tickets: string;
@@ -49,7 +38,7 @@ export type Translations = {
       guitarAndBass: string;
       drummer: string;
     };
-    journey: {
+    track: {
       play: string;
       pause: string;
       /** Status line under Play; `{track}` is the song title. */
@@ -57,9 +46,6 @@ export type Translations = {
       trackLoading: string;
       trackPlaying: string;
       trackError: string;
-      playHint: string;
-      outroTitle: string;
-      outroKicker: string;
     };
   };
   shows: {
@@ -131,31 +117,19 @@ export const translations: Record<Locale, Translations> = {
     },
     nav: {
       explore: "Explore",
-      main: "Main",
       home: "Home",
-      store: "Store",
       merch: "Merch",
-      live: "Live",
       shows: "Shows",
       language: "Language",
       socials: "Socials",
     },
     home: {
-      pinned: "Pinned",
       latestReleaseTitle: "Newest release",
       latestReleaseDescription: "Out now.",
       latestReleaseCta: "Listen",
       loadReleasePlayer: "Load {provider} player",
       nextShowLabel: "Next show",
-      nextShowFallbackTitle: "No upcoming shows",
-      nextShowFallbackDescription:
-        "Nothing is locked in yet. Check the full schedule for past dates and new announcements.",
       allShowsCta: "All shows",
-      liveLabel: "Live",
-      liveTitle: "Shows",
-      liveDescription: "Upcoming dates, tickets, and venue details.",
-      liveCta: "View shows",
-      timeFrameLabel: "Time frame",
       releaseKicker: "Release",
       tickets: "Tickets",
       noShowsTitle: "No shows announced",
@@ -172,16 +146,13 @@ export const translations: Record<Locale, Translations> = {
           "Schmät's guitarist and bassist playing on a dark stage, the bass headstock in the foreground",
         drummer: "Schmät's drummer singing behind the kit, one stick raised",
       },
-      journey: {
+      track: {
         play: "Play",
         pause: "Pause",
         trackIdle: "Song: {track}",
         trackLoading: "Loading {track}…",
         trackPlaying: "Now playing: {track}",
         trackError: "{track} didn't load. Press play to try again.",
-        playHint: "Scroll down to follow the guitar from headstock to body.",
-        outroTitle: "Hear it live",
-        outroKicker: "Encore",
       },
     },
     shows: {
@@ -259,31 +230,19 @@ export const translations: Record<Locale, Translations> = {
     },
     nav: {
       explore: "Verken",
-      main: "Hoof",
       home: "Tuis",
-      store: "Winkel",
       merch: "Merch",
-      live: "Live",
       shows: "Vertonings",
       language: "Taal",
       socials: "Sosiaal",
     },
     home: {
-      pinned: "Vasgepen",
       latestReleaseTitle: "Nuutste vrystelling",
       latestReleaseDescription: "Nou beskikbaar.",
       latestReleaseCta: "Luister",
       loadReleasePlayer: "Laai {provider}-speler",
       nextShowLabel: "Volgende vertoning",
-      nextShowFallbackTitle: "Geen komende vertonings",
-      nextShowFallbackDescription:
-        "Niks is nog vas nie. Kyk na die volle rooster vir vorige datums en nuwe aankondigings.",
       allShowsCta: "Alle vertonings",
-      liveLabel: "Live",
-      liveTitle: "Vertonings",
-      liveDescription: "Komende datums, kaartjies en lokaalbesonderhede.",
-      liveCta: "Sien vertonings",
-      timeFrameLabel: "Tydgleuf",
       releaseKicker: "Vrystelling",
       tickets: "Kaartjies",
       noShowsTitle: "Geen vertonings aangekondig nie",
@@ -300,16 +259,13 @@ export const translations: Record<Locale, Translations> = {
           "Schmät se kitaarspeler en baskitaarspeler op 'n donker verhoog, met die baskop voor",
         drummer: "Schmät se tromspeler wat agter die tromstel sing, een stok in die lug",
       },
-      journey: {
+      track: {
         play: "Speel",
         pause: "Onderbreek",
         trackIdle: "Liedjie: {track}",
         trackLoading: "Laai {track}…",
         trackPlaying: "Speel nou: {track}",
         trackError: "{track} wou nie laai nie. Druk speel om weer te probeer.",
-        playHint: "Rol af om die kitaar van kop tot lyf te volg.",
-        outroTitle: "Hoor dit regstreeks",
-        outroKicker: "Toegif",
       },
     },
     shows: {

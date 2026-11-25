@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePlayback } from "@/components/guitar/PlaybackProvider";
+import { usePlayback } from "@/components/player/PlaybackProvider";
 
 function focusPlayer(frame: HTMLIFrameElement | null) {
   frame?.focus();

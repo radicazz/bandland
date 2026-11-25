@@ -100,7 +100,7 @@ function Hero({ labels, settings }: Pick<HomeZineProps, "labels" | "settings">) 
             aria-label={home.featuredTrackLabel}
             className="mt-8 w-full max-w-xl lg:mt-10"
           >
-            <HeroPlayer labels={home.journey} />
+            <HeroPlayer labels={home.track} />
           </div>
         </div>
 

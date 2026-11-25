@@ -8,7 +8,7 @@ import type { PlaybackStatus } from "./playback";
 
 type PlayButtonProps = {
   labels: Pick<
-    Translations["home"]["journey"],
+    Translations["home"]["track"],
     "play" | "pause" | "trackIdle" | "trackLoading" | "trackPlaying" | "trackError"
   >;
   track?: string;
