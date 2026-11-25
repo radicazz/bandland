@@ -25,10 +25,10 @@ export function ErrorState({
     <PageSection>
       <PageIntro title={labels[scope].title} description={labels[scope].description} />
       <div className="mt-10 flex flex-wrap gap-4">
-        <button onClick={reset} className="btn-primary" type="button">
+        <button onClick={reset} className="btn-zine-red" type="button">
           {labels.retry}
         </button>
-        <Link href="/" className="btn-secondary">
+        <Link href="/" className="btn-zine">
           {labels.home}
         </Link>
       </div>

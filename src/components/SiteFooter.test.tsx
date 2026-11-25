@@ -16,10 +16,27 @@ describe("SiteFooter", () => {
       />,
     );
     expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin");
-    expect(screen.getByRole("link", { name: "Booking" })).toHaveAttribute(
-      "href",
-      "mailto:hello@example.com",
+    const booking = screen.getByRole("link", { name: "Booking: hello@example.com" });
+    expect(booking).toHaveAttribute("href", "mailto:hello@example.com");
+    expect(booking).toHaveTextContent("hello@example.com");
+    expect(screen.getByRole("link", { name: "Instagram (opens in a new tab)" })).toHaveAttribute(
+      "target",
+      "_blank",
     );
-    expect(screen.getByRole("link", { name: /^Instagram/ })).toBeInTheDocument();
+  });
+
+  it("pads for the player bar and drops socials without a link", () => {
+    render(
+      <SiteFooter
+        tagline="Loud"
+        bookingLabel="Booking"
+        socials={[
+          { label: "Instagram", href: "https://instagram.com/x" },
+          { label: "TikTok", href: null },
+        ]}
+      />,
+    );
+    expect(screen.getByRole("contentinfo").className).toContain("pb-[var(--player-clear,0px)]");
+    expect(screen.queryByRole("link", { name: /TikTok/ })).not.toBeInTheDocument();
   });
 });

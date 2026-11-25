@@ -19,17 +19,20 @@ export function SocialLinks({
   const links = getSocialLinks(socials);
   if (!links.length) return null;
   return (
-    <ul className={`flex flex-wrap items-center gap-x-5 ${className}`}>
+    <ul className={`flex flex-wrap items-center gap-x-6 gap-y-1 ${className}`}>
       {links.map((social) => (
         <li key={social.label}>
           <a
             href={social.href ?? undefined}
-            className="inline-flex min-h-11 items-center text-base font-medium text-text-muted underline-offset-4 transition-colors hover:text-text hover:underline"
+            className="inline-flex min-h-11 items-center gap-1 text-lg font-extrabold tracking-tight text-text underline-offset-[6px] hover:underline"
             target="_blank"
             rel="noreferrer"
             aria-label={`${social.label} (${newTabLabel})`}
           >
             {social.label}
+            <span aria-hidden className="text-base text-text-dim">
+              {"↗︎"}
+            </span>
           </a>
         </li>
       ))}

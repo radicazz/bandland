@@ -93,6 +93,47 @@ describe("SiteHeader", () => {
     expect(opener).toHaveFocus();
   });
 
+  it("marks the current page in the desktop nav and the active language", () => {
+    nav.pathname = "/shows/";
+    render(<SiteHeader locale="af" labels={translations.af} />);
+    const desktopNav = screen
+      .getAllByRole("navigation", { name: translations.af.nav.explore })
+      .find((element) => !element.closest("[aria-hidden]")) as HTMLElement;
+    const links = within(desktopNav).getAllByRole("link");
+    expect(links.map((link) => link.textContent)).toEqual(["Tuis", "Vertonings", "Merch"]);
+    expect(within(desktopNav).getByRole("link", { name: "Vertonings" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(within(desktopNav).getByRole("link", { name: "Tuis" })).not.toHaveAttribute(
+      "aria-current",
+    );
+    expect(screen.getByRole("button", { name: "AFR" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "ENG" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("lists socials in the mobile menu with new-tab labels", () => {
+    render(
+      <SiteHeader
+        locale="en"
+        labels={translations.en}
+        socials={[{ label: "Spotify", href: "https://open.spotify.com/artist/x" }]}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /open menu/i }));
+    expect(
+      within(screen.getByRole("dialog")).getByRole("link", {
+        name: "Spotify (opens in a new tab)",
+      }),
+    ).toHaveAttribute("target", "_blank");
+  });
+
+  it("does not change the locale when the active language is pressed", () => {
+    render(<SiteHeader locale="en" labels={translations.en} />);
+    fireEvent.click(screen.getByRole("button", { name: "ENG" }));
+    expect(nav.refresh).not.toHaveBeenCalled();
+  });
+
   it("updates locale cookie and refreshes the route", () => {
     render(<SiteHeader locale="en" labels={translations.en} />);
 
