@@ -81,8 +81,8 @@ export function ShowCard({
   const tone = isNext
     ? "panel-ink paper-grain"
     : isPast
-      ? "border-2 border-dashed border-border bg-bg"
-      : "border-2 border-text bg-bg shadow-[6px_6px_0_0_var(--text)]";
+      ? "panel-paper border-2 border-dashed border-border"
+      : "panel-paper border-2 border-text shadow-[6px_6px_0_0_var(--text)]";
 
   return (
     <article className={`relative ${tone}`}>
