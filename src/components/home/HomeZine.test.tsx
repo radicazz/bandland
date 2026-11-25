@@ -99,8 +99,8 @@ describe("HomeZine", () => {
     expect(rest).toHaveLength(0);
     expect(h1).toHaveTextContent("schmät");
     expect(screen.getByRole("button", { name: labels.home.journey.play })).toBeInTheDocument();
-    // Default widget order: nextShow, release, merch; socials close the page.
-    expect(order(container)).toEqual(["title", "show", "release", "merch", "links"]);
+    // Default widget order: release, nextShow, merch; socials close the page.
+    expect(order(container)).toEqual(["title", "release", "show", "merch", "links"]);
     // The fret strip is decoration only.
     expect(container.querySelector(".fret-strip")).toHaveAttribute("aria-hidden", "true");
   });

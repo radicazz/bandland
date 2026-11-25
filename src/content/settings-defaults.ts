@@ -1,10 +1,8 @@
 import { site } from "@/config/site";
-import {
-  SOCIAL_PLATFORMS,
-  WIDGET_IDS,
-  type SiteSettings,
-  type WidgetSetting,
-} from "@/content/schema";
+import { SOCIAL_PLATFORMS, type SiteSettings, type WidgetSetting } from "@/content/schema";
+
+/** Built-in order: release beside (left of) the next show, then merch. */
+const DEFAULT_ORDER: readonly WidgetSetting["id"][] = ["release", "nextShow", "merch"];
 
 const DEFAULT_WIDTHS: Record<WidgetSetting["id"], WidgetSetting["width"]> = {
   nextShow: "half",
@@ -24,7 +22,7 @@ function defaultSocials(): SiteSettings["socials"] {
 export function getDefaultSettings(): SiteSettings {
   return {
     hero: {},
-    widgets: WIDGET_IDS.map((id) => ({ id, enabled: true, width: DEFAULT_WIDTHS[id] })),
+    widgets: DEFAULT_ORDER.map((id) => ({ id, enabled: true, width: DEFAULT_WIDTHS[id] })),
     release: {
       title: site.latestRelease.title,
       href: site.latestRelease.href,

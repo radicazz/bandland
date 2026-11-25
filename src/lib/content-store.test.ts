@@ -39,7 +39,7 @@ describe("Vercel content store", () => {
 
   it("falls back to default settings when none are saved", async () => {
     const settings = await readSettings();
-    expect(settings.widgets.map((widget) => widget.id)).toEqual(["nextShow", "release", "merch"]);
+    expect(settings.widgets.map((widget) => widget.id)).toEqual(["release", "nextShow", "merch"]);
     expect(settings.footer.contactEmail).toContain("@");
     expect(blobMocks.get).toHaveBeenCalledWith(
       "content/development/settings.json",
