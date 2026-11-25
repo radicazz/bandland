@@ -82,13 +82,15 @@ export default async function RootLayout({
   const { locale, labels } = await getTranslationsFromCookies();
   const settings = await getSiteSettings();
   return (
-    <html lang={locale} className="bg-bg text-text" suppressHydrationWarning>
+    <html
+      lang={locale}
+      className={`${geistSans.variable} ${geistMono.variable} ${bandlandGothic.variable} bg-bg text-text`}
+      suppressHydrationWarning
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: BOOT_SCRIPT }} />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${bandlandGothic.variable} antialiased`}
-      >
+      <body className="antialiased">
         <a
           href="#content"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2 focus:text-text"
