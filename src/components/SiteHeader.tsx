@@ -158,7 +158,9 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
         if (
           sibling === node ||
           sibling.hasAttribute("inert") ||
-          sibling.hasAttribute("data-menu-backdrop")
+          sibling.hasAttribute("data-menu-backdrop") ||
+          // The toggle shows the X while the menu is open, so it has to stay pressable.
+          sibling === menuButtonRef.current
         )
           continue;
         sibling.setAttribute("inert", "");
@@ -337,7 +339,7 @@ export function SiteHeader({ locale, labels, socials }: SiteHeaderProps) {
             aria-expanded={isMenuOpen}
             aria-controls={menuId}
             aria-haspopup="dialog"
-            onClick={() => setIsMenuOpen((prev) => !prev)}
+            onClick={() => (isMenuOpen ? closeMenu({ returnFocus: true }) : setIsMenuOpen(true))}
             className="-mr-2 flex h-11 w-11 items-center justify-center text-text lg:hidden"
           >
             <span className="sr-only">

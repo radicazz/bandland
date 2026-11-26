@@ -93,6 +93,28 @@ describe("SiteHeader", () => {
     expect(opener).toHaveFocus();
   });
 
+  it("keeps the menu toggle live while open so one press closes it", () => {
+    render(
+      <>
+        <SiteHeader locale="en" labels={translations.en} />
+        <main>Page content</main>
+      </>,
+    );
+    const toggle = screen.getByRole("button", { name: /open menu/i });
+    fireEvent.click(toggle);
+    // An inert toggle lets the tap fall through: the outside press closes the menu, then the
+    // click lands on the re-enabled toggle and reopens it. jsdom ignores inert, so assert it.
+    expect(toggle.closest("[inert]")).toBeNull();
+    expect(screen.getByRole("main")).toHaveAttribute("inert");
+
+    fireEvent.pointerDown(toggle);
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(toggle).toHaveFocus();
+    expect(screen.getByRole("main")).not.toHaveAttribute("inert");
+    expect(document.body.style.overflow).toBe("");
+  });
+
   it("marks the current page in the desktop nav and the active language", () => {
     nav.pathname = "/shows/";
     render(<SiteHeader locale="af" labels={translations.af} />);
