@@ -173,7 +173,7 @@ export function ShowForm({
       {state.message ? (
         <p
           role="alert"
-          className="rounded-card border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight lg:col-span-2"
+          className="border-2 border-highlight bg-bg px-4 py-3 text-sm font-semibold text-highlight lg:col-span-2"
         >
           {state.message}
         </p>
@@ -182,8 +182,8 @@ export function ShowForm({
       {initialValues?.id ? <input type="hidden" name="id" value={initialValues.id} /> : null}
 
       <div className="grid min-w-0 gap-5 sm:gap-6">
-        <fieldset className="grid gap-4 rounded-card border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
-          <legend className="mb-2 px-1 text-xs text-text-dim">Show Date & Time</legend>
+        <fieldset className="grid gap-4 border-2 border-text p-4 sm:grid-cols-2 sm:p-5">
+          <legend className="mb-2 px-1 text-sm font-bold text-text">Show Date & Time</legend>
 
           <label className="text-sm font-medium text-text-muted">
             Date
@@ -192,7 +192,7 @@ export function ShowForm({
               name="showDate"
               required
               defaultValue={parsedDateTime.date}
-              className={`${inputBase} ${state.fieldErrors?.date ? "border-highlight/70" : "border-border/70"} tabular-nums`}
+              className={`${inputBase} ${state.fieldErrors?.date ? "border-highlight" : "border-text"} tabular-nums`}
               aria-invalid={Boolean(state.fieldErrors?.date)}
             />
           </label>
@@ -204,7 +204,7 @@ export function ShowForm({
               name="showTime"
               required
               defaultValue={parsedDateTime.time}
-              className={`${inputBase} ${state.fieldErrors?.date ? "border-highlight/70" : "border-border/70"} tabular-nums`}
+              className={`${inputBase} ${state.fieldErrors?.date ? "border-highlight" : "border-text"} tabular-nums`}
               aria-invalid={Boolean(state.fieldErrors?.date)}
             />
           </label>
@@ -218,8 +218,8 @@ export function ShowForm({
           <p className="text-xs text-text-dim sm:col-span-2">Timezone: SAST (UTC+02:00)</p>
         </fieldset>
 
-        <fieldset className="rounded-card border border-border/60 bg-bg/30 p-4 sm:p-5">
-          <legend className="px-1 text-xs text-text-dim">Show Status</legend>
+        <fieldset className="border-2 border-text p-4 sm:p-5">
+          <legend className="px-1 text-sm font-bold text-text">Show Status</legend>
           <div className="mt-3 flex items-start gap-3">
             <input
               id={hasHappenedId}
@@ -228,7 +228,7 @@ export function ShowForm({
               value="on"
               defaultChecked={initialValues?.hasHappened ?? false}
               aria-describedby={hasHappenedHintId}
-              className="mt-0.5 h-4 w-4 rounded border border-border/70 bg-bg/60 accent-[var(--highlight)]"
+              className="mt-0.5 h-4 w-4 accent-[var(--highlight)]"
             />
             <div className="min-w-0">
               <label htmlFor={hasHappenedId} className="block text-sm font-medium text-text">
@@ -247,7 +247,7 @@ export function ShowForm({
             name="venue"
             required
             defaultValue={initialValues?.venue ?? ""}
-            className={`${inputBase} ${state.fieldErrors?.venue ? "border-highlight/70" : "border-border/70"}`}
+            className={`${inputBase} ${state.fieldErrors?.venue ? "border-highlight" : "border-text"}`}
             placeholder="The Waiting Room"
             aria-invalid={Boolean(state.fieldErrors?.venue)}
           />
@@ -260,7 +260,7 @@ export function ShowForm({
             name="city"
             required
             defaultValue={initialValues?.city ?? ""}
-            className={`${inputBase} ${state.fieldErrors?.city ? "border-highlight/70" : "border-border/70"}`}
+            className={`${inputBase} ${state.fieldErrors?.city ? "border-highlight" : "border-text"}`}
             placeholder="Cape Town, WC"
             aria-invalid={Boolean(state.fieldErrors?.city)}
           />
@@ -272,7 +272,7 @@ export function ShowForm({
           <input
             name="timeFrame"
             defaultValue={initialValues?.timeFrame ?? ""}
-            className={`${inputBase} ${state.fieldErrors?.timeFrame ? "border-highlight/70" : "border-border/70"}`}
+            className={`${inputBase} ${state.fieldErrors?.timeFrame ? "border-highlight" : "border-text"}`}
             placeholder="6pm - late or 6pm - 8pm"
             aria-invalid={Boolean(state.fieldErrors?.timeFrame)}
           />
@@ -282,15 +282,15 @@ export function ShowForm({
           </p>
         </label>
 
-        <fieldset className="grid gap-4 rounded-card border border-border/60 bg-bg/30 p-4 sm:grid-cols-2 sm:p-5">
-          <legend className="px-1 text-xs text-text-dim">Ticket Pricing</legend>
+        <fieldset className="grid gap-4 border-2 border-text p-4 sm:grid-cols-2 sm:p-5">
+          <legend className="px-1 text-sm font-bold text-text">Ticket Pricing</legend>
 
           <label className="text-sm font-medium text-text-muted">
             Online Price (optional)
             <input
               name="priceOnline"
               defaultValue={initialValues?.priceOnline ?? ""}
-              className={`${inputBase} ${state.fieldErrors?.priceOnline ? "border-highlight/70" : "border-border/70"} tabular-nums`}
+              className={`${inputBase} ${state.fieldErrors?.priceOnline ? "border-highlight" : "border-text"} tabular-nums`}
               placeholder="R180 pre-sale"
               aria-invalid={Boolean(state.fieldErrors?.priceOnline)}
             />
@@ -302,7 +302,7 @@ export function ShowForm({
             <input
               name="priceDoor"
               defaultValue={initialValues?.priceDoor ?? ""}
-              className={`${inputBase} ${state.fieldErrors?.priceDoor ? "border-highlight/70" : "border-border/70"} tabular-nums`}
+              className={`${inputBase} ${state.fieldErrors?.priceDoor ? "border-highlight" : "border-text"} tabular-nums`}
               placeholder="R220 at the door"
               aria-invalid={Boolean(state.fieldErrors?.priceDoor)}
             />
@@ -320,7 +320,7 @@ export function ShowForm({
           <input
             name="price"
             defaultValue={initialValues?.price ?? ""}
-            className={`${inputBase} ${state.fieldErrors?.price ? "border-highlight/70" : "border-border/70"} tabular-nums`}
+            className={`${inputBase} ${state.fieldErrors?.price ? "border-highlight" : "border-text"} tabular-nums`}
             placeholder="R200 or Free"
             aria-invalid={Boolean(state.fieldErrors?.price)}
           />
@@ -335,7 +335,7 @@ export function ShowForm({
             inputMode="url"
             spellCheck={false}
             defaultValue={initialValues?.ticketUrl ?? ""}
-            className={`${inputBase} ${state.fieldErrors?.ticketUrl ? "border-highlight/70" : "border-border/70"}`}
+            className={`${inputBase} ${state.fieldErrors?.ticketUrl ? "border-highlight" : "border-text"}`}
             placeholder="https://tickets.example.com/show"
             aria-invalid={Boolean(state.fieldErrors?.ticketUrl)}
           />
@@ -353,9 +353,9 @@ export function ShowForm({
 
       <aside
         aria-labelledby={previewHeadingId}
-        className="min-w-0 border border-border/70 bg-bg/30 p-4 sm:p-5 lg:sticky lg:top-20"
+        className="min-w-0 border-2 border-dashed border-text p-4 sm:p-5 lg:sticky lg:top-20"
       >
-        <p className="text-sm font-bold text-highlight">Live preview</p>
+        <p className="kicker text-highlight">Live preview</p>
         <h3 id={previewHeadingId} className="mt-2 text-base font-semibold text-text">
           Public show card
         </h3>
@@ -373,7 +373,7 @@ export function ShowForm({
         </div>
       </aside>
 
-      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 border border-border bg-surface/95 p-3 shadow-2xl sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none lg:col-start-1">
+      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 border-2 border-text bg-bg p-3 sm:static sm:border-0 sm:bg-transparent sm:p-0 lg:col-start-1">
         <SubmitButton label={submitLabel} pending={pending} />
       </div>
     </form>

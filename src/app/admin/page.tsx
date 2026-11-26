@@ -51,30 +51,32 @@ export default async function AdminLoginPage({ searchParams }: AdminPageProps) {
       ? "Password is required."
       : error === "credentials" && code === "missing_hash"
         ? "Admin access is not configured. Add ADMIN_PASSWORD_HASH to the Vercel environment."
-        : error === "credentials" && code === "rate_limited"
-          ? "Too many sign-in attempts. Try again in a few minutes."
-          : error === "credentials" && code === "rate_limit_unavailable"
-            ? "Sign-in is temporarily unavailable. Try again later."
-            : error === "credentials" && code === "invalid_password"
-              ? "Password did not match. Please try again."
-              : error === "credentials" && code === "missing_password"
-                ? "Password is required."
-                : error === "credentials"
-                  ? "Invalid credentials. Please try again."
-                  : error === "auth" && code === "MissingSecret"
-                    ? "AUTH_SECRET is missing from the Vercel environment."
-                    : error === "auth" && code === "InvalidCallbackUrl"
-                      ? "Invalid callback URL. Check AUTH_URL and NEXT_PUBLIC_SITE_URL."
-                      : error === "auth"
-                        ? "Sign-in failed due to a configuration issue. Check server logs."
-                        : error
-                          ? "Unable to sign in. Please try again."
-                          : null;
+        : error === "credentials" && code === "invalid_hash"
+          ? "Admin access is misconfigured. ADMIN_PASSWORD_HASH is not a valid bcrypt hash."
+          : error === "credentials" && code === "rate_limited"
+            ? "Too many sign-in attempts. Try again in a few minutes."
+            : error === "credentials" && code === "rate_limit_unavailable"
+              ? "Sign-in is temporarily unavailable. Try again later."
+              : error === "credentials" && code === "invalid_password"
+                ? "Password did not match. Please try again."
+                : error === "credentials" && code === "missing_password"
+                  ? "Password is required."
+                  : error === "credentials"
+                    ? "Invalid credentials. Please try again."
+                    : error === "auth" && code === "MissingSecret"
+                      ? "AUTH_SECRET is missing from the Vercel environment."
+                      : error === "auth" && code === "InvalidCallbackUrl"
+                        ? "Invalid callback URL. Check AUTH_URL and NEXT_PUBLIC_SITE_URL."
+                        : error === "auth"
+                          ? "Sign-in failed due to a configuration issue. Check server logs."
+                          : error
+                            ? "Unable to sign in. Please try again."
+                            : null;
   return (
     <Container className="flex min-h-[calc(100dvh-4rem)] items-center justify-center py-10 sm:py-16">
       <div className="panel w-full max-w-md p-5 sm:p-8">
-        <p className="section-kicker">Admin</p>
-        <h1 className="display-title mt-6 text-4xl">Access panel</h1>
+        <p className="kicker">Admin</p>
+        <h1 className="headline mt-4 text-4xl sm:text-5xl">Access panel</h1>
         <p className="mt-2 text-sm text-text-muted">
           Enter the shared password to manage shows and merch.
         </p>
@@ -91,7 +93,7 @@ export default async function AdminLoginPage({ searchParams }: AdminPageProps) {
               {message}
             </p>
           ) : null}
-          <button type="submit" className="btn-primary w-full">
+          <button type="submit" className="btn-zine-red w-full">
             Sign in
           </button>
         </form>

@@ -50,8 +50,8 @@ export function WidgetOrderEditor({ initialWidgets }: WidgetOrderEditorProps) {
           return (
             <li
               key={widget.id}
-              className={`rounded-card border border-border bg-bg/60 p-4 ${
-                widget.enabled ? "" : "opacity-80"
+              className={`border-2 p-4 ${
+                widget.enabled ? "border-text" : "border-dashed border-text-dim"
               }`}
             >
               <div className="flex items-start justify-between gap-3">
@@ -69,7 +69,7 @@ export function WidgetOrderEditor({ initialWidgets }: WidgetOrderEditorProps) {
                       onClick={() => move(index, -1)}
                       disabled={index === 1}
                       aria-label={`Move ${name} up`}
-                      className="flex h-11 w-11 items-center justify-center rounded-control border border-border bg-surface text-text hover:border-text-dim disabled:cursor-not-allowed disabled:opacity-40"
+                      className="flex h-11 w-11 items-center justify-center border-2 border-text bg-bg text-text enabled:hover:bg-text enabled:hover:text-bg disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <span aria-hidden>↑</span>
                     </button>
@@ -78,7 +78,7 @@ export function WidgetOrderEditor({ initialWidgets }: WidgetOrderEditorProps) {
                       onClick={() => move(index, 1)}
                       disabled={index === widgets.length - 1}
                       aria-label={`Move ${name} down`}
-                      className="flex h-11 w-11 items-center justify-center rounded-control border border-border bg-surface text-text hover:border-text-dim disabled:cursor-not-allowed disabled:opacity-40"
+                      className="flex h-11 w-11 items-center justify-center border-2 border-text bg-bg text-text enabled:hover:bg-text enabled:hover:text-bg disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <span aria-hidden>↓</span>
                     </button>

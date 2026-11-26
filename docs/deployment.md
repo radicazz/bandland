@@ -25,6 +25,10 @@ Set these in Vercel Project Settings:
 
 Apply the canonical URL to every environment so Preview metadata remains canonical. Apply the auth values and both store tokens to every environment so authenticated Preview pages can read production data; the application rejects all Preview mutations and upload-token requests.
 
+Paste the hash into the Vercel dashboard exactly as printed, without quotes or
+backslashes. In a hand-edited `.env` file, escape each `$` as `\$`; otherwise it is
+expanded as a variable and the hash is destroyed. Sign-in reports a malformed hash.
+
 For local development:
 
 ```bash
@@ -52,6 +56,12 @@ Expose Vercel's system environment variables. To exercise the rule on a protecte
 Preview deployment, enable Protection Bypass for Automation so the server-side
 SDK request can reach the firewall. Sign-in is unavailable on Vercel while the
 rule is missing or unreachable. Local development skips the Vercel check.
+
+The SDK does not follow redirects. In production the app checks the rule on
+`VERCEL_PROJECT_PRODUCTION_URL`, or on its `www.` subdomain when that serves the
+request (an apex domain redirecting to `www`). Any other redirect between those
+domains makes sign-in unavailable, including sign-in through a `*.vercel.app`
+production alias when a custom domain is set.
 
 ## 4. Deploy and verify
 

@@ -63,7 +63,7 @@ export function PlayButton({
       className={
         zine
           ? "inline-flex size-16 shrink-0 items-center justify-center rounded-full border-2 border-red bg-red text-paper transition-colors hover:border-red-deep hover:bg-red-deep motion-reduce:transition-none sm:size-20 [&>svg]:translate-x-px"
-          : "btn-primary btn-primary-lg"
+          : "btn-zine-red px-8"
       }
     >
       {icon}

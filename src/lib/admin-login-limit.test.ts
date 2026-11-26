@@ -37,6 +37,24 @@ describe("getAdminLoginLimit", () => {
     );
   });
 
+  it("uses the www host when the project URL is the apex domain that redirects to it", async () => {
+    checkRateLimit.mockResolvedValue({ rateLimited: false });
+    await getAdminLoginLimit(
+      new Request("https://www.bandland.example/admin", {
+        headers: { "x-real-ip": "203.0.113.7", host: "www.bandland.example" },
+      }),
+    );
+    expect(checkRateLimit.mock.calls[0]?.[1].headers.host).toBe("www.bandland.example");
+  });
+
+  it("keeps Preview checks on the deployment host", async () => {
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("VERCEL_URL", "preview.vercel.example");
+    checkRateLimit.mockResolvedValue({ rateLimited: false });
+    await getAdminLoginLimit(request("/admin"));
+    expect(checkRateLimit.mock.calls[0]?.[1].headers.host).toBe("preview.vercel.example");
+  });
+
   it("blocks sign-in when the firewall rule is missing", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     checkRateLimit.mockResolvedValue({ rateLimited: false, error: "not-found" });

@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { getAdminLoginLimit } from "@/lib/admin-login-limit";
+import { parseAdminPasswordHash } from "@/lib/admin-password-hash";
 
 const credentialsSchema = z.object({
   password: z.string().min(1),
@@ -53,10 +54,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const passwordHash = process.env.ADMIN_PASSWORD_HASH?.trim();
-        if (!passwordHash) {
+        const configuredHash = process.env.ADMIN_PASSWORD_HASH?.trim();
+        if (!configuredHash) {
           console.error("[Auth] ADMIN_PASSWORD_HASH missing from environment");
           throw new AdminSignInError("missing_hash");
+        }
+
+        const passwordHash = parseAdminPasswordHash(configuredHash);
+        if (!passwordHash) {
+          console.error("[Auth] ADMIN_PASSWORD_HASH is not a bcrypt hash");
+          throw new AdminSignInError("invalid_hash");
         }
 
         const normalizedPassword = parsed.data.password.trim();

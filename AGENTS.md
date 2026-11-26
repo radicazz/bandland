@@ -1,6 +1,6 @@
 # Bandland — Agent Guidelines
 
-Band landing page for schmät with a **photocopied punk zine aesthetic**: cream paper, black ink, one hard red, torn paper, halftone band photos and a blackletter wordmark. It is music-first and fans-first: play the track, then the latest release, the next show and tickets. `/admin` keeps the old dark monochrome look. `DESIGN.md` holds the full design rationale and the contrast table.
+Band landing page for schmät with a **photocopied punk zine aesthetic**: cream paper, black ink, one hard red, torn paper, halftone band photos and a blackletter wordmark. It is music-first and fans-first: play the track, then the latest release, the next show and tickets. `/admin` uses the same theme. `DESIGN.md` holds the full design rationale and the contrast table.
 
 ## Design Tokens
 
@@ -17,7 +17,7 @@ These live in `src/app/globals.css`. The raw tokens are exposed as Tailwind colo
 | `--red`      | `#c0151c` | The single accent: actions, red panels |
 | `--red-deep` | `#8e0f15` | Hover/pressed red                      |
 
-Most components use the semantic aliases: `--bg`, `--surface`, `--surface-2`, `--border`, `--text`, `--text-muted`, `--text-dim`, `--highlight` and `--focus`. Their Tailwind utilities are `bg-bg`, `text-text-muted`, `border-border` and so on. On paper they map to paper, paper-2, paper-3, an ink mix, ink, ink-2, ink-3, red and ink. The panel classes and the admin scope re-point them.
+Most components use the semantic aliases: `--bg`, `--surface`, `--surface-2`, `--border`, `--text`, `--text-muted`, `--text-dim`, `--highlight` and `--focus`. Their Tailwind utilities are `bg-bg`, `text-text-muted`, `border-border` and so on. On paper they map to paper, paper-2, paper-3, an ink mix, ink, ink-2, ink-3, red and ink. The panel classes re-point them.
 
 Contrast was computed, not eyeballed. Ink/paper is 15.59:1. Paper/red and red/paper are 5.12:1. Red/paper-2 is 4.54:1. Ink-3/paper-2 is 5.45:1. Red/ink is 3.04:1, which is enough for UI boundaries only.
 
@@ -27,7 +27,7 @@ Rules:
 - Use one accent: red. Text on red is paper, never ink. Red is never text on ink.
 - Prefer translucent overlays (`color-mix` with tokens) over new colours.
 - Maintain WCAG AA as a minimum, and recompute the ratios in `DESIGN.md` if a token changes.
-- Admin stays dark. `src/app/admin/layout.tsx` renders a `data-admin-theme` wrapper, and `globals.css` re-declares the old dark values (`#060606` bg, `#f2f2f2` text, `#e36b6b` accent) for it and for `:root:has([data-admin-theme])`. Do not use zine classes in admin.
+- Admin uses the same paper theme and zine buttons, kickers and headlines as the public pages. Keep it calm for form work: no torn edges, tilts or halftone around inputs.
 
 ## Zine Kit
 
@@ -46,7 +46,7 @@ These classes are in `globals.css` ("Zine kit"). They are CSS/SVG only, use no r
 - `.btn-zine`, `.btn-zine-red`: square bordered buttons, either paper with ink or red with paper.
 - `.fret-strip`: a decorative fretboard band. Always use it as `aria-hidden="true"`.
 
-The older shared classes follow the tokens and are used by admin and the player: `.btn-primary`, `.btn-secondary`, `.panel`, `.section-kicker`, `.display-title`, `.menu-scroll`, `.player-bar` and `.player-range`.
+`.panel` (a paper card with an ink border and hard shadow, used by admin), `.menu-scroll`, `.player-bar` and `.player-range` are the other shared classes.
 
 ## Typography
 
@@ -195,7 +195,7 @@ Location: `src/config/site.ts`
 - `player/PlayerBar` and `player/Waveform`: the site-wide player bar, rendered by the root layout. It is client-only and hidden until Play is first pressed. The waveform draws on a 2D canvas only while playing.
 - `PageSection` / `PageIntro`: shared public-page layout and headings.
 - `ShowCard`, `MerchCard`, `ContentImage`, `SocialLinks`, `ErrorState` (+ `ErrorMessagesProvider`): shared public building blocks.
-- Admin components are in `src/components/admin/`. `src/app/admin/layout.tsx` provides the dark admin theme scope.
+- Admin components are in `src/components/admin/`.
 
 Pattern: simple, functional components; client JS isolated to interactive features.
 
@@ -204,7 +204,7 @@ Pattern: simple, functional components; client JS isolated to interactive featur
 - `/`: home, the zine collage (see Current Features).
 - `/shows`: show list with ticket links.
 - `/merch`: merch grid with external links.
-- `/admin`: admin login and protected CRUD routes (`/admin/settings` for site settings). It is linked from the footer and uses the dark theme.
+- `/admin`: admin login and protected CRUD routes (`/admin/settings` for site settings). It is linked from the footer and uses the site theme.
 
 SEO:
 

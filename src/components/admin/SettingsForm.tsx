@@ -32,8 +32,8 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <fieldset className="grid gap-5 rounded-card border border-border bg-surface p-4 sm:p-6">
-      <legend className="px-2 text-lg font-semibold text-text">{title}</legend>
+    <fieldset className="grid gap-5 border-2 border-text p-4 sm:p-6">
+      <legend className="headline px-2 text-2xl">{title}</legend>
       {description ? <p className="-mt-2 text-sm text-text-muted">{description}</p> : null}
       {children}
     </fieldset>
@@ -47,7 +47,7 @@ export function SettingsForm({ action, settings, readOnly = false }: SettingsFor
   const formRef = useRef<HTMLFormElement>(null);
   const errors = state.fieldErrors ?? {};
   const inputClass = (key: string) =>
-    `${inputBase} ${errors[key] ? "border-highlight/70" : "border-border/70"}`;
+    `${inputBase} ${errors[key] ? "border-highlight" : "border-text"}`;
 
   useEffect(() => {
     if (state.status === "error") {
@@ -69,7 +69,7 @@ export function SettingsForm({ action, settings, readOnly = false }: SettingsFor
       {state.message ? (
         <p
           role="alert"
-          className="rounded-card border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight"
+          className="border-2 border-highlight bg-bg px-4 py-3 text-sm font-semibold text-highlight"
         >
           {state.message}
         </p>
@@ -217,11 +217,11 @@ export function SettingsForm({ action, settings, readOnly = false }: SettingsFor
         </Section>
       </fieldset>
       {!readOnly ? (
-        <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 rounded-card border border-border bg-surface p-3 shadow-2xl sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+        <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 border-2 border-text bg-bg p-3 sm:static sm:border-0 sm:bg-transparent sm:p-0">
           <button
             type="submit"
             disabled={isPending}
-            className="btn-primary min-w-[10rem] w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-70"
+            className="btn-zine-red min-w-[10rem] w-full sm:w-auto disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isPending ? "Saving..." : "Save settings"}
           </button>
