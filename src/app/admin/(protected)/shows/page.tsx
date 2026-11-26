@@ -27,11 +27,11 @@ export default async function AdminShowsPage({
     <section className="panel p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-text">Shows</h2>
+          <h2 className="headline text-3xl">Shows</h2>
           <p className="mt-2 text-sm text-text-muted">Manage upcoming and past shows.</p>
         </div>
         {!readOnly ? (
-          <Link href="/admin/shows/new" className="btn-primary w-full sm:w-auto">
+          <Link href="/admin/shows/new" className="btn-zine-red w-full sm:w-auto">
             New show
           </Link>
         ) : null}
@@ -39,7 +39,7 @@ export default async function AdminShowsPage({
       <AdminNotice value={saved} entity="Show" />
 
       {shows.length === 0 ? (
-        <div className="mt-6 rounded-card border border-border/70 bg-bg/60 p-6 text-sm text-text-muted">
+        <div className="mt-6 border-2 border-dashed border-text p-6 text-sm text-text-muted">
           No shows yet. Add the first one to get started.
         </div>
       ) : (
@@ -49,24 +49,24 @@ export default async function AdminShowsPage({
             const hasHappened = getResolvedHasHappened(show);
 
             return (
-              <li key={show.id} className="border border-border bg-bg/60 p-4 sm:p-5">
+              <li key={show.id} className="border-2 border-text bg-bg p-4 sm:p-5">
                 <div className="grid gap-4 sm:grid-cols-[7rem_minmax(0,1fr)_auto] sm:items-start">
-                  <div className="overflow-hidden border border-border bg-surface/50">
+                  <div className="overflow-hidden border-2 border-border bg-surface">
                     <ContentImage
                       src={show.imageUrl}
                       alt=""
                       className="h-28 w-full object-cover sm:h-24"
-                      fallbackClassName="flex h-28 w-full items-center justify-center bg-surface/50 sm:h-24"
+                      fallbackClassName="flex h-28 w-full items-center justify-center bg-surface sm:h-24"
                       fallbackLabel="No photo"
                     />
                   </div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span
-                        className={`inline-flex min-h-7 items-center rounded-full border px-2.5 text-sm font-semibold ${
+                        className={`inline-flex min-h-7 items-center border-2 px-2.5 text-sm font-bold ${
                           hasHappened
-                            ? "border-border/70 bg-surface/50 text-text-muted"
-                            : "border-highlight/40 bg-highlight/10 text-highlight"
+                            ? "border-dashed border-text-dim text-text-muted"
+                            : "border-highlight bg-highlight text-bg"
                         }`}
                       >
                         {hasHappened ? "Happened" : "Upcoming"}
@@ -109,7 +109,7 @@ export default async function AdminShowsPage({
                     <div className="grid w-full gap-2 sm:w-auto sm:items-center">
                       <Link
                         href={`/admin/shows/${show.id}`}
-                        className="btn-primary w-full sm:w-auto"
+                        className="btn-zine-red w-full sm:w-auto"
                       >
                         Edit
                       </Link>
@@ -122,7 +122,7 @@ export default async function AdminShowsPage({
                 </div>
                 {show.ticketUrl ? (
                   <a
-                    className="mt-4 inline-flex break-all text-xs text-highlight"
+                    className="mt-4 inline-flex break-all text-xs font-bold text-highlight underline underline-offset-4"
                     href={show.ticketUrl}
                     target="_blank"
                     rel="noreferrer"

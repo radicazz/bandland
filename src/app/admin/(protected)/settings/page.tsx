@@ -17,7 +17,7 @@ export default async function AdminSettingsPage({
 
   return (
     <section>
-      <h2 className="text-lg font-semibold text-text">Site settings</h2>
+      <h2 className="headline text-3xl">Site settings</h2>
       <p className="mt-2 text-sm text-text-muted">
         Control the home page layout, the latest release, the footer and social links.
       </p>

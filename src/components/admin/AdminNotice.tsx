@@ -8,7 +8,7 @@ export function AdminNotice({ value, entity }: AdminNoticeProps) {
   return (
     <p
       role="status"
-      className="mt-5 border-l-2 border-highlight bg-highlight/5 px-4 py-3 text-sm text-text"
+      className="mt-5 border-l-4 border-highlight bg-surface px-4 py-3 text-sm font-semibold text-text"
     >
       {entity} {value} successfully.
     </p>

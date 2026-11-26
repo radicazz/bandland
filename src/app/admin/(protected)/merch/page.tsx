@@ -20,11 +20,11 @@ export default async function AdminMerchPage({
     <section className="panel p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-lg font-semibold text-text">Merch</h2>
+          <h2 className="headline text-3xl">Merch</h2>
           <p className="mt-2 text-sm text-text-muted">Manage merch items and store links.</p>
         </div>
         {!readOnly ? (
-          <Link href="/admin/merch/new" className="btn-primary w-full sm:w-auto">
+          <Link href="/admin/merch/new" className="btn-zine-red w-full sm:w-auto">
             New merch
           </Link>
         ) : null}
@@ -32,20 +32,20 @@ export default async function AdminMerchPage({
       <AdminNotice value={saved} entity="Merch item" />
 
       {items.length === 0 ? (
-        <div className="mt-6 rounded-card border border-border/70 bg-bg/60 p-6 text-sm text-text-muted">
+        <div className="mt-6 border-2 border-dashed border-text p-6 text-sm text-text-muted">
           No merch items yet. Add the first one to get started.
         </div>
       ) : (
         <ul className="mt-6 grid gap-4">
           {items.map((item) => (
-            <li key={item.id} className="border border-border bg-bg/60 p-4 sm:p-5">
+            <li key={item.id} className="border-2 border-text bg-bg p-4 sm:p-5">
               <div className="grid gap-4 sm:grid-cols-[7rem_minmax(0,1fr)_auto] sm:items-start">
-                <div className="overflow-hidden border border-border bg-surface/50">
+                <div className="overflow-hidden border-2 border-border bg-surface">
                   <ContentImage
                     src={item.imageUrl}
                     alt=""
                     className="h-28 w-full object-cover sm:h-24"
-                    fallbackClassName="flex h-28 w-full items-center justify-center bg-surface/50 sm:h-24"
+                    fallbackClassName="flex h-28 w-full items-center justify-center bg-surface sm:h-24"
                     fallbackLabel="No photo"
                   />
                 </div>
@@ -58,7 +58,10 @@ export default async function AdminMerchPage({
                 </div>
                 {!readOnly ? (
                   <div className="grid w-full gap-2 sm:w-auto sm:items-center">
-                    <Link href={`/admin/merch/${item.id}`} className="btn-primary w-full sm:w-auto">
+                    <Link
+                      href={`/admin/merch/${item.id}`}
+                      className="btn-zine-red w-full sm:w-auto"
+                    >
                       Edit
                     </Link>
                     <form action={deleteMerchAction} className="w-full sm:w-auto">
@@ -69,7 +72,7 @@ export default async function AdminMerchPage({
                 ) : null}
               </div>
               <a
-                className="mt-4 inline-flex break-all text-xs text-highlight"
+                className="mt-4 inline-flex break-all text-xs font-bold text-highlight underline underline-offset-4"
                 href={item.href}
                 target="_blank"
                 rel="noreferrer"

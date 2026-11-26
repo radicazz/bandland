@@ -50,7 +50,7 @@ export function MerchForm({
       {state.message ? (
         <p
           role="alert"
-          className="rounded-card border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm text-highlight"
+          className="border-2 border-highlight bg-bg px-4 py-3 text-sm font-semibold text-highlight"
         >
           {state.message}
         </p>
@@ -64,7 +64,7 @@ export function MerchForm({
           name="name"
           required
           defaultValue={initialValues?.name ?? ""}
-          className={`${inputBase} ${state.fieldErrors?.name ? "border-highlight/70" : "border-border/70"}`}
+          className={`${inputBase} ${state.fieldErrors?.name ? "border-highlight" : "border-text"}`}
           placeholder="Tour T-Shirt"
           aria-invalid={Boolean(state.fieldErrors?.name)}
         />
@@ -77,7 +77,7 @@ export function MerchForm({
           name="description"
           rows={3}
           defaultValue={initialValues?.description ?? ""}
-          className={`${inputBase} ${state.fieldErrors?.description ? "border-highlight/70" : "border-border/70"} min-h-28 resize-y`}
+          className={`${inputBase} ${state.fieldErrors?.description ? "border-highlight" : "border-text"} min-h-28 resize-y`}
           placeholder="Short copy for the merch detail."
           aria-invalid={Boolean(state.fieldErrors?.description)}
         />
@@ -90,7 +90,7 @@ export function MerchForm({
           name="price"
           required
           defaultValue={initialValues?.price ?? ""}
-          className={`${inputBase} ${state.fieldErrors?.price ? "border-highlight/70" : "border-border/70"} tabular-nums`}
+          className={`${inputBase} ${state.fieldErrors?.price ? "border-highlight" : "border-text"} tabular-nums`}
           placeholder="R450"
           aria-invalid={Boolean(state.fieldErrors?.price)}
         />
@@ -106,7 +106,7 @@ export function MerchForm({
           spellCheck={false}
           required
           defaultValue={initialValues?.href ?? ""}
-          className={`${inputBase} ${state.fieldErrors?.href ? "border-highlight/70" : "border-border/70"}`}
+          className={`${inputBase} ${state.fieldErrors?.href ? "border-highlight" : "border-text"}`}
           placeholder="https://store.example.com/item"
           aria-invalid={Boolean(state.fieldErrors?.href)}
         />
@@ -118,7 +118,7 @@ export function MerchForm({
         <select
           name="badge"
           defaultValue={initialValues?.badge ?? ""}
-          className={`${inputBase} border-border/70`}
+          className={`${inputBase} border-text`}
         >
           <option value="">None</option>
           <option value="new">New</option>
@@ -132,7 +132,7 @@ export function MerchForm({
         error={state.fieldErrors?.image}
       />
 
-      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 border border-border bg-surface/95 p-3 shadow-2xl sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-4 border-2 border-text bg-bg p-3 sm:static sm:border-0 sm:bg-transparent sm:p-0">
         <SubmitButton label={submitLabel} pending={pending} />
       </div>
     </form>

@@ -15,7 +15,7 @@
   --red: #c0151c;
   --red-deep: #8e0f15;
 
-  /* Semantic aliases used by components; panels and the admin scope re-point them. */
+  /* Semantic aliases used by components; panels re-point them. */
   --bg: var(--paper);
   --surface: var(--paper-2);
   --surface-2: var(--paper-3);
@@ -32,25 +32,6 @@
   --grain:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g' x='0' y='0' width='1' height='1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0 0 0 -.33'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"),
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m' x='0' y='0' width='1' height='1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .35 0 0 0 -.13'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23m)'/%3E%3C/svg%3E");
-}
-
-/*
- * Admin keeps the original dark monochrome look. `src/app/admin/layout.tsx` renders the
- * `data-admin-theme` wrapper; `:has` re-themes the root too so the page background and
- * site chrome around /admin match.
- */
-:root:has([data-admin-theme]),
-[data-admin-theme] {
-  --bg: #060606;
-  --surface: #0f0f10;
-  --surface-2: #1a1b1d;
-  --border: #2e2f33;
-  --text: #f2f2f2;
-  --text-muted: #c2c2c2;
-  --text-dim: #a1a1a1;
-  --highlight: #e36b6b;
-  --focus: #e36b6b;
-  --fill: var(--bg);
 }
 
 @theme inline {
@@ -73,9 +54,6 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-brand: var(--font-bandland-gothic);
-  /* Radius scale: controls (buttons, inputs, small tiles) and cards (panels, menus). Pills only for status. */
-  --radius-control: 0.5rem;
-  --radius-card: 1rem;
 }
 
 html,
@@ -138,38 +116,14 @@ body {
 }
 
 @layer components {
-  .btn-primary,
-  .btn-secondary {
-    @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-control px-6 py-2.5 text-center text-base font-semibold transition-colors whitespace-normal;
-  }
-
-  .btn-primary {
-    @apply border border-highlight bg-highlight text-bg hover:bg-highlight/85;
-  }
-
-  .btn-primary-lg {
-    @apply min-h-14 px-8;
-  }
-
-  .btn-secondary {
-    @apply border border-border bg-surface-2 text-text hover:border-text-dim hover:bg-border;
-  }
-
   .menu-scroll {
     scrollbar-width: thin;
     scrollbar-color: color-mix(in srgb, var(--text-dim) 55%, transparent) transparent;
   }
 
+  /* Paper slip with a hard ink border and offset shadow (admin cards). */
   .panel {
-    @apply rounded-card border border-border bg-surface;
-  }
-
-  .section-kicker {
-    @apply text-sm font-semibold text-text-dim;
-  }
-
-  .display-title {
-    @apply break-words font-sans font-bold leading-[1.05] tracking-tight text-text;
+    @apply border-2 border-text bg-bg shadow-[6px_6px_0_0_var(--text)];
   }
 
   /* Persistent player: frosted surface along the bottom edge. */
@@ -588,6 +542,11 @@ body {
   .btn-zine-red:hover {
     border-color: var(--red-deep);
     background-color: var(--red-deep);
+  }
+
+  .btn-zine:disabled,
+  .btn-zine-red:disabled {
+    opacity: 0.7;
   }
 
   /*

@@ -22,13 +22,13 @@ export default async function AdminMerchEditPage({ params }: AdminMerchEditPageP
   }
 
   return (
-    <section className="rounded-card border border-border/70 bg-surface/70 p-4 sm:p-6">
+    <section className="panel p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-xs text-text-dim">Merch</p>
-          <h2 className="mt-2 text-2xl font-semibold text-text">Edit merch</h2>
+          <p className="kicker">Merch</p>
+          <h2 className="headline mt-3 text-3xl">Edit merch</h2>
         </div>
-        <Link href="/admin/merch" className="btn-primary w-full sm:w-auto">
+        <Link href="/admin/merch" className="btn-zine w-full sm:w-auto">
           Back to merch
         </Link>
       </div>

@@ -40,14 +40,14 @@ export default async function AdminDashboardPage() {
   return (
     <div className="grid gap-6 sm:gap-8">
       <section>
-        <p className="section-kicker">Quick actions</p>
-        <h2 className="display-title mt-6 text-4xl sm:text-5xl">What are we doing?</h2>
+        <p className="kicker">Quick actions</p>
+        <h2 className="headline mt-4 text-4xl sm:text-5xl">What are we doing?</h2>
         <div className="mt-6 grid gap-3 sm:grid-cols-2">
           {visibleActions.map((action, index) => (
             <Link
               key={action.href}
               href={action.href}
-              className="group border-l-2 border-border bg-bg/60 p-4 transition-colors hover:border-highlight hover:bg-highlight/5 sm:p-5"
+              className="group border-2 border-text bg-bg p-4 transition-colors hover:border-highlight hover:bg-surface sm:p-5"
             >
               <span className="font-mono text-sm text-text-dim">0{index + 1}</span>
               <span className="mt-3 block text-base font-semibold text-text group-hover:text-highlight">
@@ -65,7 +65,7 @@ export default async function AdminDashboardPage() {
           { label: "Merch", count: merch.length, href: "/admin/merch" },
         ].map((item) => (
           <Link key={item.label} href={item.href} className="panel p-5 sm:p-6">
-            <p className="text-xs font-semibold text-text-muted">{item.label}</p>
+            <p className="kicker">{item.label}</p>
             <p className="mt-3 font-mono text-4xl tabular-nums text-highlight">{item.count}</p>
           </Link>
         ))}
@@ -73,12 +73,12 @@ export default async function AdminDashboardPage() {
 
       <section className="panel p-4 sm:p-6">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold text-text">Recent changes</h2>
+          <h2 className="headline text-2xl">Recent changes</h2>
         </div>
         {audit.length === 0 ? (
           <p className="mt-4 text-sm text-text-muted">No changes recorded yet.</p>
         ) : (
-          <ul className="mt-4 divide-y divide-border/60 border-t border-border/60">
+          <ul className="mt-4 divide-y divide-border border-t-2 border-text">
             {audit.slice(0, 5).map((entry) => (
               <li
                 key={entry.id}

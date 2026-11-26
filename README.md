@@ -1,6 +1,6 @@
 # Bandland
 
-Band landing page for schmät, styled as a photocopied punk zine (cream paper, black ink, one red, torn edges, halftone band photos). `/admin` keeps a dark monochrome theme. Built with Next.js 16, React 19, Tailwind CSS 4, TypeScript, and Vercel Blob.
+Band landing page for schmät, styled as a photocopied punk zine (cream paper, black ink, one red, torn edges, halftone band photos). `/admin` uses the same theme. Built with Next.js 16, React 19, Tailwind CSS 4, TypeScript, and Vercel Blob.
 
 Design and project rules live in `AGENTS.md` and `DESIGN.md`. Vercel is the only supported deployment target.
 

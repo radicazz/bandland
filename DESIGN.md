@@ -2,7 +2,7 @@
 
 Design read: an epic punk landing page for schmät, built for fans first. It looks like a photocopied zine: cream paper, black ink, hard red, torn paper, halftone band photos and a blackletter wordmark. Music comes first, then the latest release, the next show and tickets.
 
-The public site and `/admin` use different themes. The public site is the zine. Admin keeps the original dark monochrome look; see "Admin theme" below.
+The public site and `/admin` share one theme; see "Admin" below.
 
 ## Colour tokens
 
@@ -92,16 +92,17 @@ The photos are already processed, so use them as they are, or inside `.photo-fra
 
 - **One red**: red marks the action (Play, Tickets), the active language and the big release panel. Everything else is ink on paper, so the red still shouts.
 - **Paper, not white**: cream paper with grain makes the photocopy read. Pure white would look like a template.
-- **Square corners on zine elements**: torn paper and tape replace rounded cards. The radius tokens stay for admin and legacy components.
+- **Square corners on zine elements**: torn paper and tape replace rounded cards. Admin cards, inputs and buttons are square too.
 - **Torn edges and tilts are static**: they read as print and nothing moves, so reduced motion needs no special handling.
 - **Socials**: shown as plain text names, because redrawn brand glyphs are never accurate.
 - **Arrows**: `↗` on links that leave the site, `▶` on play, listen and ticket actions.
 - **Voice**: short, concrete and bilingual (English and Afrikaans), with no marketing adjectives.
 
-## Admin theme
+## Admin
 
-`/admin` keeps the original dark monochrome tokens: `#060606` background, `#f2f2f2` text and a `#e36b6b` accent.
+`/admin` uses the same tokens as the public site, so it needs no theme scope of its own.
 
-- `src/app/admin/layout.tsx` wraps every admin route, the login page included, in a `data-admin-theme` element.
-- `globals.css` re-declares the dark values for `[data-admin-theme]` and for `:root:has([data-admin-theme])`. That makes the page background and the site chrome around admin dark too.
-- Do not use zine classes in admin.
+- It shares `.headline`, `.kicker`, `.btn-zine` and `.btn-zine-red`, plus `.panel` for cards.
+- Form controls have a 2px ink border; an invalid one turns red.
+- Active and selected states are solid red or ink with paper text. Do not tint behind red text: it drops the contrast below AA.
+- No torn edges, tilts or halftone around forms.

@@ -26,14 +26,14 @@ export function ImageUploadField({
   const hasCurrent = Boolean(currentImageUrl);
   const isPoster = previewVariant === "poster";
   const previewFrameClassName = isPoster
-    ? "mx-auto aspect-[2/3] w-full max-w-64 overflow-hidden border border-border bg-bg/60"
-    : "overflow-hidden border border-border bg-bg/60";
+    ? "mx-auto aspect-[2/3] w-full max-w-64 overflow-hidden border-2 border-border"
+    : "overflow-hidden border-2 border-border";
   const previewImageClassName = isPoster
     ? "h-full w-full object-contain"
     : "h-48 w-full object-cover";
   const fallbackClassName = isPoster
-    ? "flex h-full w-full items-center justify-center bg-surface/50"
-    : "flex h-48 w-full items-center justify-center bg-surface/50";
+    ? "flex h-full w-full items-center justify-center bg-surface"
+    : "flex h-48 w-full items-center justify-center bg-surface";
 
   useEffect(
     () => () => {
@@ -43,11 +43,11 @@ export function ImageUploadField({
   );
 
   return (
-    <fieldset className="border border-border/70 bg-bg/30 p-4 sm:p-5">
+    <fieldset className="border-2 border-text p-4 sm:p-5">
       <legend className="px-1 text-xs font-semibold text-text-muted">{label}</legend>
       <label
         htmlFor={inputId}
-        className="mt-3 flex min-h-32 cursor-pointer flex-col items-center justify-center border border-dashed border-border bg-surface/50 px-5 py-6 text-center transition-colors hover:border-highlight focus-within:border-highlight"
+        className="mt-3 flex min-h-32 cursor-pointer flex-col items-center justify-center border-2 border-dashed border-text bg-surface px-5 py-6 text-center transition-colors hover:border-highlight focus-within:border-highlight"
       >
         <span className="text-sm font-semibold text-text">
           {fileName ?? (hasCurrent ? "Replace photo" : "Choose a photo")}
@@ -111,7 +111,7 @@ export function ImageUploadField({
           </p>
           <button
             type="button"
-            className="min-h-10 border border-border px-3 text-xs font-bold text-text-muted hover:border-highlight hover:text-highlight"
+            className="min-h-10 border-2 border-text px-3 text-xs font-bold text-text hover:bg-text hover:text-bg"
             onClick={() =>
               setRemoveCurrent((current) => {
                 const nextValue = !current;

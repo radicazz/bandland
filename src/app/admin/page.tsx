@@ -75,8 +75,8 @@ export default async function AdminLoginPage({ searchParams }: AdminPageProps) {
   return (
     <Container className="flex min-h-[calc(100dvh-4rem)] items-center justify-center py-10 sm:py-16">
       <div className="panel w-full max-w-md p-5 sm:p-8">
-        <p className="section-kicker">Admin</p>
-        <h1 className="display-title mt-6 text-4xl">Access panel</h1>
+        <p className="kicker">Admin</p>
+        <h1 className="headline mt-4 text-4xl sm:text-5xl">Access panel</h1>
         <p className="mt-2 text-sm text-text-muted">
           Enter the shared password to manage shows and merch.
         </p>
@@ -93,7 +93,7 @@ export default async function AdminLoginPage({ searchParams }: AdminPageProps) {
               {message}
             </p>
           ) : null}
-          <button type="submit" className="btn-primary w-full">
+          <button type="submit" className="btn-zine-red w-full">
             Sign in
           </button>
         </form>

@@ -20,7 +20,7 @@ export function DeleteButton({
     <>
       <button
         type="button"
-        className="btn-secondary w-full sm:w-auto"
+        className="btn-zine w-full sm:w-auto"
         onClick={() => dialogRef.current?.showModal()}
         disabled={pending}
       >
@@ -29,26 +29,22 @@ export function DeleteButton({
       <dialog
         ref={dialogRef}
         aria-labelledby={titleId}
-        className="m-auto w-[calc(100%-2rem)] max-w-md border border-border bg-surface p-0 text-text backdrop:bg-bg/80"
+        className="m-auto w-[calc(100%-2rem)] max-w-md border-2 border-text bg-bg p-0 text-text backdrop:bg-text/70"
         onClick={(event) => {
           if (event.target === dialogRef.current) dialogRef.current.close();
         }}
       >
         <div className="p-5 sm:p-6">
-          <p className="section-kicker">Confirm</p>
-          <h2 id={titleId} className="mt-5 text-xl font-semibold text-text">
+          <p className="kicker">Confirm</p>
+          <h2 id={titleId} className="headline mt-4 text-2xl">
             Delete permanently?
           </h2>
           <p className="mt-3 text-sm leading-6 text-text-muted">{confirmMessage}</p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <button
-              type="button"
-              className="btn-secondary"
-              onClick={() => dialogRef.current?.close()}
-            >
+            <button type="button" className="btn-zine" onClick={() => dialogRef.current?.close()}>
               Keep it
             </button>
-            <button type="submit" className="btn-primary" disabled={pending}>
+            <button type="submit" className="btn-zine-red" disabled={pending}>
               {pending ? "Deleting…" : "Yes, delete"}
             </button>
           </div>
