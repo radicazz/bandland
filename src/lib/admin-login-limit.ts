@@ -2,13 +2,20 @@ import "server-only";
 
 import { checkRateLimit } from "@vercel/firewall";
 
+function getFirewallHost(request: Request) {
+  const { VERCEL_ENV, VERCEL_PROJECT_PRODUCTION_URL: projectHost, VERCEL_URL } = process.env;
+  if (VERCEL_ENV !== "production" || !projectHost) return VERCEL_URL;
+
+  // The project URL is the shortest production domain. If that is an apex which redirects
+  // to www, the SDK rejects the redirect. Never trust any other request host: the SDK
+  // sends it the client IP and the protection bypass secret.
+  return request.headers.get("host") === `www.${projectHost}` ? `www.${projectHost}` : projectHost;
+}
+
 export async function getAdminLoginLimit(request: Request) {
   if (process.env.VERCEL !== "1") return "allowed";
 
-  const host =
-    process.env.VERCEL_ENV === "production"
-      ? process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL
-      : process.env.VERCEL_URL;
+  const host = getFirewallHost(request);
   const clientIp = request.headers.get("x-real-ip");
 
   try {
