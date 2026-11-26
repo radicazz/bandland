@@ -21,8 +21,8 @@ describe("parseAdminPasswordHash", () => {
   it.each([
     ["a plain password", "throwaway-password"],
     ["a truncated hash", hash.slice(0, -1)],
-    // What dotenv expansion leaves behind when the dollars are not escaped.
-    ["an expanded hash", hash.slice(7)],
+    // Like the remnant dotenv expansion leaves when the dollars are not escaped.
+    ["a remnant of an expanded hash", hash.slice(-16)],
     ["an unmatched quote", `'${hash}`],
   ])("rejects %s", (_, value) => {
     expect(parseAdminPasswordHash(value)).toBeNull();

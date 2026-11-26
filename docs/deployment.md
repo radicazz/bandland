@@ -60,7 +60,8 @@ rule is missing or unreachable. Local development skips the Vercel check.
 The SDK does not follow redirects. In production the app checks the rule on
 `VERCEL_PROJECT_PRODUCTION_URL`, or on its `www.` subdomain when that serves the
 request (an apex domain redirecting to `www`). Any other redirect between those
-domains makes sign-in unavailable.
+domains makes sign-in unavailable, including sign-in through a `*.vercel.app`
+production alias when a custom domain is set.
 
 ## 4. Deploy and verify
 

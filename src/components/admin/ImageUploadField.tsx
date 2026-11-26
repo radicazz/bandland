@@ -47,7 +47,7 @@ export function ImageUploadField({
       <legend className="px-1 text-xs font-semibold text-text-muted">{label}</legend>
       <label
         htmlFor={inputId}
-        className="mt-3 flex min-h-32 cursor-pointer flex-col items-center justify-center border-2 border-dashed border-text bg-surface px-5 py-6 text-center transition-colors hover:border-highlight focus-within:border-highlight"
+        className="mt-3 flex min-h-32 cursor-pointer flex-col items-center justify-center border-2 border-dashed border-text bg-surface px-5 py-6 text-center transition-colors hover:border-highlight focus-within:outline-2 focus-within:outline-offset-[3px] focus-within:outline-[var(--focus)]"
       >
         <span className="text-sm font-semibold text-text">
           {fileName ?? (hasCurrent ? "Replace photo" : "Choose a photo")}
